@@ -14,16 +14,35 @@
 //  limitations under the License.
 // ============================================================================
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
+import 'package:simple_tracker/state/bloc.dart';
 
-class CustomScrollPhysics extends ScrollPhysics {
-  const CustomScrollPhysics({ScrollPhysics parent}) : super(parent: parent);
+class BlocProvider<T extends Bloc> extends StatefulWidget {
+  final Widget child;
+  final T bloc;
+
+  const BlocProvider({Key key, @required this.bloc, @required this.child}) : super(key: key);
+
+  static T of<T extends Bloc>(BuildContext context) {
+    final BlocProvider<T> provider = context.findAncestorWidgetOfExactType();
+    return provider.bloc;
+  }
 
   @override
-  double get maxFlingVelocity => 50.0;
+  State<StatefulWidget> createState() {
+    return _BlocProviderState();
+  }
+}
+
+class _BlocProviderState extends State<BlocProvider> {
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
+  }
 
   @override
-  ScrollPhysics applyTo(ScrollPhysics ancestor) {
-    return CustomScrollPhysics();
+  void dispose() {
+    widget.bloc.dispose();
+    super.dispose();
   }
 }

@@ -26,6 +26,7 @@ dependencies:
 
   infinite_listview: ^1.0.1+1
   date_calendar: ^0.2.1
+  json_serializable: ^3.3.0
 
 dev_dependencies:
   flutter_test:

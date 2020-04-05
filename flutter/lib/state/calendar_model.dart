@@ -14,16 +14,20 @@
 //  limitations under the License.
 // ============================================================================
 
-import 'package:flutter/cupertino.dart';
+import 'package:json_annotation/json_annotation.dart';
 
-class CustomScrollPhysics extends ScrollPhysics {
-  const CustomScrollPhysics({ScrollPhysics parent}) : super(parent: parent);
+@JsonSerializable()
+class CalendarModel {
+  final String _id;
+  final String _name;
+  final List<String> _highlightedDays;
 
-  @override
-  double get maxFlingVelocity => 50.0;
+  CalendarModel(this._id, this._name, this._highlightedDays);
 
-  @override
-  ScrollPhysics applyTo(ScrollPhysics ancestor) {
-    return CustomScrollPhysics();
-  }
+  Set<DateTime> get highlightedDays =>
+      _highlightedDays.map((dayString) => DateTime.parse(dayString)).toSet();
+
+  String get name => _name;
+
+  String get id => _id;
 }

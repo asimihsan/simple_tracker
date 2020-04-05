@@ -5,7 +5,7 @@
 //  you may not use this file except in compliance with the License.
 //  You may obtain a copy of the License in the LICENSE file and at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//      https://www.apache.org/licenses/LICENSE-2.0
 //
 //  Unless required by applicable law or agreed to in writing, software
 //  distributed under the License is distributed on an "AS IS" BASIS,
@@ -45,14 +45,11 @@ const DAY_LABELS_EN = [
 ];
 
 class CalenderMonth extends StatelessWidget {
-  const CalenderMonth({
-    Key key,
-    this.year,
-    this.month,
-  }) : super(key: key);
+  const CalenderMonth({Key key, this.year, this.month, this.highlightedDays}) : super(key: key);
 
   final int year;
   final int month;
+  final Set<DateTime> highlightedDays;
 
   @override
   Widget build(BuildContext context) {
@@ -70,25 +67,27 @@ class CalenderMonth extends StatelessWidget {
     rows.add(Row(children: currentRow));
     currentRow = new List<Widget>();
 
-    var currentDayInMonth = 1;
     for (var i = 0; i <= 40; i++) {
+      final bool highlighted = highlightedDays.contains(currentCalendar.toDateTimeLocal());
       if (i + 1 < startingWeekday) {
-        currentRow.add(dayWidget(context, currentDayInMonth, true /*blank*/));
+        currentRow
+            .add(dayWidget(context, currentCalendar.day, true /*blank*/, false /*highlighted*/));
       } else {
-        currentRow.add(dayWidget(context, currentDayInMonth, false /*blank*/));
-        currentDayInMonth++;
+        currentRow.add(dayWidget(context, currentCalendar.day, false /*blank*/, highlighted));
+        currentCalendar = currentCalendar.addDays(1);
       }
       currentRow.add(Spacer());
       if (currentRow.length >= 14) {
         rows.add(Row(children: currentRow));
         currentRow = new List<Widget>();
       }
-      if (currentCalendar.addDays(currentDayInMonth).month != this.month) {
+      if (currentCalendar.month != this.month) {
         break;
       }
     }
     while (currentRow.length < 14) {
-      currentRow.add(dayWidget(context, currentDayInMonth, true /*blank*/));
+      currentRow
+          .add(dayWidget(context, currentCalendar.day, true /*blank*/, false /*highlighted*/));
       currentRow.add(Spacer());
     }
     rows.add(Row(children: currentRow));
@@ -106,14 +105,16 @@ class CalenderMonth extends StatelessWidget {
     );
   }
 
-  Widget dayWidget(final BuildContext context, final int index, final bool isBlank) {
+  Widget dayWidget(
+      final BuildContext context, final int index, final bool isBlank, final bool highlighted) {
+    final Color backgroundColor = highlighted ? Colors.orangeAccent : Colors.white;
     return InkWell(
         onTap: () => developer.log("Pressed index $index"),
         child: Container(
             width: 50,
             margin: const EdgeInsets.all(2.0),
             padding: const EdgeInsets.all(15.0),
-            decoration: new BoxDecoration(border: Border.all()),
+            decoration: new BoxDecoration(border: Border.all(), color: backgroundColor),
             child: Text(
               isBlank ? "" : "$index",
               style: Theme.of(context).textTheme.body1,

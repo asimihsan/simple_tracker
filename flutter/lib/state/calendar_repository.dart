@@ -14,16 +14,19 @@
 //  limitations under the License.
 // ============================================================================
 
-import 'package:flutter/cupertino.dart';
+import 'package:meta/meta.dart';
+import 'package:simple_tracker/state/calendar_model.dart';
 
-class CustomScrollPhysics extends ScrollPhysics {
-  const CustomScrollPhysics({ScrollPhysics parent}) : super(parent: parent);
+class CalendarRepository {
+  Future<CalendarModel> getCalendar({@required String userId, @required String calendarId}) async {
+    // TODO this would actually call a server, here just pretend data.
+    await Future.delayed(Duration(seconds: 1));
 
-  @override
-  double get maxFlingVelocity => 50.0;
+    List<String> highlightedDays = new List();
+    highlightedDays.add("2020-03-05");
+    highlightedDays.add("2020-04-01");
+    highlightedDays.add("2020-04-03");
 
-  @override
-  ScrollPhysics applyTo(ScrollPhysics ancestor) {
-    return CustomScrollPhysics();
+    return new CalendarModel("calendarId", "Migraines", highlightedDays);
   }
 }

@@ -14,16 +14,26 @@
 //  limitations under the License.
 // ============================================================================
 
-import 'package:flutter/cupertino.dart';
+import 'dart:async';
 
-class CustomScrollPhysics extends ScrollPhysics {
-  const CustomScrollPhysics({ScrollPhysics parent}) : super(parent: parent);
+import 'package:simple_tracker/state/bloc.dart';
+import 'package:simple_tracker/state/calendar_model.dart';
+
+class CalendarBloc implements Bloc {
+  CalendarModel _calendarModel;
+  CalendarModel get selectedCalendar => _calendarModel;
+
+  final _calendarController = StreamController<CalendarModel>();
+
+  Stream<CalendarModel> get calendarStream => _calendarController.stream;
+
+  void selectCalendar(CalendarModel calendarModel) {
+    _calendarModel = calendarModel;
+    _calendarController.sink.add(calendarModel);
+  }
 
   @override
-  double get maxFlingVelocity => 50.0;
-
-  @override
-  ScrollPhysics applyTo(ScrollPhysics ancestor) {
-    return CustomScrollPhysics();
+  void dispose() {
+    _calendarController.close();
   }
 }
