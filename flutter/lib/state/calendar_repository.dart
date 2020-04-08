@@ -20,13 +20,13 @@ import 'package:simple_tracker/state/calendar_model.dart';
 class CalendarRepository {
   Future<CalendarModel> getCalendar({@required String userId, @required String calendarId}) async {
     // TODO this would actually call a server, here just pretend data.
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(Duration(seconds: 3));
 
     List<String> highlightedDays = new List();
     highlightedDays.add("2020-03-05");
     highlightedDays.add("2020-04-01");
     highlightedDays.add("2020-04-03");
 
-    return new CalendarModel("calendarId", "Migraines", highlightedDays);
+    return new CalendarModel.withContent("calendarId", "Migraines", highlightedDays);
   }
 }

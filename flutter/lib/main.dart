@@ -17,13 +17,20 @@
 import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:simple_tracker/detail_view.dart';
-import 'package:simple_tracker/state/bloc_provider.dart';
 import 'package:simple_tracker/state/calendar_model.dart';
-import 'package:simple_tracker/state/calendar_query_bloc.dart';
+import 'package:simple_tracker/state/calendar_repository.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(MultiProvider(
+    providers: [
+      Provider(
+        create: (_) => new CalendarRepository(),
+      ),
+    ],
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -31,15 +38,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<CalendarQueryBloc>(
-      bloc: CalendarQueryBloc(),
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        home: MyHomePage(),
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
       ),
+      home: MyHomePage(),
     );
   }
 }
@@ -47,35 +51,34 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatelessWidget {
   MyHomePage({Key key}) : super(key: key);
 
+  Widget _buildHomePage(Widget child) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Simple Tracker"),
+      ),
+      body: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final CalendarQueryBloc calendarQueryBloc = BlocProvider.of<CalendarQueryBloc>(context);
-    if (!calendarQueryBloc.submittedOnce) {
-      calendarQueryBloc.submitQuery("userId", "calendarId");
-    }
-    Widget child;
-    return StreamBuilder<CalendarModel>(
-        stream: BlocProvider.of<CalendarQueryBloc>(context).calendarStream,
+    return FutureBuilder<CalendarModel>(
+        future: downloadCalendar(context),
         builder: (context, snapshot) {
-          final CalendarModel calendar = snapshot.data;
-          if (calendar == null) {
+          final CalendarModel calendarModel = snapshot?.data;
+          if (calendarModel == null) {
             developer.log("MyHomePage calendar is null...");
-            child = CircularProgressIndicator();
-          } else {
-            developer.log("MyHomePage calendar is non-null...");
-            child = DetailView(calendar);
+            return _buildHomePage(new CircularProgressIndicator());
           }
-          return Scaffold(
-            appBar: AppBar(
-              title: Text("Simple Tracker"),
-            ),
-            body: child,
-//      floatingActionButton: FloatingActionButton(
-//        onPressed: _incrementCounter,
-//        tooltip: 'Increment',
-//        child: Icon(Icons.add),
-//      ),
-          );
+          developer.log("MyHomePage calendar is non-null...");
+          return MultiProvider(
+              providers: [ChangeNotifierProvider(create: (_) => calendarModel)],
+              child: _buildHomePage(DetailView()));
         });
+  }
+
+  Future<CalendarModel> downloadCalendar(BuildContext context) async {
+    final CalendarRepository repository = Provider.of<CalendarRepository>(context, listen: false);
+    return repository.getCalendar(userId: "userId", calendarId: "calendarId");
   }
 }

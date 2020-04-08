@@ -14,20 +14,71 @@
 //  limitations under the License.
 // ============================================================================
 
-import 'package:json_annotation/json_annotation.dart';
+import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart';
 
-@JsonSerializable()
-class CalendarModel {
-  final String _id;
-  final String _name;
-  final List<String> _highlightedDays;
+class CalendarModel extends ChangeNotifier {
+  bool _isLoaded;
+  String _id;
+  String _name;
+  List<String> _highlightedDays;
+  Set<DateTime> _highlightedDateTimes;
 
-  CalendarModel(this._id, this._name, this._highlightedDays);
+  static final _formatter = new DateFormat('yyyy-MM-dd');
 
-  Set<DateTime> get highlightedDays =>
-      _highlightedDays.map((dayString) => DateTime.parse(dayString)).toSet();
+  CalendarModel.notLoaded() {
+    this._isLoaded = false;
+    this._id = null;
+    this._name = null;
+    this._highlightedDays = null;
+    this._highlightedDateTimes = null;
+  }
+
+  CalendarModel.withContent(String id, String name, List<String> highlightedDays) {
+    this._isLoaded = true;
+    this._id = id;
+    this._name = name;
+    this._highlightedDays = highlightedDays;
+    this._highlightedDateTimes =
+        _highlightedDays.map((dayString) => DateTime.parse(dayString)).toSet();
+  }
+
+  bool get isLoaded => _isLoaded;
+
+  String get id => _id;
 
   String get name => _name;
 
-  String get id => _id;
+  void setContent(CalendarModel other) {
+    this._id = other._id;
+    this._name = other._name;
+    this._highlightedDays = other._highlightedDays;
+    notifyListeners();
+  }
+
+  void _setHighlightedDays(Set<DateTime> newHighlightedDateTimes) {
+    _highlightedDateTimes = newHighlightedDateTimes;
+    _highlightedDays = newHighlightedDateTimes
+        .map((dateTime) => _formatter.format(dateTime))
+        .toList(growable: false);
+    _highlightedDays.sort();
+  }
+
+  bool isDateTimeHighlighted(DateTime dateTime) {
+    return _highlightedDateTimes.contains(dateTime);
+  }
+
+  void addHighlightedDay(DateTime dateTime) {
+    Set<DateTime> currentHighlightedDays = _highlightedDateTimes;
+    currentHighlightedDays.add(dateTime);
+    _setHighlightedDays(currentHighlightedDays);
+    notifyListeners();
+  }
+
+  void removeHighlightedDay(DateTime dateTime) {
+    Set<DateTime> currentHighlightedDays = _highlightedDateTimes;
+    currentHighlightedDays.remove(dateTime);
+    _setHighlightedDays(currentHighlightedDays);
+    notifyListeners();
+  }
 }
