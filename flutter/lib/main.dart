@@ -21,12 +21,16 @@ import 'package:provider/provider.dart';
 import 'package:simple_tracker/detail_view.dart';
 import 'package:simple_tracker/state/calendar_model.dart';
 import 'package:simple_tracker/state/calendar_repository.dart';
+import 'package:simple_tracker/state/user_model.dart';
 
 void main() {
   runApp(MultiProvider(
     providers: [
       Provider(
         create: (_) => new CalendarRepository(),
+      ),
+      Provider(
+        create: (_) => new UserModel.notLoggedIn(),
       ),
     ],
     child: MyApp(),
@@ -78,6 +82,9 @@ class MyHomePage extends StatelessWidget {
   }
 
   Future<CalendarModel> downloadCalendar(BuildContext context) async {
+    // TODO put this somewhere else, for now also login.
+    Provider.of<UserModel>(context).login("userId", "userAuthenticationToken");
+
     final CalendarRepository repository = Provider.of<CalendarRepository>(context, listen: false);
     return repository.getCalendar(userId: "userId", calendarId: "calendarId");
   }

@@ -16,6 +16,7 @@
 
 import 'package:meta/meta.dart';
 import 'package:simple_tracker/state/calendar_model.dart';
+import 'package:simple_tracker/state/user_model.dart';
 
 class CalendarRepository {
   Future<CalendarModel> getCalendar({@required String userId, @required String calendarId}) async {
@@ -28,5 +29,27 @@ class CalendarRepository {
     highlightedDays.add("2020-04-03");
 
     return new CalendarModel.withContent("calendarId", "Migraines", highlightedDays);
+  }
+
+  Future<void> addHighlightedDay(@required UserModel userModel,
+      @required CalendarModel calendarModel, @required DateTime dateTime) async {
+    calendarModel.addRefreshingDateTime(dateTime);
+
+    // TODO this would actually call a server, here just pretend data.
+    await Future.delayed(Duration(seconds: 1));
+
+    calendarModel.addHighlightedDay(dateTime);
+    calendarModel.removeRefreshingDateTime(dateTime);
+  }
+
+  Future<void> removeHighlightedDay(@required UserModel userModel,
+      @required CalendarModel calendarModel, @required DateTime dateTime) async {
+    calendarModel.addRefreshingDateTime(dateTime);
+
+    // TODO this would actually call a server, here just pretend data.
+    await Future.delayed(Duration(seconds: 1));
+
+    calendarModel.removeHighlightedDay(dateTime);
+    calendarModel.removeRefreshingDateTime(dateTime);
   }
 }

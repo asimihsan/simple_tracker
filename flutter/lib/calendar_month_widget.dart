@@ -21,6 +21,8 @@ import 'package:provider/provider.dart';
 import 'dart:developer' as developer;
 
 import 'package:simple_tracker/state/calendar_model.dart';
+import 'package:simple_tracker/state/calendar_repository.dart';
+import 'package:simple_tracker/state/user_model.dart';
 
 const MONTH_LABELS_EN = [
   "January",
@@ -56,6 +58,10 @@ class CalenderMonth extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<CalendarModel>(builder: (context, calendar, child) {
+      final CalendarRepository calendarRepository =
+          Provider.of<CalendarRepository>(context, listen: false);
+      final UserModel userModel = Provider.of<UserModel>(context, listen: false);
+
       final String title = "${MONTH_LABELS_EN[this.month - 1]} ${this.year}";
       developer.log('CalenderMonth build entry for title $title');
 
@@ -74,13 +80,12 @@ class CalenderMonth extends StatelessWidget {
 
       for (var i = 0; i <= 40; i++) {
         final DateTime currentDateTime = currentCalendar.toDateTimeLocal();
-        final bool highlighted = calendar.isDateTimeHighlighted(currentDateTime);
         if (i + 1 < startingWeekday) {
-          currentRow.add(dayWidget(context, currentCalendar.day, true /*blank*/,
-              false /*highlighted*/, calendar, currentDateTime));
+          currentRow.add(dayWidget(context, currentCalendar.day, true /*blank*/, calendar,
+              currentDateTime, calendarRepository, userModel));
         } else {
-          currentRow.add(dayWidget(context, currentCalendar.day, false /*blank*/, highlighted,
-              calendar, currentDateTime));
+          currentRow.add(dayWidget(context, currentCalendar.day, false /*blank*/, calendar,
+              currentDateTime, calendarRepository, userModel));
           currentCalendar = currentCalendar.addDays(1);
         }
         currentRow.add(Spacer());
@@ -93,8 +98,8 @@ class CalenderMonth extends StatelessWidget {
         }
       }
       while (currentRow.length < 14) {
-        currentRow.add(dayWidget(
-            context, currentCalendar.day, true /*blank*/, false /*highlighted*/, null, null));
+        currentRow.add(dayWidget(context, currentCalendar.day, true /*blank*/, null, null,
+            calendarRepository, userModel));
         currentRow.add(Spacer());
       }
       rows.add(Row(children: currentRow));
@@ -111,30 +116,57 @@ class CalenderMonth extends StatelessWidget {
     });
   }
 
-  Widget dayWidget(final BuildContext context, final int index, final bool isBlank,
-      final bool highlighted, final CalendarModel calendarModel, final DateTime currentDateTime) {
-    final Color backgroundColor = highlighted ? Colors.orangeAccent : Colors.white;
-    return InkWell(
-        onTap: () {
-          if (calendarModel != null) {
-            developer.log("Pressed index $index");
-            if (highlighted) {
-              calendarModel.removeHighlightedDay(currentDateTime);
-            } else {
-              calendarModel.addHighlightedDay(currentDateTime);
-            }
-          }
-        },
-        child: Container(
-            width: 50,
-            margin: const EdgeInsets.all(2.0),
-            padding: const EdgeInsets.all(15.0),
-            decoration: new BoxDecoration(border: Border.all(), color: backgroundColor),
-            child: Text(
+  Widget dayWidget(
+      final BuildContext context,
+      final int index,
+      final bool isBlank,
+      final CalendarModel calendarModel,
+      final DateTime currentDateTime,
+      final CalendarRepository calendarRepository,
+      final UserModel userModel) {
+    Widget child;
+    Color backgroundColor;
+    Function onTapHandler;
+    if (isBlank) {
+      child = Text(
+        isBlank ? "" : "$index",
+        style: Theme.of(context).textTheme.body1,
+        textAlign: TextAlign.center,
+      );
+      backgroundColor = Colors.white;
+      onTapHandler = () {};
+    } else {
+      final bool highlighted = calendarModel.isDateTimeHighlighted(currentDateTime);
+      final bool refreshing = calendarModel.isRefreshingDateTime(currentDateTime);
+      backgroundColor = highlighted ? Colors.orangeAccent : Colors.white;
+      child = refreshing
+          ? new CircularProgressIndicator()
+          : Text(
               isBlank ? "" : "$index",
               style: Theme.of(context).textTheme.body1,
               textAlign: TextAlign.center,
-            )));
+            );
+      onTapHandler = () {
+        developer.log("Pressed index $index");
+        if (highlighted) {
+          calendarRepository.removeHighlightedDay(userModel, calendarModel, currentDateTime);
+        } else {
+          calendarRepository.addHighlightedDay(userModel, calendarModel, currentDateTime);
+        }
+      };
+    }
+
+    return SizedBox(
+        height: 50,
+        width: 50,
+        child: InkWell(
+          onTap: onTapHandler,
+          child: Ink(
+              width: 50,
+              padding: const EdgeInsets.all(15.0),
+              decoration: new BoxDecoration(border: Border.all(), color: backgroundColor),
+              child: child),
+        ));
   }
 
   Widget headerWidget(final BuildContext context, String day) {

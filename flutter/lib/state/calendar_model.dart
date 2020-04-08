@@ -14,6 +14,8 @@
 //  limitations under the License.
 // ============================================================================
 
+import 'dart:collection';
+
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 
@@ -22,7 +24,12 @@ class CalendarModel extends ChangeNotifier {
   String _id;
   String _name;
   List<String> _highlightedDays;
+
+  // This is a derived calculated field.
   Set<DateTime> _highlightedDateTimes;
+
+  // This is a Flutter-UI-only field to indicate DateTimes that are currently refreshing.
+  Set<DateTime> _refreshingDateTimes;
 
   static final _formatter = new DateFormat('yyyy-MM-dd');
 
@@ -32,6 +39,7 @@ class CalendarModel extends ChangeNotifier {
     this._name = null;
     this._highlightedDays = null;
     this._highlightedDateTimes = null;
+    this._refreshingDateTimes = null;
   }
 
   CalendarModel.withContent(String id, String name, List<String> highlightedDays) {
@@ -41,6 +49,7 @@ class CalendarModel extends ChangeNotifier {
     this._highlightedDays = highlightedDays;
     this._highlightedDateTimes =
         _highlightedDays.map((dayString) => DateTime.parse(dayString)).toSet();
+    this._refreshingDateTimes = new HashSet();
   }
 
   bool get isLoaded => _isLoaded;
@@ -80,5 +89,19 @@ class CalendarModel extends ChangeNotifier {
     currentHighlightedDays.remove(dateTime);
     _setHighlightedDays(currentHighlightedDays);
     notifyListeners();
+  }
+
+  void addRefreshingDateTime(DateTime dateTime) {
+    this._refreshingDateTimes.add(dateTime);
+    notifyListeners();
+  }
+
+  void removeRefreshingDateTime(DateTime dateTime) {
+    this._refreshingDateTimes.remove(dateTime);
+    notifyListeners();
+  }
+
+  bool isRefreshingDateTime(DateTime dateTime) {
+    return this._refreshingDateTimes.contains(dateTime);
   }
 }
