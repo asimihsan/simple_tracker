@@ -5,6 +5,9 @@ import { CdkStack } from '../lib/cdk-stack';
 const app = new cdk.App();
 
 const preprodEnvironment = { account: '519160639284', region: 'us-west-2' }
-const prodEnvironment = { account: '519160639284', region: 'us-west-2' }
+const preprodDomainName = 'preprod-simple-tracker.ihsan.io'
 
-new CdkStack(app, 'preprod-SimpleTrackedCdkStack', { env: preprodEnvironment });
+const prodEnvironment = { account: '519160639284', region: 'us-west-2' }
+const prodDomainName = 'prod-simple-tracker.ihsan.io'
+
+new CdkStack(app, 'preprod-SimpleTrackedCdkStack', preprodDomainName, { env: preprodEnvironment });
