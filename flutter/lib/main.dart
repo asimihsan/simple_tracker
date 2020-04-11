@@ -28,7 +28,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget child = getUserLogin(context);
     return MaterialApp(
       localizationsDelegates: [
         const AppLocalizationsDelegate(),
@@ -42,7 +41,16 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: child,
+      home: MyAppWithLocalizations(key: this.key),
     );
+  }
+}
+
+class MyAppWithLocalizations extends StatelessWidget {
+  MyAppWithLocalizations({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return getUserLogin(context, isSignupForm: false);
   }
 }

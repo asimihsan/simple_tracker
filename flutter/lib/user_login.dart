@@ -19,26 +19,31 @@ import 'package:flutter/material.dart';
 import 'package:simple_tracker/localizations.dart';
 import 'dart:developer' as developer;
 
-Widget getUserLogin(BuildContext context) {
+Widget getUserLogin(BuildContext context, {bool isSignupForm}) {
   final AppLocalizations localizations =
       Localizations.of<AppLocalizations>(context, AppLocalizations);
+  final String title =
+      isSignupForm ? localizations.userLoginSignupTitle : localizations.userLoginLoginTitle;
 
   return Scaffold(
     appBar: AppBar(
-      //title: Text(localizations.userLoginTitle),
-      title: Text('Login'),
+      title: Text(title),
     ),
     body: SafeArea(
-      child: UserLoginForm(),
+      child: UserLoginForm(isSignupForm),
       minimum: const EdgeInsets.symmetric(horizontal: 16.0),
     ),
   );
 }
 
 class UserLoginForm extends StatefulWidget {
+  final bool isSignupForm;
+
+  UserLoginForm(this.isSignupForm);
+
   @override
   State<StatefulWidget> createState() {
-    return UserLoginFormState();
+    return UserLoginFormState(isSignupForm);
   }
 }
 
@@ -46,10 +51,31 @@ class UserLoginFormState extends State<UserLoginForm> {
   // Global key that uniquely identifies Form widget allows validation.
   final _formKey = GlobalKey<FormState>();
 
+  final TextEditingController _password = new TextEditingController();
+
+  final bool isSignupForm;
+
+  UserLoginFormState(this.isSignupForm);
+
   @override
   Widget build(BuildContext context) {
     final AppLocalizations localizations =
         Localizations.of<AppLocalizations>(context, AppLocalizations);
+    final TextSpan switchLink = isSignupForm
+        ? new TextSpan(
+            text: localizations.userLoginLoginAsExistingUser,
+            style: new TextStyle(color: Colors.blue),
+            recognizer: new TapGestureRecognizer()
+              ..onTap = () {
+                switchToUserLoginHandler(context);
+              })
+        : new TextSpan(
+            text: localizations.userLoginSignUpAsANewUser,
+            style: new TextStyle(color: Colors.blue),
+            recognizer: new TapGestureRecognizer()
+              ..onTap = () {
+                switchToUserSignupHandler(context);
+              });
 
     return Form(
         key: _formKey,
@@ -61,11 +87,19 @@ class UserLoginFormState extends State<UserLoginForm> {
             ),
           ),
           TextFormField(
+            controller: _password,
             validator: (input) => validatePassword(input, localizations),
             decoration: InputDecoration(
               labelText: localizations.userLoginPassword,
             ),
           ),
+          if (isSignupForm)
+            TextFormField(
+              validator: (input) => validateConfirmPassword(input, _password.text, localizations),
+              decoration: InputDecoration(
+                labelText: localizations.userLoginConfirmPassword,
+              ),
+            ),
           Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: RaisedButton(
@@ -75,26 +109,30 @@ class UserLoginFormState extends State<UserLoginForm> {
                         SnackBar(content: Text(localizations.userLoginProcessingData)));
                   }
                 },
-                child: Text("Submit"),
+                child: Text(localizations.userLoginSubmitButton),
               )),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 32.0),
             child: new Center(
                 child: new RichText(
                     text: new TextSpan(
-              children: [
-                new TextSpan(
-                    text: "Sign up as a new user",
-                    style: new TextStyle(color: Colors.blue),
-                    recognizer: new TapGestureRecognizer()
-                      ..onTap = () {
-                        developer.log("Sign up click");
-                      }),
-              ],
+              children: [switchLink],
             ))),
           ),
         ]));
   }
+}
+
+void switchToUserSignupHandler(BuildContext context) {
+  developer.log("Sign up click");
+  Navigator.pushReplacement(
+      context, MaterialPageRoute(builder: (context) => getUserLogin(context, isSignupForm: true)));
+}
+
+void switchToUserLoginHandler(BuildContext context) {
+  developer.log("Log in click");
+  Navigator.pushReplacement(
+      context, MaterialPageRoute(builder: (context) => getUserLogin(context, isSignupForm: false)));
 }
 
 String validateUsername(String input, AppLocalizations appLocalizations) {
@@ -121,6 +159,18 @@ String validatePassword(String input, AppLocalizations appLocalizations) {
   }
   if (input.length > 128) {
     return appLocalizations.userLoginErrorPasswordTooLong;
+  }
+  return null;
+}
+
+String validateConfirmPassword(
+    String input, String firstPassword, AppLocalizations appLocalizations) {
+  if (input != firstPassword) {
+    return appLocalizations.userLoginConfirmPasswordDoesNotMatch;
+  }
+  String basicPasswordValidation = validatePassword(input, appLocalizations);
+  if (basicPasswordValidation != null) {
+    return basicPasswordValidation;
   }
   return null;
 }
