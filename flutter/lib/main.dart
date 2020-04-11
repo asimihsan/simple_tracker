@@ -14,27 +14,13 @@
 //  limitations under the License.
 // ============================================================================
 
-import 'dart:developer' as developer;
-
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:simple_tracker/detail_view.dart';
-import 'package:simple_tracker/state/calendar_model.dart';
-import 'package:simple_tracker/state/calendar_repository.dart';
-import 'package:simple_tracker/state/user_model.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:simple_tracker/localizations.dart';
+import 'package:simple_tracker/user_login.dart';
 
 void main() {
-  runApp(MultiProvider(
-    providers: [
-      Provider(
-        create: (_) => new CalendarRepository(),
-      ),
-      Provider(
-        create: (_) => new UserModel.notLoggedIn(),
-      ),
-    ],
-    child: MyApp(),
-  ));
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -42,50 +28,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget child = getUserLogin(context);
     return MaterialApp(
-      title: 'Flutter Demo',
+      localizationsDelegates: [
+        const AppLocalizationsDelegate(),
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate
+      ],
+      supportedLocales: [
+        const Locale.fromSubtags(languageCode: 'en'),
+      ],
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(),
+      home: child,
     );
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  MyHomePage({Key key}) : super(key: key);
-
-  Widget _buildHomePage(Widget child) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Simple Tracker"),
-      ),
-      body: child,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<CalendarModel>(
-        future: downloadCalendar(context),
-        builder: (context, snapshot) {
-          final CalendarModel calendarModel = snapshot?.data;
-          if (calendarModel == null) {
-            developer.log("MyHomePage calendar is null...");
-            return _buildHomePage(new CircularProgressIndicator());
-          }
-          developer.log("MyHomePage calendar is non-null...");
-          return MultiProvider(
-              providers: [ChangeNotifierProvider(create: (_) => calendarModel)],
-              child: _buildHomePage(DetailView()));
-        });
-  }
-
-  Future<CalendarModel> downloadCalendar(BuildContext context) async {
-    // TODO put this somewhere else, for now also login.
-    Provider.of<UserModel>(context).login("userId", "userAuthenticationToken");
-
-    final CalendarRepository repository = Provider.of<CalendarRepository>(context, listen: false);
-    return repository.getCalendar(userId: "userId", calendarId: "calendarId");
   }
 }
