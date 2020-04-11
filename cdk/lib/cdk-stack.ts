@@ -79,6 +79,7 @@ export class CdkStack extends cdk.Stack {
       deployOptions: {
         tracingEnabled: true,
       },
+      binaryMediaTypes: ["*/*"],
     });
     const apiGatewayDomain = new apigateway.DomainName(this, 'apiDomainName', {
       domainName: apiDomainName,

@@ -7,7 +7,10 @@ A minimalistic way of tracking occurrences of events over time. Only tracks whet
 ## Build / deployment steps
 
 ```
-(cd lambda && GOOS=linux go build -o build/main main.go)
+rm -rf flutter/lib/proto && mkdir -p flutter/lib/proto && \
+rm -rf lambda/proto && mkdir -p lambda/proto && \
+protoc -I=proto --dart_out=flutter/lib/proto --go_out=lambda/proto proto/user.proto && \
+(cd lambda && GOOS=linux go build -o build/main *.go) && \
 (cd cdk && cdk deploy preprod-SimpleTrackedCdkStack)
 ```
 
