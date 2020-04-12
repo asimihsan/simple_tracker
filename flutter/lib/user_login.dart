@@ -14,10 +14,13 @@
 //  limitations under the License.
 // ============================================================================
 
+import 'dart:developer' as developer;
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:simple_tracker/localizations.dart';
-import 'dart:developer' as developer;
+import 'package:simple_tracker/state/user_repository.dart';
 
 Widget getUserLogin(BuildContext context, {bool isSignupForm}) {
   final AppLocalizations localizations =
@@ -25,12 +28,21 @@ Widget getUserLogin(BuildContext context, {bool isSignupForm}) {
   final String title =
       isSignupForm ? localizations.userLoginSignupTitle : localizations.userLoginLoginTitle;
 
+  Widget child = MultiProvider(
+    providers: [
+      Provider(
+        create: (_) => new UserRepository("https://preprod-simple-tracker.ihsan.io/"),
+      )
+    ],
+    child: UserLoginForm(isSignupForm),
+  );
+
   return Scaffold(
     appBar: AppBar(
       title: Text(title),
     ),
     body: SafeArea(
-      child: UserLoginForm(isSignupForm),
+      child: child,
       minimum: const EdgeInsets.symmetric(horizontal: 16.0),
     ),
   );
@@ -51,6 +63,7 @@ class UserLoginFormState extends State<UserLoginForm> {
   // Global key that uniquely identifies Form widget allows validation.
   final _formKey = GlobalKey<FormState>();
 
+  final TextEditingController _username = new TextEditingController();
   final TextEditingController _password = new TextEditingController();
 
   final bool isSignupForm;
@@ -61,6 +74,8 @@ class UserLoginFormState extends State<UserLoginForm> {
   Widget build(BuildContext context) {
     final AppLocalizations localizations =
         Localizations.of<AppLocalizations>(context, AppLocalizations);
+    final UserRepository userRepository = Provider.of<UserRepository>(context, listen: false);
+
     final TextSpan switchLink = isSignupForm
         ? new TextSpan(
             text: localizations.userLoginLoginAsExistingUser,
@@ -81,6 +96,7 @@ class UserLoginFormState extends State<UserLoginForm> {
         key: _formKey,
         child: Column(children: <Widget>[
           TextFormField(
+            controller: _username,
             validator: (input) => validateUsername(input, localizations),
             decoration: InputDecoration(
               labelText: localizations.userLoginUsername,
@@ -104,10 +120,19 @@ class UserLoginFormState extends State<UserLoginForm> {
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: RaisedButton(
                 onPressed: () {
-                  if (_formKey.currentState.validate()) {
-                    Scaffold.of(context).showSnackBar(
-                        SnackBar(content: Text(localizations.userLoginProcessingData)));
+                  if (!_formKey.currentState.validate()) {
+                    return;
                   }
+                  Scaffold.of(context)
+                      .showSnackBar(SnackBar(content: Text(localizations.userLoginProcessingData)));
+                  userRepository
+                      .createUser(username: _username.text, password: _password.text)
+                      .then((_) {
+                    developer.log("UserLoginFormState user repository finished success");
+                    Scaffold.of(context).removeCurrentSnackBar();
+                  }).catchError((err) {
+                    developer.log("UserLoginFormState user repository finished error", error: err);
+                  });
                 },
                 child: Text(localizations.userLoginSubmitButton),
               )),
@@ -168,9 +193,5 @@ String validateConfirmPassword(
   if (input != firstPassword) {
     return appLocalizations.userLoginConfirmPasswordDoesNotMatch;
   }
-  String basicPasswordValidation = validatePassword(input, appLocalizations);
-  if (basicPasswordValidation != null) {
-    return basicPasswordValidation;
-  }
-  return null;
+  return validatePassword(input, appLocalizations);
 }

@@ -60,6 +60,15 @@ export class CdkStack extends cdk.Stack {
     userTable.grantReadWriteData(lambdaFunction);
     sessionTable.grantReadWriteData(lambdaFunction);
     calendarTable.grantReadWriteData(lambdaFunction);
+
+    // const lambdaFunctionVersion = new lambda.Version(this, 'LambdaFunctionVersion_' + lambdaVersionLabel + "_", {
+    //   lambda: lambdaFunction,
+    //   provisionedConcurrentExecutions: 0,
+    // });
+    // const lambdaFunctionAlias = new lambda.Alias(this, 'LambdaFunctionAlias', {
+    //   version: lambdaFunctionVersion,
+    //   aliasName: 'live',
+    // });
     // ------------------------------------------------------------------------
 
     // ------------------------------------------------------------------------
@@ -79,7 +88,7 @@ export class CdkStack extends cdk.Stack {
       deployOptions: {
         tracingEnabled: true,
       },
-      binaryMediaTypes: ["*/*"],
+      binaryMediaTypes: ["application/protobuf"],
     });
     const apiGatewayDomain = new apigateway.DomainName(this, 'apiDomainName', {
       domainName: apiDomainName,

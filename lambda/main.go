@@ -43,15 +43,9 @@ var userTableName = os.Getenv("USER_TABLE_NAME")
 //var calendarTableName = os.Getenv("CALENDAR_TABLE_NAME")
 
 func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	body, err := base64.StdEncoding.DecodeString(request.Body)
-	if err != nil {
-		fmt.Println("Failed to base64-decode body.")
-		return events.APIGatewayProxyResponse{Body: "Failed to base64-decode input", StatusCode: 400}, nil
-	}
-
 	if request.Path == "/create_user" {
 		create_user_request := &simpletracker.CreateUserRequest{}
-		if err := proto.Unmarshal(body, create_user_request); err != nil {
+		if err := proto.Unmarshal([]byte(request.Body), create_user_request); err != nil {
 			fmt.Println("Failed to parse create user request proto")
 			return events.APIGatewayProxyResponse{
 				Body: "Failed to parse create user request proto", StatusCode: 400}, nil

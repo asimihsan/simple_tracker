@@ -5,8 +5,7 @@ go 1.14
 require (
 	github.com/aws/aws-lambda-go v1.16.0
 	github.com/aws/aws-sdk-go v1.19.18
-	github.com/aws/aws-xray-sdk-go v0.9.4
-	github.com/cihub/seelog v0.0.0-20170130134532-f561c5e57575 // indirect
+	github.com/aws/aws-xray-sdk-go v1.0.0-rc.15
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/protobuf v1.3.5
 	github.com/google/uuid v1.1.1
