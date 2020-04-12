@@ -33,6 +33,7 @@ class UserRepository {
 
     var url = baseUrl + "create_user";
     Map<String, String> headers = {
+      "Accept": "application/protobuf",
       "Content-Type": "application/protobuf",
     };
 
@@ -40,9 +41,12 @@ class UserRepository {
     var response = await http.post(url, headers: headers, body: createUserRequestSerialized);
     developer.log("CreateUser response " + response.statusCode.toString());
     if (response.statusCode == 200) {
-      developer.log("CreateUser response 200");
+      developer.log("CreateUser response success");
       var responseProto = CreateUserResponse.fromBuffer(response.bodyBytes);
+      developer.log("response proto", error: responseProto.toDebugString());
       userModel.login("userId", "authenticationToken");
+    } else {
+      developer.log("CreateUser response failure", error: response.body);
     }
     return userModel;
   }

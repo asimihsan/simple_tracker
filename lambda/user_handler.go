@@ -34,9 +34,17 @@ func handleCreateUserRequest(
 	_, err := CreateUser(request.Username, request.Password, dynamoDbClient, userTableName, ctx)
 	if err != nil {
 		fmt.Printf("Failed to create user: %s\n", err.Error())
+		if err == ErrUserAlreadyExists {
+			return &simpletracker.CreateUserResponse{
+				Success:     false,
+				ErrorReason: simpletracker.CreateUserErrorReason_USER_ALREADY_EXISTS}, nil
+		}
 		return &simpletracker.CreateUserResponse{
 			Success:     false,
-			ErrorReason: simpletracker.CreateUserErrorReason_INTERNAL_SERVER_ERROR}, err
+			ErrorReason: simpletracker.CreateUserErrorReason_CREATE_USER_ERROR_REASON_INTERNAL_SERVER_ERROR}, err
 	}
-	return &simpletracker.CreateUserResponse{}, nil
+	return &simpletracker.CreateUserResponse{
+		Success:     true,
+		ErrorReason: simpletracker.CreateUserErrorReason_CREATE_USER_ERROR_REASON_NO_ERROR,
+	}, nil
 }

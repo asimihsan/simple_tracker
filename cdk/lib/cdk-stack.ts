@@ -30,6 +30,8 @@ export class CdkStack extends cdk.Stack {
 
       // TODO if Prod make this RETAIN
       removalPolicy: RemovalPolicy.DESTROY,
+
+      timeToLiveAttribute: 'ExpiryEpochSeconds'
     });
 
     const calendarTable = new dynamodb.Table(this, 'CalendarTable', {

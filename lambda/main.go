@@ -20,7 +20,6 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/golang/protobuf/proto"
@@ -43,28 +42,37 @@ var userTableName = os.Getenv("USER_TABLE_NAME")
 //var calendarTableName = os.Getenv("CALENDAR_TABLE_NAME")
 
 func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	responseHeaders := make(map[string]string)
+	responseHeaders["Content-Type"] = "application/protobuf"
 	if request.Path == "/create_user" {
-		create_user_request := &simpletracker.CreateUserRequest{}
-		if err := proto.Unmarshal([]byte(request.Body), create_user_request); err != nil {
+		createUserRequest := &simpletracker.CreateUserRequest{}
+		if err := proto.Unmarshal([]byte(request.Body), createUserRequest); err != nil {
 			fmt.Println("Failed to parse create user request proto")
+			_ = xray.AddError(ctx, err)
 			return events.APIGatewayProxyResponse{
 				Body: "Failed to parse create user request proto", StatusCode: 400}, nil
 		}
-		create_user_resp, err := handleCreateUserRequest(
-			create_user_request, dynamoDbClient, userTableName, ctx)
+		createUserResp, err := handleCreateUserRequest(
+			createUserRequest, dynamoDbClient, userTableName, ctx)
 		if err != nil {
 			fmt.Println("CreateUser handling failed.")
+			_ = xray.AddError(ctx, err)
 			return events.APIGatewayProxyResponse{
 				Body: "CreateUser handling failed.", StatusCode: 400}, nil
 		}
-		resp, err := proto.Marshal(create_user_resp)
+		resp, err := proto.Marshal(createUserResp)
 		if err != nil {
 			fmt.Println("Failed to serialize create user response")
+			_ = xray.AddError(ctx, err)
 			return events.APIGatewayProxyResponse{
 				Body: "Failed to serialize create user response", StatusCode: 500}, nil
 		}
 		return events.APIGatewayProxyResponse{
-			Body: base64.StdEncoding.EncodeToString(resp), StatusCode: 200, IsBase64Encoded: true}, nil
+			Body:            string(resp),
+			Headers:         responseHeaders,
+			StatusCode:      200,
+			IsBase64Encoded: false,
+		}, nil
 	}
 
 	return events.APIGatewayProxyResponse{Body: "Unknown API endpoint", StatusCode: 200}, nil
