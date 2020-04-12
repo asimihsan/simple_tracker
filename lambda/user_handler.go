@@ -21,17 +21,29 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+
 	simpletracker "lambda/proto"
 )
 
-func handleCreateUserRequest(
-	request *simpletracker.CreateUserRequest,
+func handleVerifyUserRequestInner(
+	request *simpletracker.LoginUserRequest,
 	dynamoDbClient *dynamodb.DynamoDB,
 	userTableName string,
 	ctx context.Context,
+) (*UserToReturn, error) {
+	return VerifyUser(request.Username, request.Password, dynamoDbClient, userTableName, ctx)
+}
+
+func handleCreateUserRequestInner(
+	request *simpletracker.CreateUserRequest,
+	dynamoDbClient *dynamodb.DynamoDB,
+	userTableName string,
+	sessionTableName string,
+	ctx context.Context,
 ) (*simpletracker.CreateUserResponse, error) {
-	_, err := CreateUser(request.Username, request.Password, dynamoDbClient, userTableName, ctx)
+	user, err := CreateUser(request.Username, request.Password, dynamoDbClient, userTableName, ctx)
 	if err != nil {
 		fmt.Printf("Failed to create user: %s\n", err.Error())
 		if err == ErrUserAlreadyExists {
@@ -43,8 +55,19 @@ func handleCreateUserRequest(
 			Success:     false,
 			ErrorReason: simpletracker.CreateUserErrorReason_CREATE_USER_ERROR_REASON_INTERNAL_SERVER_ERROR}, err
 	}
+
+	createdSession, err := CreateSession(user.Id, dynamoDbClient, sessionTableName, ctx)
+	if err != nil {
+		fmt.Printf("Failed to create createdSession: %s\n", err.Error)
+		return &simpletracker.CreateUserResponse{
+			Success:     false,
+			ErrorReason: simpletracker.CreateUserErrorReason_CREATE_USER_ERROR_REASON_INTERNAL_SERVER_ERROR}, err
+	}
+
 	return &simpletracker.CreateUserResponse{
 		Success:     true,
 		ErrorReason: simpletracker.CreateUserErrorReason_CREATE_USER_ERROR_REASON_NO_ERROR,
+		SessionId:   createdSession.Id,
+		UserId:      createdSession.UserId,
 	}, nil
 }

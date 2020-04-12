@@ -55,7 +55,7 @@ func VerifyUser(username string,
 ) (*UserToReturn, error) {
 
 	var resp *dynamodb.GetItemOutput
-	if err := xray.Capture(ctx, "LoginUser_GetItem", func(ctx1 context.Context) (err error) {
+	if err := xray.Capture(ctx, "VerifyUser_GetItem", func(ctx1 context.Context) (err error) {
 		input := &dynamodb.GetItemInput{
 			Key: map[string]*dynamodb.AttributeValue{
 				"Username": {
@@ -68,11 +68,14 @@ func VerifyUser(username string,
 		resp, err = client.GetItemWithContext(ctx1, input)
 		if err != nil {
 			if awsErr, ok := err.(awserr.Error); ok {
-				// Generic AWS error with Code, Message, and original error (if any)
-				fmt.Println(awsErr.Code(), awsErr.Message(), awsErr.OrigErr())
 				if reqErr, ok := err.(awserr.RequestFailure); ok {
 					// A service error occurred
-					fmt.Println(reqErr.StatusCode(), reqErr.RequestID())
+					fmt.Printf("AWS service error. Code %s, Message: %s, OrigErr %s, StatusCode %s, RequestID %s\n",
+						awsErr.Code(), awsErr.Message(), awsErr.OrigErr(), reqErr.StatusCode(), reqErr.RequestID())
+				} else {
+					// Generic AWS error with Code, Message, and original error (if any)
+					fmt.Printf("Generic AWS error. Code %s, Message %s, OrigErr %s\n",
+						awsErr.Code(), awsErr.Message(), awsErr.OrigErr())
 				}
 			} else {
 				fmt.Println(err.Error())
@@ -81,7 +84,7 @@ func VerifyUser(username string,
 		}
 		return nil
 	}); err != nil {
-		fmt.Println("LoginUser failed to get item from DynamoDB")
+		fmt.Println("VerifyUser failed to get item from DynamoDB")
 		fmt.Println(err.Error())
 		return nil, err
 	}
@@ -101,11 +104,11 @@ func VerifyUser(username string,
 	userId := *resp.Item["Id"].S
 
 	var match bool
-	if err := xray.Capture(ctx, "LoginUser_ComparePasswords", func(ctx1 context.Context) (err error) {
+	if err := xray.Capture(ctx, "VerifyUser_ComparePasswords", func(ctx1 context.Context) (err error) {
 		match, err = comparePasswordAndHash(password, existingPasswordHashCombined)
 		return
 	}); err != nil {
-		fmt.Println("LoginUser failed to compare passwords")
+		fmt.Println("VerifyUser failed to compare passwords")
 		fmt.Println(err.Error())
 		return nil, err
 	}
@@ -121,11 +124,11 @@ func VerifyUser(username string,
 func arbitraryHashPassword(password string, ctx context.Context) (err error) {
 	// To mitigate side-channel timing attacks always calculate a password hash, even if we don't have a
 	// database hash to compare it to.
-	if err = xray.Capture(ctx, "LoginUser_ArbitraryHashPassword", func(ctx1 context.Context) (err error) {
+	if err = xray.Capture(ctx, "ArbitraryHashPassword", func(ctx1 context.Context) (err error) {
 		_, err = generatePasswordHash(password)
 		return
 	}); err != nil {
-		fmt.Println("LoginUser failed to do arbitrary hash password")
+		fmt.Println("Failed to do arbitrary hash password")
 		fmt.Println(err.Error())
 	}
 	return
@@ -186,15 +189,14 @@ func CreateUser(username string,
 		_, err = client.PutItemWithContext(ctx1, input)
 		if err != nil {
 			if awsErr, ok := err.(awserr.Error); ok {
-				// Generic AWS error with Code, Message, and original error (if any)
-				fmt.Println(awsErr.Code(), awsErr.Message(), awsErr.OrigErr())
 				if reqErr, ok := err.(awserr.RequestFailure); ok {
 					// A service error occurred
-					fmt.Println(reqErr.StatusCode(), reqErr.RequestID())
-					if reqErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
-						// User already exists
-						return ErrUserAlreadyExists
-					}
+					fmt.Printf("AWS service error. Code %s, Message: %s, OrigErr %s, StatusCode %s, RequestID %s\n",
+						awsErr.Code(), awsErr.Message(), awsErr.OrigErr(), reqErr.StatusCode(), reqErr.RequestID())
+				} else {
+					// Generic AWS error with Code, Message, and original error (if any)
+					fmt.Printf("Generic AWS error. Code %s, Message %s, OrigErr %s\n",
+						awsErr.Code(), awsErr.Message(), awsErr.OrigErr())
 				}
 			} else {
 				fmt.Println(err.Error())

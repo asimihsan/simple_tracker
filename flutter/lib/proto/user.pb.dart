@@ -59,6 +59,7 @@ class CreateUserResponse extends $pb.GeneratedMessage {
     ..aOB(1, 'success')
     ..e<CreateUserErrorReason>(2, 'errorReason', $pb.PbFieldType.OE, defaultOrMaker: CreateUserErrorReason.CREATE_USER_ERROR_REASON_NO_ERROR, valueOf: CreateUserErrorReason.valueOf, enumValues: CreateUserErrorReason.values)
     ..aOS(3, 'sessionId')
+    ..aOS(4, 'userId')
     ..hasRequiredFields = false
   ;
 
@@ -103,6 +104,15 @@ class CreateUserResponse extends $pb.GeneratedMessage {
   $core.bool hasSessionId() => $_has(2);
   @$pb.TagNumber(3)
   void clearSessionId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get userId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set userId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasUserId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearUserId() => clearField(4);
 }
 
 class LoginUserRequest extends $pb.GeneratedMessage {
@@ -151,6 +161,7 @@ class LoginUserResponse extends $pb.GeneratedMessage {
     ..aOB(1, 'success')
     ..e<LoginUserErrorReason>(2, 'errorReason', $pb.PbFieldType.OE, defaultOrMaker: LoginUserErrorReason.LOGIN_USER_ERROR_REASON_NO_ERROR, valueOf: LoginUserErrorReason.valueOf, enumValues: LoginUserErrorReason.values)
     ..aOS(3, 'sessionId')
+    ..aOS(4, 'userId')
     ..hasRequiredFields = false
   ;
 
@@ -195,5 +206,14 @@ class LoginUserResponse extends $pb.GeneratedMessage {
   $core.bool hasSessionId() => $_has(2);
   @$pb.TagNumber(3)
   void clearSessionId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get userId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set userId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasUserId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearUserId() => clearField(4);
 }
 

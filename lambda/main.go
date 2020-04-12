@@ -21,82 +21,187 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/golang/protobuf/proto"
-	simpletracker "lambda/proto"
-
-	"github.com/aws/aws-xray-sdk-go/xray"
 	"os"
-	//"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-lambda-go/lambdacontext"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-xray-sdk-go/strategy/ctxmissing"
+	"github.com/aws/aws-xray-sdk-go/xray"
+	"github.com/golang/protobuf/proto"
+
+	simpletracker "lambda/proto"
 )
 
-var sess = session.Must(session.NewSession())
-var dynamoDbClient = dynamodb.New(sess)
-var userTableName = os.Getenv("USER_TABLE_NAME")
+var (
+	sess             *session.Session
+	dynamoDbClient   *dynamodb.DynamoDB
+	userTableName    string
+	sessionTableName string
+)
 
-//var sessionTableName = os.Getenv("SESSION_TABLE_NAME")
 //var calendarTableName = os.Getenv("CALENDAR_TABLE_NAME")
 
-func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (apiGatewayResponse events.APIGatewayProxyResponse, err error) {
+	_ = xray.Capture(ctx, "LambdaHandleRequest", func(ctx1 context.Context) (err error) {
+		recordRequestIds(ctx1, request)
+		switch request.Path {
+		case "/create_user":
+			apiGatewayResponse, err = handleCreateUserRequest(ctx1, request)
+		case "/login_user":
+			apiGatewayResponse, err = handleLoginUserRequest(ctx1, request)
+		default:
+			apiGatewayResponse = events.APIGatewayProxyResponse{Body: "Unknown API endpoint", StatusCode: 200}
+		}
+		return
+	})
+	return
+}
+
+func recordRequestIds(ctx context.Context, request events.APIGatewayProxyRequest) {
+	apiGatewayRequestId := request.RequestContext.RequestID
+	lc, _ := lambdacontext.FromContext(ctx)
+	lambdaRequestId := lc.AwsRequestID
+
+	_ = xray.AddAnnotation(ctx, "ApiGatewayRequestId", apiGatewayRequestId)
+	_ = xray.AddAnnotation(ctx, "LambdaRequestId", lambdaRequestId)
+}
+
+func recordUsername(ctx context.Context, username string) {
+	// Due to https://github.com/aws/aws-xray-sdk-go/issues/142 it is not possible to populate the main
+	// User annotation for X-Ray traces, so we just make up our own annotation.
+	_ = xray.AddAnnotation(ctx, "Username", username)
+}
+
+func handleLoginUserRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	responseHeaders := make(map[string]string)
 	responseHeaders["Content-Type"] = "application/protobuf"
-	if request.Path == "/create_user" {
-		createUserRequest := &simpletracker.CreateUserRequest{}
-		if err := proto.Unmarshal([]byte(request.Body), createUserRequest); err != nil {
-			fmt.Println("Failed to parse create user request proto")
-			_ = xray.AddError(ctx, err)
-			return events.APIGatewayProxyResponse{
-				Body: "Failed to parse create user request proto", StatusCode: 400}, nil
-		}
-		createUserResp, err := handleCreateUserRequest(
-			createUserRequest, dynamoDbClient, userTableName, ctx)
-		if err != nil {
-			fmt.Println("CreateUser handling failed.")
-			_ = xray.AddError(ctx, err)
-			return events.APIGatewayProxyResponse{
-				Body: "CreateUser handling failed.", StatusCode: 400}, nil
-		}
-		resp, err := proto.Marshal(createUserResp)
-		if err != nil {
-			fmt.Println("Failed to serialize create user response")
-			_ = xray.AddError(ctx, err)
-			return events.APIGatewayProxyResponse{
-				Body: "Failed to serialize create user response", StatusCode: 500}, nil
-		}
+	loginUserRequest := &simpletracker.LoginUserRequest{}
+	if err := proto.Unmarshal([]byte(request.Body), loginUserRequest); err != nil {
+		fmt.Println("Failed to parse login user request proto")
+		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
-			Body:            string(resp),
-			Headers:         responseHeaders,
-			StatusCode:      200,
-			IsBase64Encoded: false,
-		}, nil
+			Body: "Failed to parse login user request proto", StatusCode: 400}, nil
+	}
+	recordUsername(ctx, loginUserRequest.Username)
+
+	var loginUserResponse simpletracker.LoginUserResponse
+
+	// 1. Verify username/password combination is valid.
+	user, err := handleVerifyUserRequestInner(loginUserRequest, dynamoDbClient, userTableName, ctx)
+	if err != nil {
+		if err == ErrUserMissingOrPasswordIncorrect {
+			fmt.Println("LoginUser handling failed, user missing or password incorrect.")
+			loginUserResponse = simpletracker.LoginUserResponse{
+				Success:     false,
+				ErrorReason: simpletracker.LoginUserErrorReason_USER_MISSING_OR_PASSWORD_INCORRECT,
+			}
+		} else {
+			fmt.Println("LoginUser handling failed, could not verify user.")
+			loginUserResponse = simpletracker.LoginUserResponse{
+				Success:     false,
+				ErrorReason: simpletracker.LoginUserErrorReason_LOGIN_USER_ERROR_REASON_INTERNAL_SERVER_ERROR,
+			}
+		}
+	} else {
+		// 2. User/password combination is valid. Create a createdSession.
+		fmt.Println("LoginUser successfully validated username and password.")
+		createdSession, err := CreateSession(user.Id, dynamoDbClient, sessionTableName, ctx)
+		if err != nil {
+			fmt.Println("LoginUser failed to create createdSession.")
+			loginUserResponse = simpletracker.LoginUserResponse{
+				Success:     false,
+				ErrorReason: simpletracker.LoginUserErrorReason_LOGIN_USER_ERROR_REASON_INTERNAL_SERVER_ERROR,
+			}
+		} else {
+			// 3. Username/password valid, createdSession created, successful.
+			fmt.Println("LoginUser successfully created createdSession.")
+			loginUserResponse = simpletracker.LoginUserResponse{
+				Success:     true,
+				ErrorReason: simpletracker.LoginUserErrorReason_LOGIN_USER_ERROR_REASON_NO_ERROR,
+				SessionId:   createdSession.Id,
+				UserId:      createdSession.UserId,
+			}
+		}
+	}
+	resp, err := proto.Marshal(&loginUserResponse)
+	if err != nil {
+		fmt.Println("Failed to serialize login user response")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "Failed to serialize login user response", StatusCode: 500}, nil
 	}
 
-	return events.APIGatewayProxyResponse{Body: "Unknown API endpoint", StatusCode: 200}, nil
+	var statusCode int
+	if loginUserResponse.Success == true {
+		statusCode = 200
+	} else {
+		if loginUserResponse.ErrorReason == simpletracker.LoginUserErrorReason_USER_MISSING_OR_PASSWORD_INCORRECT {
+			statusCode = 400
+		} else {
+			statusCode = 500
+		}
+	}
 
-	//fmt.Printf("Processing request data for request %s.\n", request.RequestContext.RequestID)
-	//fmt.Printf("Body size = %d.\n", len(request.Body))
-	//fmt.Printf("Request path: %s.\n", request.Path)
-	//
-	//fmt.Println("Headers:")
-	//for key, value := range request.Headers {
-	//	fmt.Printf("    %s: %s\n", key, value)
-	//}
-	//
-	//if err != nil {
-	//	fmt.Println("handleRequest error when creating user")
-	//	fmt.Println(err.Error())
-	//	return events.APIGatewayProxyResponse{Body: request.Body, StatusCode: 500}, nil
-	//}
-	//
-	//return events.APIGatewayProxyResponse{Body: request.Body, StatusCode: 200}, nil
+	return events.APIGatewayProxyResponse{
+		Body:            string(resp),
+		Headers:         responseHeaders,
+		StatusCode:      statusCode,
+		IsBase64Encoded: false,
+	}, nil
+}
+
+func handleCreateUserRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	responseHeaders := make(map[string]string)
+	responseHeaders["Content-Type"] = "application/protobuf"
+	createUserRequest := &simpletracker.CreateUserRequest{}
+	if err := proto.Unmarshal([]byte(request.Body), createUserRequest); err != nil {
+		fmt.Println("Failed to parse create user request proto")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "Failed to parse create user request proto", StatusCode: 400}, nil
+	}
+	recordUsername(ctx, createUserRequest.Username)
+
+	createUserResp, err := handleCreateUserRequestInner(
+		createUserRequest, dynamoDbClient, userTableName, sessionTableName, ctx)
+	if err != nil {
+		fmt.Println("CreateUser handling failed.")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "CreateUser handling failed.", StatusCode: 400}, nil
+	}
+	resp, err := proto.Marshal(createUserResp)
+	if err != nil {
+		fmt.Println("Failed to serialize create user response")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "Failed to serialize create user response", StatusCode: 500}, nil
+	}
+	return events.APIGatewayProxyResponse{
+		Body:            string(resp),
+		Headers:         responseHeaders,
+		StatusCode:      200,
+		IsBase64Encoded: false,
+	}, nil
+}
+
+func initialize() {
+	_ = xray.Configure(xray.Config{
+		LogLevel:               "trace",
+		ContextMissingStrategy: ctxmissing.NewDefaultLogErrorStrategy(),
+	})
+	sess = session.Must(session.NewSession())
+	dynamoDbClient = dynamodb.New(sess)
+	xray.AWS(dynamoDbClient.Client)
+
+	userTableName = os.Getenv("USER_TABLE_NAME")
+	sessionTableName = os.Getenv("SESSION_TABLE_NAME")
 }
 
 func main() {
-	_ = xray.Configure(xray.Config{LogLevel: "trace"})
-	xray.AWS(dynamoDbClient.Client)
+	initialize()
 	lambda.Start(handleRequest)
 }

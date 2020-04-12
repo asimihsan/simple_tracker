@@ -16,24 +16,24 @@
 
 class UserModel {
   bool _loggedIn;
-  String _id;
-  String _authenticationToken;
+  String _userId;
+  String _sessionId;
 
   UserModel.notLoggedIn() {
     this._loggedIn = false;
-    this._id = null;
-    this._authenticationToken = null;
+    this._userId = null;
+    this._sessionId = null;
   }
 
-  void login(String id, String authenticationToken) {
+  void login(String id, String sessionId) {
     this._loggedIn = true;
-    this._id = id;
-    this._authenticationToken = authenticationToken;
+    this._userId = id;
+    this._sessionId = sessionId;
   }
 
   bool get loggedIn => _loggedIn;
 
-  String get authenticationToken => _authenticationToken;
+  String get sessionId => _sessionId;
 
-  String get id => _id;
+  String get userId => _userId;
 }

@@ -40,13 +40,61 @@ class UserRepository {
     var userModel = UserModel.notLoggedIn();
     var response = await http.post(url, headers: headers, body: createUserRequestSerialized);
     developer.log("CreateUser response " + response.statusCode.toString());
+    if (response.headers.containsKey("x-amzn-trace-id")) {
+      developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
+    }
+    if (response.headers.containsKey("x-amzn-requestid")) {
+      developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
+    }
+
     if (response.statusCode == 200) {
       developer.log("CreateUser response success");
       var responseProto = CreateUserResponse.fromBuffer(response.bodyBytes);
       developer.log("response proto", error: responseProto.toDebugString());
-      userModel.login("userId", "authenticationToken");
+      userModel.login(responseProto.userId, responseProto.sessionId);
     } else {
       developer.log("CreateUser response failure", error: response.body);
+      return null;
+    }
+    return userModel;
+  }
+
+  Future<UserModel> loginUser({@required String username, @required String password}) async {
+    var requestProto = LoginUserRequest();
+    requestProto.username = username;
+    requestProto.password = password;
+    var requestSerialized = requestProto.writeToBuffer();
+
+    var url = baseUrl + "login_user";
+    Map<String, String> headers = {
+      "Accept": "application/protobuf",
+      "Content-Type": "application/protobuf",
+    };
+
+    var userModel = UserModel.notLoggedIn();
+    var response = await http.post(url, headers: headers, body: requestSerialized);
+    developer.log("LoginUser response " + response.statusCode.toString());
+    if (response.headers.containsKey("x-amzn-trace-id")) {
+      developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
+    }
+    if (response.headers.containsKey("x-amzn-requestid")) {
+      developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
+    }
+
+    LoginUserResponse responseProto;
+    try {
+      responseProto = LoginUserResponse.fromBuffer(response.bodyBytes);
+      developer.log("response proto", error: responseProto.toDebugString());
+    } catch (e) {
+      developer.log("could not deserialize response as proto", error: e);
+    }
+
+    if (response.statusCode == 200) {
+      developer.log("CreateUser response success");
+      userModel.login(responseProto.userId, responseProto.sessionId);
+    } else {
+      developer.log("LoginUser response failure", error: response.body);
+      return null;
     }
     return userModel;
   }

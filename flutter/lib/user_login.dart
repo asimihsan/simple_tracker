@@ -125,14 +125,28 @@ class UserLoginFormState extends State<UserLoginForm> {
                   }
                   Scaffold.of(context)
                       .showSnackBar(SnackBar(content: Text(localizations.userLoginProcessingData)));
-                  userRepository
-                      .createUser(username: _username.text, password: _password.text)
-                      .then((_) {
-                    developer.log("UserLoginFormState user repository finished success");
-                    Scaffold.of(context).removeCurrentSnackBar();
-                  }).catchError((err) {
-                    developer.log("UserLoginFormState user repository finished error", error: err);
-                  });
+
+                  if (isSignupForm) {
+                    userRepository
+                        .createUser(username: _username.text, password: _password.text)
+                        .then((_) {
+                      developer.log("UserLoginFormState user repository create finished success");
+                      Scaffold.of(context).removeCurrentSnackBar();
+                    }).catchError((err) {
+                      developer.log("UserLoginFormState user repository create finished error",
+                          error: err);
+                    });
+                  } else {
+                    userRepository
+                        .loginUser(username: _username.text, password: _password.text)
+                        .then((_) {
+                      developer.log("UserLoginFormState user repository login finished success");
+                      Scaffold.of(context).removeCurrentSnackBar();
+                    }).catchError((err) {
+                      developer.log("UserLoginFormState user repository login finished error",
+                          error: err);
+                    });
+                  }
                 },
                 child: Text(localizations.userLoginSubmitButton),
               )),

@@ -37,6 +37,7 @@ const CreateUserResponse$json = const {
     const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     const {'1': 'error_reason', '3': 2, '4': 1, '5': 14, '6': '.simpletracker.CreateUserErrorReason', '10': 'errorReason'},
     const {'1': 'session_id', '3': 3, '4': 1, '5': 9, '10': 'sessionId'},
+    const {'1': 'user_id', '3': 4, '4': 1, '5': 9, '10': 'userId'},
   ],
 };
 
@@ -54,6 +55,7 @@ const LoginUserResponse$json = const {
     const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     const {'1': 'error_reason', '3': 2, '4': 1, '5': 14, '6': '.simpletracker.LoginUserErrorReason', '10': 'errorReason'},
     const {'1': 'session_id', '3': 3, '4': 1, '5': 9, '10': 'sessionId'},
+    const {'1': 'user_id', '3': 4, '4': 1, '5': 9, '10': 'userId'},
   ],
 };
 
