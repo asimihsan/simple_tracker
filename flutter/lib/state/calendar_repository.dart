@@ -19,6 +19,10 @@ import 'package:simple_tracker/state/calendar_model.dart';
 import 'package:simple_tracker/state/user_model.dart';
 
 class CalendarRepository {
+  final String baseUrl;
+
+  CalendarRepository(this.baseUrl);
+
   Future<CalendarModel> getCalendar({@required String userId, @required String calendarId}) async {
     // TODO this would actually call a server, here just pretend data.
     await Future.delayed(Duration(seconds: 3));

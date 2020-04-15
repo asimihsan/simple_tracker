@@ -35,11 +35,23 @@ export class CdkStack extends cdk.Stack {
     });
 
     const calendarTable = new dynamodb.Table(this, 'CalendarTable', {
-      partitionKey: { name: 'Id', type: dynamodb.AttributeType.STRING },
+      partitionKey: { name: 'OwnerUserId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'Id', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
 
       // TODO if Prod make this RETAIN
       removalPolicy: RemovalPolicy.DESTROY,
+    });
+
+    const paginationTokenTable = new dynamodb.Table(this, 'PaginationTokenTable', {
+      partitionKey: { name: 'Id', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'SessionIdAndUserId', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+
+      // TODO if Prod make this RETAIN
+      removalPolicy: RemovalPolicy.DESTROY,
+
+      timeToLiveAttribute: 'ExpiryEpochSeconds'
     });
     // ------------------------------------------------------------------------
 
@@ -52,6 +64,7 @@ export class CdkStack extends cdk.Stack {
         "USER_TABLE_NAME": userTable.tableName,
         "SESSION_TABLE_NAME": sessionTable.tableName,
         "CALENDAR_TABLE_NAME": calendarTable.tableName,
+        "PAGINATION_TOKEN_TABLE_NAME": paginationTokenTable.tableName,
       },
       handler: 'main',
       memorySize: 1024,
@@ -59,9 +72,25 @@ export class CdkStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(10),
       tracing: lambda.Tracing.ACTIVE
     });
-    userTable.grantReadWriteData(lambdaFunction);
-    sessionTable.grantReadWriteData(lambdaFunction);
-    calendarTable.grantReadWriteData(lambdaFunction);
+
+    userTable.grant(lambdaFunction,
+      'dynamodb:GetItem',
+      'dynamodb:PutItem',
+    )
+    sessionTable.grant(lambdaFunction,
+      'dynamodb:GetItem',
+      'dynamodb:PutItem',
+    )
+    calendarTable.grant(lambdaFunction,
+      'dynamodb:GetItem',
+      'dynamodb:Query',
+      'dynamodb:UpdateItem',
+      'dynamodb:DeleteItem',
+    )
+    paginationTokenTable.grant(lambdaFunction,
+      'dynamodb:GetItem',
+      'dynamodb:PutItem',
+    )
 
     // const lambdaFunctionVersion = new lambda.Version(this, 'LambdaFunctionVersion_' + lambdaVersionLabel + "_", {
     //   lambda: lambdaFunction,
@@ -85,14 +114,14 @@ export class CdkStack extends cdk.Stack {
       region: "us-east-1",
       hostedZone: hostedZone
     });
-    const api = new apigateway.LambdaRestApi(this, 'api', {
+    const api = new apigateway.LambdaRestApi(this, 'Api', {
       handler: lambdaFunction,
       deployOptions: {
         tracingEnabled: true,
       },
       binaryMediaTypes: ["application/protobuf"],
     });
-    const apiGatewayDomain = new apigateway.DomainName(this, 'apiDomainName', {
+    const apiGatewayDomain = new apigateway.DomainName(this, 'ApiDomainName', {
       domainName: apiDomainName,
       certificate: certificate,
       endpointType: apigateway.EndpointType.EDGE,

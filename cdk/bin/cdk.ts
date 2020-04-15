@@ -10,4 +10,4 @@ const preprodDomainName = 'preprod-simple-tracker.ihsan.io'
 const prodEnvironment = { account: '519160639284', region: 'us-west-2' }
 const prodDomainName = 'prod-simple-tracker.ihsan.io'
 
-new CdkStack(app, 'preprod-SimpleTrackedCdkStack', preprodDomainName, { env: preprodEnvironment });
+new CdkStack(app, 'preprod-SimpleTrackerCdkStack', preprodDomainName, { env: preprodEnvironment });

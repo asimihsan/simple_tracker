@@ -16,7 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:simple_tracker/detail_view.dart';
+import 'package:simple_tracker/view/detail_view.dart';
 import 'package:simple_tracker/state/calendar_model.dart';
 import 'package:simple_tracker/state/calendar_repository.dart';
 import 'dart:developer' as developer;
@@ -26,7 +26,7 @@ import 'package:simple_tracker/state/user_model.dart';
 Widget getCalendarDetail() {
   return MultiProvider(
     providers: [
-      Provider(create: (_) => new CalendarRepository()),
+      Provider(create: (_) => new CalendarRepository("https://preprod-simple-tracker.ihsan.io/")),
     ],
     child: CalendarDetailWidget(),
   );

@@ -19,8 +19,12 @@ import 'dart:developer' as developer;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:simple_tracker/exception/InternalServerErrorException.dart';
+import 'package:simple_tracker/exception/UserMissingOrPasswordIncorrectException.dart';
 import 'package:simple_tracker/localizations.dart';
+import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/state/user_repository.dart';
+import 'package:simple_tracker/view/calendar_list.dart';
 
 Widget getUserLogin(BuildContext context, {bool isSignupForm}) {
   final AppLocalizations localizations =
@@ -125,26 +129,49 @@ class UserLoginFormState extends State<UserLoginForm> {
                   }
                   Scaffold.of(context)
                       .showSnackBar(SnackBar(content: Text(localizations.userLoginProcessingData)));
-
+                  final providedUserModel = Provider.of<UserModel>(context, listen: false);
                   if (isSignupForm) {
                     userRepository
-                        .createUser(username: _username.text, password: _password.text)
+                        .createUser(
+                            username: _username.text,
+                            password: _password.text,
+                            providedUserModel: providedUserModel)
                         .then((_) {
                       developer.log("UserLoginFormState user repository create finished success");
                       Scaffold.of(context).removeCurrentSnackBar();
+                      switchToCalendarListView(context);
                     }).catchError((err) {
                       developer.log("UserLoginFormState user repository create finished error",
                           error: err);
                     });
                   } else {
                     userRepository
-                        .loginUser(username: _username.text, password: _password.text)
+                        .loginUser(
+                            username: _username.text,
+                            password: _password.text,
+                            providedUserModel: providedUserModel)
                         .then((_) {
                       developer.log("UserLoginFormState user repository login finished success");
                       Scaffold.of(context).removeCurrentSnackBar();
+                      switchToCalendarListView(context);
                     }).catchError((err) {
                       developer.log("UserLoginFormState user repository login finished error",
                           error: err);
+                      Scaffold.of(context).removeCurrentSnackBar();
+                      if (err is UserMissingOrPasswordIncorrectException) {
+                        Scaffold.of(context).showSnackBar(SnackBar(
+                            backgroundColor: Colors.deepOrange,
+                            content: Text(
+                                localizations.userLoginUserMissingOrPasswordIncorrectException)));
+                      } else if (err is InternalServerErrorException) {
+                        Scaffold.of(context).showSnackBar(SnackBar(
+                            backgroundColor: Colors.deepOrange,
+                            content: Text(localizations.internalServerErrorException)));
+                      } else {
+                        Scaffold.of(context).showSnackBar(SnackBar(
+                            backgroundColor: Colors.deepOrange,
+                            content: Text("Unknown error occurred!!")));
+                      }
                     });
                   }
                 },
@@ -172,6 +199,12 @@ void switchToUserLoginHandler(BuildContext context) {
   developer.log("Log in click");
   Navigator.pushReplacement(
       context, MaterialPageRoute(builder: (context) => getUserLogin(context, isSignupForm: false)));
+}
+
+void switchToCalendarListView(BuildContext context) {
+  developer.log("switching to calendar list view");
+  Navigator.pushReplacement(
+      context, MaterialPageRoute(builder: (context) => getCalendarList(context)));
 }
 
 String validateUsername(String input, AppLocalizations appLocalizations) {

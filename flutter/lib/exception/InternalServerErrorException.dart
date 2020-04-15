@@ -14,28 +14,6 @@
 //  limitations under the License.
 // ============================================================================
 
-import 'package:flutter/material.dart';
-
-class UserModel {
-  bool _loggedIn;
-  String _userId;
-  String _sessionId;
-
-  UserModel.notLoggedIn() {
-    this._loggedIn = false;
-    this._userId = null;
-    this._sessionId = null;
-  }
-
-  void login(String userId, String sessionId) {
-    this._loggedIn = true;
-    this._userId = userId;
-    this._sessionId = sessionId;
-  }
-
-  bool get loggedIn => _loggedIn;
-
-  String get sessionId => _sessionId;
-
-  String get userId => _userId;
+class InternalServerErrorException implements Exception {
+  String errMsg() => "Internal server error, please report to developer";
 }

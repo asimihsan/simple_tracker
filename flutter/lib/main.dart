@@ -16,8 +16,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:provider/provider.dart';
 import 'package:simple_tracker/localizations.dart';
-import 'package:simple_tracker/user_login.dart';
+import 'package:simple_tracker/state/user_model.dart';
+import 'package:simple_tracker/view/user_login.dart';
 
 void main() {
   runApp(MyApp());
@@ -28,29 +30,54 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      localizationsDelegates: [
-        const AppLocalizationsDelegate(),
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate
-      ],
-      supportedLocales: [
-        const Locale.fromSubtags(languageCode: 'en'),
-      ],
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: MyAppWithLocalizations(key: this.key),
-    );
+    return MultiProvider(
+        providers: [
+          Provider(
+            create: (_) => new UserModel.notLoggedIn(),
+          )
+        ],
+        child: MaterialApp(
+          localizationsDelegates: [
+            const AppLocalizationsDelegate(),
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate
+          ],
+          supportedLocales: [
+            const Locale.fromSubtags(languageCode: 'en'),
+          ],
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+          ),
+          home: MyAppWithLocalizations(),
+        ));
   }
 }
 
-class MyAppWithLocalizations extends StatelessWidget {
+class MyAppWithLocalizations extends StatefulWidget {
   MyAppWithLocalizations({Key key}) : super(key: key);
 
   @override
+  State<StatefulWidget> createState() => new MyAppWithLocalizationsState();
+}
+
+class MyAppWithLocalizationsState extends State<MyAppWithLocalizations> {
+  @override
   Widget build(BuildContext context) {
-    return getUserLogin(context, isSignupForm: false);
+    return Scaffold(
+        appBar: AppBar(
+          title: Text('Loading...'),
+        ),
+        body: SafeArea(
+          child: new Text('Loading...'),
+          minimum: const EdgeInsets.symmetric(horizontal: 16.0),
+        ));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => Navigator.pushReplacement(context,
+        MaterialPageRoute(builder: (context) => getUserLogin(context, isSignupForm: false))));
   }
 }

@@ -20,6 +20,8 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
+	"errors"
 	"fmt"
 	"os"
 
@@ -36,13 +38,14 @@ import (
 )
 
 var (
-	sess             *session.Session
-	dynamoDbClient   *dynamodb.DynamoDB
-	userTableName    string
-	sessionTableName string
+	sess                        *session.Session
+	dynamoDbClient              *dynamodb.DynamoDB
+	userTableName               string
+	sessionTableName            string
+	calendarTableName           string
+	paginationTokenTableName    string
+	ErrFailedToBase64DecodeBody = errors.New("failed to base-64 decode body")
 )
-
-//var calendarTableName = os.Getenv("CALENDAR_TABLE_NAME")
 
 func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (apiGatewayResponse events.APIGatewayProxyResponse, err error) {
 	_ = xray.Capture(ctx, "LambdaHandleRequest", func(ctx1 context.Context) (err error) {
@@ -75,17 +78,38 @@ func recordUsername(ctx context.Context, username string) {
 	_ = xray.AddAnnotation(ctx, "Username", username)
 }
 
+func getRequestBody(request events.APIGatewayProxyRequest) (string, error) {
+	if !request.IsBase64Encoded {
+		return request.Body, nil
+	}
+	requestBodyBytes, err := base64.StdEncoding.DecodeString(request.Body)
+	if err != nil {
+		fmt.Println("failed to base64-decode body")
+		return "", ErrFailedToBase64DecodeBody
+	}
+	return string(requestBodyBytes), nil
+}
+
 func handleLoginUserRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	responseHeaders := make(map[string]string)
-	responseHeaders["Content-Type"] = "application/protobuf"
+	requestBody, err := getRequestBody(request)
+	if err != nil {
+		fmt.Println("handleLoginUserRequest failed to get body")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "failed to get body", StatusCode: 400}, nil
+	}
+
 	loginUserRequest := &simpletracker.LoginUserRequest{}
-	if err := proto.Unmarshal([]byte(request.Body), loginUserRequest); err != nil {
-		fmt.Println("Failed to parse login user request proto")
+	if err := proto.Unmarshal([]byte(requestBody), loginUserRequest); err != nil {
+		fmt.Println("handleLoginUserRequest failed to parse login user request proto")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "Failed to parse login user request proto", StatusCode: 400}, nil
 	}
 	recordUsername(ctx, loginUserRequest.Username)
+
+	responseHeaders := make(map[string]string)
+	responseHeaders["Content-Type"] = "application/protobuf"
 
 	var loginUserResponse simpletracker.LoginUserResponse
 
@@ -146,24 +170,33 @@ func handleLoginUserRequest(ctx context.Context, request events.APIGatewayProxyR
 	}
 
 	return events.APIGatewayProxyResponse{
-		Body:            string(resp),
+		Body:            base64.StdEncoding.EncodeToString(resp),
 		Headers:         responseHeaders,
 		StatusCode:      statusCode,
-		IsBase64Encoded: false,
+		IsBase64Encoded: true,
 	}, nil
 }
 
 func handleCreateUserRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	responseHeaders := make(map[string]string)
-	responseHeaders["Content-Type"] = "application/protobuf"
+	requestBody, err := getRequestBody(request)
+	if err != nil {
+		fmt.Println("handleCreateUserRequest failed to get body")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "failed to get body", StatusCode: 400}, nil
+	}
+
 	createUserRequest := &simpletracker.CreateUserRequest{}
-	if err := proto.Unmarshal([]byte(request.Body), createUserRequest); err != nil {
+	if err := proto.Unmarshal([]byte(requestBody), createUserRequest); err != nil {
 		fmt.Println("Failed to parse create user request proto")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "Failed to parse create user request proto", StatusCode: 400}, nil
 	}
 	recordUsername(ctx, createUserRequest.Username)
+
+	responseHeaders := make(map[string]string)
+	responseHeaders["Content-Type"] = "application/protobuf"
 
 	createUserResp, err := handleCreateUserRequestInner(
 		createUserRequest, dynamoDbClient, userTableName, sessionTableName, ctx)
@@ -181,10 +214,10 @@ func handleCreateUserRequest(ctx context.Context, request events.APIGatewayProxy
 			Body: "Failed to serialize create user response", StatusCode: 500}, nil
 	}
 	return events.APIGatewayProxyResponse{
-		Body:            string(resp),
+		Body:            base64.StdEncoding.EncodeToString(resp),
 		Headers:         responseHeaders,
 		StatusCode:      200,
-		IsBase64Encoded: false,
+		IsBase64Encoded: true,
 	}, nil
 }
 
@@ -199,6 +232,8 @@ func initialize() {
 
 	userTableName = os.Getenv("USER_TABLE_NAME")
 	sessionTableName = os.Getenv("SESSION_TABLE_NAME")
+	calendarTableName = os.Getenv("CALENDAR_TABLE_NAME")
+	paginationTokenTableName = os.Getenv("PAGINATION_TOKEN_TABLE_NAME")
 }
 
 func main() {

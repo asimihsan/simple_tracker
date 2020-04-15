@@ -24,6 +24,9 @@ class AppLocalizations {
 
   static Map<String, Map<String, String>> _localizedValues = {
     'en': {
+      'user_login_user_missing_or_password_incorrect_exception':
+          "Username doesn't exist or password is incorrect.",
+      'internal_server_error_exception': 'Internal server error exception.',
       'user_login_login_title': 'Login',
       'user_login_signup_title': 'Signup',
       'user_login_username': 'Username',
@@ -41,6 +44,7 @@ class AppLocalizations {
       'user_login_submit_button': 'Submit',
       'user_login_confirm_password_does_not_match':
           'Confirmation password does not match original password',
+      'calendar_list_title': 'Calendar List',
     },
   };
 
@@ -106,6 +110,19 @@ class AppLocalizations {
 
   String get userLoginConfirmPasswordDoesNotMatch {
     return _localizedValues[locale.languageCode]['user_login_confirm_password_does_not_match'];
+  }
+
+  String get userLoginUserMissingOrPasswordIncorrectException {
+    return _localizedValues[locale.languageCode]
+        ['user_login_user_missing_or_password_incorrect_exception'];
+  }
+
+  String get internalServerErrorException {
+    return _localizedValues[locale.languageCode]['internal_server_error_exception'];
+  }
+
+  String get calendarListTitle {
+    return _localizedValues[locale.languageCode]['calendar_list_title'];
   }
 }
 

@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+
+package simpletracker;
+
+message ListCalendarsRequest {
+    string user_id = 1;
+    string session_id = 2;
+
+    // Maximum number of calendar summaries per response page.
+    google.protobuf.Int32Value max_results = 3;
+
+    // This is a serialized version of ListCalendarsRequestNextToken. This token must be
+    // opaque to clients and not deserializable to a ListCalendarsRequestNextToken. Servers
+    // will probably encrypt ListCalendarsRequestNextToken. Clients must simply pass in a
+    // received next_token into here.
+    google.protobuf.BytesValue next_token = 4;
+}
+
+message ListCalendarsRequestNextToken {
+    int32 version = 1;
+
+    // The user ID inside the token must not be used for authorization purposes. Rather you first
+    // authorize the request parameters, and then compare to the inner user_id.
+    string user_id = 2;
+
+    // The session ID inside the token must not be used for authorization purposes. Rather you first
+    // authorize the request parameters, and then compare to the inner session_id.
+    string session_id = 3;
+
+    // Thiis is what a server wants to use for some other service call as a pagination token.
+    google.protobuf.StringValue next_token_inner = 4;
+
+    // Pagination tokens can expire to prevent indefinite re-use.
+    int32 expiryEpochSeconds = 5;
+}
+
+message ListCalendarsResponse {
+    bool success = 1;
+    repeated CalendarSummary calendarSummaries = 2;
+    google.protobuf.BytesValue next_token = 3;
+}
+
+message CalendarSummary {
+    // Format version field (not an OCC field).
+    int32 formatVersion = 1;
+
+    string id = 2;
+    string name = 3;
+    string color = 4;
+
+    // OCC version field.
+    int32 version = 5;
+}
+
+message CalendarDetail {
+    CalendarSummary summary = 1;
+    repeated string highlightedDays = 2;
+}

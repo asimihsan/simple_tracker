@@ -14,7 +14,10 @@
 //  limitations under the License.
 // ============================================================================
 
+import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
+import 'package:simple_tracker/exception/InternalServerErrorException.dart';
+import 'package:simple_tracker/exception/UserMissingOrPasswordIncorrectException.dart';
 import 'package:simple_tracker/proto/user.pb.dart';
 import 'package:simple_tracker/state/user_model.dart';
 import 'package:http/http.dart' as http;
@@ -25,7 +28,10 @@ class UserRepository {
 
   UserRepository(this.baseUrl);
 
-  Future<UserModel> createUser({@required String username, @required String password}) async {
+  Future<UserModel> createUser(
+      {@required String username,
+      @required String password,
+      @required UserModel providedUserModel}) async {
     var requestProto = CreateUserRequest();
     requestProto.username = username;
     requestProto.password = password;
@@ -37,7 +43,6 @@ class UserRepository {
       "Content-Type": "application/protobuf",
     };
 
-    var userModel = UserModel.notLoggedIn();
     var response = await http.post(url, headers: headers, body: createUserRequestSerialized);
     developer.log("CreateUser response " + response.statusCode.toString());
     if (response.headers.containsKey("x-amzn-trace-id")) {
@@ -51,15 +56,18 @@ class UserRepository {
       developer.log("CreateUser response success");
       var responseProto = CreateUserResponse.fromBuffer(response.bodyBytes);
       developer.log("response proto", error: responseProto.toDebugString());
-      userModel.login(responseProto.userId, responseProto.sessionId);
+      providedUserModel.login(responseProto.userId, responseProto.sessionId);
     } else {
       developer.log("CreateUser response failure", error: response.body);
       return null;
     }
-    return userModel;
+    return providedUserModel;
   }
 
-  Future<UserModel> loginUser({@required String username, @required String password}) async {
+  Future<UserModel> loginUser(
+      {@required String username,
+      @required String password,
+      @required UserModel providedUserModel}) async {
     var requestProto = LoginUserRequest();
     requestProto.username = username;
     requestProto.password = password;
@@ -71,7 +79,6 @@ class UserRepository {
       "Content-Type": "application/protobuf",
     };
 
-    var userModel = UserModel.notLoggedIn();
     var response = await http.post(url, headers: headers, body: requestSerialized);
     developer.log("LoginUser response " + response.statusCode.toString());
     if (response.headers.containsKey("x-amzn-trace-id")) {
@@ -91,11 +98,19 @@ class UserRepository {
 
     if (response.statusCode == 200) {
       developer.log("CreateUser response success");
-      userModel.login(responseProto.userId, responseProto.sessionId);
+      providedUserModel.login(responseProto.userId, responseProto.sessionId);
     } else {
       developer.log("LoginUser response failure", error: response.body);
-      return null;
+      if (responseProto != null) {
+        switch (responseProto.errorReason) {
+          case LoginUserErrorReason.USER_MISSING_OR_PASSWORD_INCORRECT:
+            throw new UserMissingOrPasswordIncorrectException();
+          case LoginUserErrorReason.LOGIN_USER_ERROR_REASON_INTERNAL_SERVER_ERROR:
+          default:
+            throw new InternalServerErrorException();
+        }
+      }
     }
-    return userModel;
+    return providedUserModel;
   }
 }
