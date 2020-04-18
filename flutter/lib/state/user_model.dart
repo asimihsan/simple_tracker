@@ -14,8 +14,6 @@
 //  limitations under the License.
 // ============================================================================
 
-import 'package:flutter/material.dart';
-
 class UserModel {
   bool _loggedIn;
   String _userId;

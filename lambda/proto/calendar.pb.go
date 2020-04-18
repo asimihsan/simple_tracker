@@ -6,7 +6,6 @@ package simpletracker
 import (
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
-	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 	math "math"
 )
 
@@ -21,19 +20,43 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
+type ListCalendarsErrorReason int32
+
+const (
+	ListCalendarsErrorReason_LIST_CALENDARS_ERROR_REASON_NO_ERROR              ListCalendarsErrorReason = 0
+	ListCalendarsErrorReason_LIST_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR ListCalendarsErrorReason = 1
+)
+
+var ListCalendarsErrorReason_name = map[int32]string{
+	0: "LIST_CALENDARS_ERROR_REASON_NO_ERROR",
+	1: "LIST_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR",
+}
+
+var ListCalendarsErrorReason_value = map[string]int32{
+	"LIST_CALENDARS_ERROR_REASON_NO_ERROR":              0,
+	"LIST_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR": 1,
+}
+
+func (x ListCalendarsErrorReason) String() string {
+	return proto.EnumName(ListCalendarsErrorReason_name, int32(x))
+}
+
+func (ListCalendarsErrorReason) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_e3d25d49f056cdb2, []int{0}
+}
+
 type ListCalendarsRequest struct {
 	UserId    string `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	SessionId string `protobuf:"bytes,2,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
-	// Maximum number of calendar summaries per response page.
-	MaxResults *wrappers.Int32Value `protobuf:"bytes,3,opt,name=max_results,json=maxResults,proto3" json:"max_results,omitempty"`
-	// This is a serialized version of ListCalendarsRequestNextToken. This token must be
-	// opaque to clients and not deserializable to a ListCalendarsRequestNextToken. Servers
-	// will probably encrypt ListCalendarsRequestNextToken. Clients must simply pass in a
-	// received next_token into here.
-	NextToken            *wrappers.BytesValue `protobuf:"bytes,4,opt,name=next_token,json=nextToken,proto3" json:"next_token,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
-	XXX_unrecognized     []byte               `json:"-"`
-	XXX_sizecache        int32                `json:"-"`
+	// Maximum number of calendar summaries per response page. If 0 or smaller then server will enforce an arbitrary
+	// default value.
+	MaxResults int64 `protobuf:"varint,3,opt,name=max_results,json=maxResults,proto3" json:"max_results,omitempty"`
+	// This is a pagination token for the ListCalendars API. This is opaque to clients and clients cannot deserialize it
+	// to ListCalendarsRequestNextToken. If clients want to resume pagination they should re-use this.
+	NextToken            *ListCalendarsRequestNextTokenOpaque `protobuf:"bytes,4,opt,name=next_token,json=nextToken,proto3" json:"next_token,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                             `json:"-"`
+	XXX_unrecognized     []byte                               `json:"-"`
+	XXX_sizecache        int32                                `json:"-"`
 }
 
 func (m *ListCalendarsRequest) Reset()         { *m = ListCalendarsRequest{} }
@@ -75,32 +98,80 @@ func (m *ListCalendarsRequest) GetSessionId() string {
 	return ""
 }
 
-func (m *ListCalendarsRequest) GetMaxResults() *wrappers.Int32Value {
+func (m *ListCalendarsRequest) GetMaxResults() int64 {
 	if m != nil {
 		return m.MaxResults
 	}
-	return nil
+	return 0
 }
 
-func (m *ListCalendarsRequest) GetNextToken() *wrappers.BytesValue {
+func (m *ListCalendarsRequest) GetNextToken() *ListCalendarsRequestNextTokenOpaque {
 	if m != nil {
 		return m.NextToken
 	}
 	return nil
 }
 
+type ListCalendarsRequestNextTokenOpaque struct {
+	OpaqueNextToken      []byte   `protobuf:"bytes,1,opt,name=opaqueNextToken,proto3" json:"opaqueNextToken,omitempty"`
+	EncryptionKeyUsed    string   `protobuf:"bytes,2,opt,name=encryptionKeyUsed,proto3" json:"encryptionKeyUsed,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ListCalendarsRequestNextTokenOpaque) Reset()         { *m = ListCalendarsRequestNextTokenOpaque{} }
+func (m *ListCalendarsRequestNextTokenOpaque) String() string { return proto.CompactTextString(m) }
+func (*ListCalendarsRequestNextTokenOpaque) ProtoMessage()    {}
+func (*ListCalendarsRequestNextTokenOpaque) Descriptor() ([]byte, []int) {
+	return fileDescriptor_e3d25d49f056cdb2, []int{1}
+}
+
+func (m *ListCalendarsRequestNextTokenOpaque) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListCalendarsRequestNextTokenOpaque.Unmarshal(m, b)
+}
+func (m *ListCalendarsRequestNextTokenOpaque) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListCalendarsRequestNextTokenOpaque.Marshal(b, m, deterministic)
+}
+func (m *ListCalendarsRequestNextTokenOpaque) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListCalendarsRequestNextTokenOpaque.Merge(m, src)
+}
+func (m *ListCalendarsRequestNextTokenOpaque) XXX_Size() int {
+	return xxx_messageInfo_ListCalendarsRequestNextTokenOpaque.Size(m)
+}
+func (m *ListCalendarsRequestNextTokenOpaque) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListCalendarsRequestNextTokenOpaque.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListCalendarsRequestNextTokenOpaque proto.InternalMessageInfo
+
+func (m *ListCalendarsRequestNextTokenOpaque) GetOpaqueNextToken() []byte {
+	if m != nil {
+		return m.OpaqueNextToken
+	}
+	return nil
+}
+
+func (m *ListCalendarsRequestNextTokenOpaque) GetEncryptionKeyUsed() string {
+	if m != nil {
+		return m.EncryptionKeyUsed
+	}
+	return ""
+}
+
 type ListCalendarsRequestNextToken struct {
-	Version int32 `protobuf:"varint,1,opt,name=version,proto3" json:"version,omitempty"`
+	Version int64 `protobuf:"varint,1,opt,name=version,proto3" json:"version,omitempty"`
 	// The user ID inside the token must not be used for authorization purposes. Rather you first
 	// authorize the request parameters, and then compare to the inner user_id.
 	UserId string `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	// The session ID inside the token must not be used for authorization purposes. Rather you first
 	// authorize the request parameters, and then compare to the inner session_id.
 	SessionId string `protobuf:"bytes,3,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
-	// Thiis is what a server wants to use for some other service call as a pagination token.
-	NextTokenInner *wrappers.StringValue `protobuf:"bytes,4,opt,name=next_token_inner,json=nextTokenInner,proto3" json:"next_token_inner,omitempty"`
+	// This is how we'll resume the DynamoDB query, using the last evaluated sort key, i.e. calendar ID. It may be
+	// absent (empty map), meaning there are no more pages.
+	DynamodbNextToken map[string]string `protobuf:"bytes,4,rep,name=dynamodb_next_token,json=dynamodbNextToken,proto3" json:"dynamodb_next_token,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// Pagination tokens can expire to prevent indefinite re-use.
-	ExpiryEpochSeconds   int32    `protobuf:"varint,5,opt,name=expiryEpochSeconds,proto3" json:"expiryEpochSeconds,omitempty"`
+	ExpiryEpochSeconds   int64    `protobuf:"varint,5,opt,name=expiry_epoch_seconds,json=expiryEpochSeconds,proto3" json:"expiry_epoch_seconds,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -110,7 +181,7 @@ func (m *ListCalendarsRequestNextToken) Reset()         { *m = ListCalendarsRequ
 func (m *ListCalendarsRequestNextToken) String() string { return proto.CompactTextString(m) }
 func (*ListCalendarsRequestNextToken) ProtoMessage()    {}
 func (*ListCalendarsRequestNextToken) Descriptor() ([]byte, []int) {
-	return fileDescriptor_e3d25d49f056cdb2, []int{1}
+	return fileDescriptor_e3d25d49f056cdb2, []int{2}
 }
 
 func (m *ListCalendarsRequestNextToken) XXX_Unmarshal(b []byte) error {
@@ -131,7 +202,7 @@ func (m *ListCalendarsRequestNextToken) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ListCalendarsRequestNextToken proto.InternalMessageInfo
 
-func (m *ListCalendarsRequestNextToken) GetVersion() int32 {
+func (m *ListCalendarsRequestNextToken) GetVersion() int64 {
 	if m != nil {
 		return m.Version
 	}
@@ -152,14 +223,14 @@ func (m *ListCalendarsRequestNextToken) GetSessionId() string {
 	return ""
 }
 
-func (m *ListCalendarsRequestNextToken) GetNextTokenInner() *wrappers.StringValue {
+func (m *ListCalendarsRequestNextToken) GetDynamodbNextToken() map[string]string {
 	if m != nil {
-		return m.NextTokenInner
+		return m.DynamodbNextToken
 	}
 	return nil
 }
 
-func (m *ListCalendarsRequestNextToken) GetExpiryEpochSeconds() int32 {
+func (m *ListCalendarsRequestNextToken) GetExpiryEpochSeconds() int64 {
 	if m != nil {
 		return m.ExpiryEpochSeconds
 	}
@@ -167,19 +238,20 @@ func (m *ListCalendarsRequestNextToken) GetExpiryEpochSeconds() int32 {
 }
 
 type ListCalendarsResponse struct {
-	Success              bool                 `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	CalendarSummaries    []*CalendarSummary   `protobuf:"bytes,2,rep,name=calendarSummaries,proto3" json:"calendarSummaries,omitempty"`
-	NextToken            *wrappers.BytesValue `protobuf:"bytes,3,opt,name=next_token,json=nextToken,proto3" json:"next_token,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
-	XXX_unrecognized     []byte               `json:"-"`
-	XXX_sizecache        int32                `json:"-"`
+	Success              bool                                 `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	ErrorReason          ListCalendarsErrorReason             `protobuf:"varint,2,opt,name=error_reason,json=errorReason,proto3,enum=simpletracker.ListCalendarsErrorReason" json:"error_reason,omitempty"`
+	CalendarSummaries    []*CalendarSummary                   `protobuf:"bytes,3,rep,name=calendarSummaries,proto3" json:"calendarSummaries,omitempty"`
+	NextToken            *ListCalendarsRequestNextTokenOpaque `protobuf:"bytes,4,opt,name=next_token,json=nextToken,proto3" json:"next_token,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                             `json:"-"`
+	XXX_unrecognized     []byte                               `json:"-"`
+	XXX_sizecache        int32                                `json:"-"`
 }
 
 func (m *ListCalendarsResponse) Reset()         { *m = ListCalendarsResponse{} }
 func (m *ListCalendarsResponse) String() string { return proto.CompactTextString(m) }
 func (*ListCalendarsResponse) ProtoMessage()    {}
 func (*ListCalendarsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_e3d25d49f056cdb2, []int{2}
+	return fileDescriptor_e3d25d49f056cdb2, []int{3}
 }
 
 func (m *ListCalendarsResponse) XXX_Unmarshal(b []byte) error {
@@ -207,6 +279,13 @@ func (m *ListCalendarsResponse) GetSuccess() bool {
 	return false
 }
 
+func (m *ListCalendarsResponse) GetErrorReason() ListCalendarsErrorReason {
+	if m != nil {
+		return m.ErrorReason
+	}
+	return ListCalendarsErrorReason_LIST_CALENDARS_ERROR_REASON_NO_ERROR
+}
+
 func (m *ListCalendarsResponse) GetCalendarSummaries() []*CalendarSummary {
 	if m != nil {
 		return m.CalendarSummaries
@@ -214,7 +293,7 @@ func (m *ListCalendarsResponse) GetCalendarSummaries() []*CalendarSummary {
 	return nil
 }
 
-func (m *ListCalendarsResponse) GetNextToken() *wrappers.BytesValue {
+func (m *ListCalendarsResponse) GetNextToken() *ListCalendarsRequestNextTokenOpaque {
 	if m != nil {
 		return m.NextToken
 	}
@@ -223,12 +302,13 @@ func (m *ListCalendarsResponse) GetNextToken() *wrappers.BytesValue {
 
 type CalendarSummary struct {
 	// Format version field (not an OCC field).
-	FormatVersion int32  `protobuf:"varint,1,opt,name=formatVersion,proto3" json:"formatVersion,omitempty"`
-	Id            string `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Color         string `protobuf:"bytes,4,opt,name=color,proto3" json:"color,omitempty"`
+	FormatVersion int64  `protobuf:"varint,1,opt,name=formatVersion,proto3" json:"formatVersion,omitempty"`
+	OwnerUserid   string `protobuf:"bytes,2,opt,name=ownerUserid,proto3" json:"ownerUserid,omitempty"`
+	Id            string `protobuf:"bytes,3,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
+	Color         string `protobuf:"bytes,5,opt,name=color,proto3" json:"color,omitempty"`
 	// OCC version field.
-	Version              int32    `protobuf:"varint,5,opt,name=version,proto3" json:"version,omitempty"`
+	Version              int64    `protobuf:"varint,6,opt,name=version,proto3" json:"version,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -238,7 +318,7 @@ func (m *CalendarSummary) Reset()         { *m = CalendarSummary{} }
 func (m *CalendarSummary) String() string { return proto.CompactTextString(m) }
 func (*CalendarSummary) ProtoMessage()    {}
 func (*CalendarSummary) Descriptor() ([]byte, []int) {
-	return fileDescriptor_e3d25d49f056cdb2, []int{3}
+	return fileDescriptor_e3d25d49f056cdb2, []int{4}
 }
 
 func (m *CalendarSummary) XXX_Unmarshal(b []byte) error {
@@ -259,11 +339,18 @@ func (m *CalendarSummary) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_CalendarSummary proto.InternalMessageInfo
 
-func (m *CalendarSummary) GetFormatVersion() int32 {
+func (m *CalendarSummary) GetFormatVersion() int64 {
 	if m != nil {
 		return m.FormatVersion
 	}
 	return 0
+}
+
+func (m *CalendarSummary) GetOwnerUserid() string {
+	if m != nil {
+		return m.OwnerUserid
+	}
+	return ""
 }
 
 func (m *CalendarSummary) GetId() string {
@@ -287,7 +374,7 @@ func (m *CalendarSummary) GetColor() string {
 	return ""
 }
 
-func (m *CalendarSummary) GetVersion() int32 {
+func (m *CalendarSummary) GetVersion() int64 {
 	if m != nil {
 		return m.Version
 	}
@@ -306,7 +393,7 @@ func (m *CalendarDetail) Reset()         { *m = CalendarDetail{} }
 func (m *CalendarDetail) String() string { return proto.CompactTextString(m) }
 func (*CalendarDetail) ProtoMessage()    {}
 func (*CalendarDetail) Descriptor() ([]byte, []int) {
-	return fileDescriptor_e3d25d49f056cdb2, []int{4}
+	return fileDescriptor_e3d25d49f056cdb2, []int{5}
 }
 
 func (m *CalendarDetail) XXX_Unmarshal(b []byte) error {
@@ -342,8 +429,11 @@ func (m *CalendarDetail) GetHighlightedDays() []string {
 }
 
 func init() {
+	proto.RegisterEnum("simpletracker.ListCalendarsErrorReason", ListCalendarsErrorReason_name, ListCalendarsErrorReason_value)
 	proto.RegisterType((*ListCalendarsRequest)(nil), "simpletracker.ListCalendarsRequest")
+	proto.RegisterType((*ListCalendarsRequestNextTokenOpaque)(nil), "simpletracker.ListCalendarsRequestNextTokenOpaque")
 	proto.RegisterType((*ListCalendarsRequestNextToken)(nil), "simpletracker.ListCalendarsRequestNextToken")
+	proto.RegisterMapType((map[string]string)(nil), "simpletracker.ListCalendarsRequestNextToken.DynamodbNextTokenEntry")
 	proto.RegisterType((*ListCalendarsResponse)(nil), "simpletracker.ListCalendarsResponse")
 	proto.RegisterType((*CalendarSummary)(nil), "simpletracker.CalendarSummary")
 	proto.RegisterType((*CalendarDetail)(nil), "simpletracker.CalendarDetail")
@@ -354,35 +444,44 @@ func init() {
 }
 
 var fileDescriptor_e3d25d49f056cdb2 = []byte{
-	// 468 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x92, 0xc1, 0x6e, 0xd3, 0x40,
-	0x10, 0x86, 0x65, 0xa7, 0x69, 0xf1, 0x44, 0x4d, 0x61, 0x55, 0x84, 0x05, 0xb4, 0x8a, 0x22, 0x0e,
-	0x39, 0xb9, 0x52, 0x7a, 0x41, 0x88, 0x13, 0x2d, 0x48, 0x91, 0x2a, 0x0e, 0x1b, 0xd4, 0x6b, 0xb4,
-	0xb5, 0xa7, 0xce, 0xaa, 0xf6, 0xae, 0xd9, 0x59, 0x43, 0xf2, 0x0c, 0x3c, 0x12, 0x2f, 0xc0, 0xab,
-	0xf0, 0x16, 0xc8, 0x6b, 0xbb, 0xd4, 0x6e, 0x01, 0x71, 0xcb, 0xcc, 0xfc, 0x13, 0x7f, 0xff, 0xfc,
-	0x0b, 0xe3, 0x58, 0x64, 0xa8, 0x12, 0x61, 0xa2, 0xc2, 0x68, 0xab, 0xd9, 0x3e, 0xc9, 0xbc, 0xc8,
-	0xd0, 0x1a, 0x11, 0xdf, 0xa0, 0x79, 0x7e, 0x9c, 0x6a, 0x9d, 0x66, 0x78, 0xe2, 0x86, 0x57, 0xe5,
-	0xf5, 0xc9, 0x57, 0x23, 0x8a, 0x02, 0x0d, 0xd5, 0xf2, 0xe9, 0x0f, 0x0f, 0x0e, 0x2f, 0x24, 0xd9,
-	0xb3, 0xe6, 0x5f, 0x88, 0xe3, 0xe7, 0x12, 0xc9, 0xb2, 0x67, 0xb0, 0x57, 0x12, 0x9a, 0x95, 0x4c,
-	0x42, 0x6f, 0xe2, 0xcd, 0x02, 0xbe, 0x5b, 0x95, 0x8b, 0x84, 0x1d, 0x01, 0x10, 0x12, 0x49, 0xad,
-	0xaa, 0x99, 0xef, 0x66, 0x41, 0xd3, 0x59, 0x24, 0xec, 0x2d, 0x8c, 0x72, 0xb1, 0x59, 0x19, 0xa4,
-	0x32, 0xb3, 0x14, 0x0e, 0x26, 0xde, 0x6c, 0x34, 0x7f, 0x11, 0xd5, 0x18, 0x51, 0x8b, 0x11, 0x2d,
-	0x94, 0x3d, 0x9d, 0x5f, 0x8a, 0xac, 0x44, 0x0e, 0xb9, 0xd8, 0xf0, 0x5a, 0xce, 0xde, 0x00, 0x28,
-	0xdc, 0xd8, 0x95, 0xd5, 0x37, 0xa8, 0xc2, 0x9d, 0x3f, 0x2c, 0xbf, 0xdb, 0x5a, 0xa4, 0x7a, 0x39,
-	0xa8, 0xe4, 0x9f, 0x2a, 0xf5, 0xf4, 0xa7, 0x07, 0x47, 0x0f, 0x59, 0xf9, 0xd8, 0x2a, 0x58, 0x08,
-	0x7b, 0x5f, 0xd0, 0x54, 0xa0, 0xce, 0xd3, 0x90, 0xb7, 0xe5, 0x5d, 0xb7, 0xfe, 0x5f, 0xdc, 0x0e,
-	0xfa, 0x6e, 0x3f, 0xc0, 0xe3, 0xdf, 0xbc, 0x2b, 0xa9, 0x14, 0x9a, 0x86, 0xfa, 0xe5, 0x3d, 0xea,
-	0xa5, 0x35, 0x52, 0xa5, 0x35, 0xf6, 0xf8, 0x16, 0x7b, 0x51, 0xed, 0xb0, 0x08, 0x18, 0x6e, 0x0a,
-	0x69, 0xb6, 0xef, 0x0b, 0x1d, 0xaf, 0x97, 0x18, 0x6b, 0x95, 0x50, 0x38, 0x74, 0x90, 0x0f, 0x4c,
-	0xa6, 0xdf, 0x3d, 0x78, 0xda, 0xf3, 0x4a, 0x85, 0x56, 0x84, 0x95, 0x47, 0x2a, 0xe3, 0x18, 0x89,
-	0x9c, 0xc7, 0x47, 0xbc, 0x2d, 0xd9, 0x05, 0x3c, 0x69, 0xdf, 0xca, 0xb2, 0xcc, 0x73, 0x61, 0x24,
-	0x52, 0xe8, 0x4f, 0x06, 0xb3, 0xd1, 0xfc, 0x38, 0xea, 0xbc, 0x9a, 0xe8, 0xac, 0xa3, 0xdb, 0xf2,
-	0xfb, 0x8b, 0xbd, 0xa4, 0x06, 0xff, 0x95, 0xd4, 0x37, 0x0f, 0x0e, 0x7a, 0x9f, 0x60, 0xaf, 0x60,
-	0xff, 0x5a, 0x9b, 0x5c, 0xd8, 0xcb, 0x4e, 0x42, 0xdd, 0x26, 0x1b, 0x83, 0x7f, 0x1b, 0x91, 0x2f,
-	0x13, 0xc6, 0x60, 0x47, 0x89, 0x1c, 0x9b, 0x60, 0xdc, 0x6f, 0x76, 0x08, 0xc3, 0x58, 0x67, 0xba,
-	0x0e, 0x22, 0xe0, 0x75, 0x71, 0x37, 0xfb, 0x61, 0x27, 0xfb, 0xa9, 0x85, 0x71, 0x0b, 0x73, 0x8e,
-	0x56, 0xc8, 0x8c, 0xbd, 0xae, 0x6e, 0xe8, 0xb0, 0x1c, 0xc5, 0xbf, 0xef, 0xd3, 0xca, 0xd9, 0x0c,
-	0x0e, 0xd6, 0x32, 0x5d, 0x67, 0x32, 0x5d, 0x5b, 0x4c, 0xce, 0xc5, 0xb6, 0xbe, 0x70, 0xc0, 0xfb,
-	0xed, 0xab, 0x5d, 0x77, 0xa3, 0xd3, 0x5f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x72, 0xb3, 0xd3, 0x08,
-	0xc0, 0x03, 0x00, 0x00,
+	// 624 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x54, 0x5d, 0x6e, 0xd3, 0x40,
+	0x10, 0xc6, 0x4e, 0x7f, 0xc8, 0xa4, 0x4d, 0xdb, 0xa5, 0x40, 0x84, 0x54, 0x88, 0x42, 0x25, 0x22,
+	0x84, 0x22, 0x08, 0x42, 0xaa, 0x78, 0x8b, 0x12, 0x3f, 0x04, 0xa2, 0x44, 0x6c, 0xda, 0xbe, 0x5a,
+	0x5b, 0x7b, 0x68, 0xac, 0xda, 0xbb, 0xee, 0xee, 0xba, 0xc4, 0x42, 0x5c, 0x85, 0x1b, 0x70, 0x09,
+	0x0e, 0xc2, 0x59, 0x90, 0x37, 0x71, 0x68, 0xdc, 0x12, 0xe0, 0x81, 0x37, 0xcf, 0xf7, 0xcd, 0xcc,
+	0xce, 0x7c, 0xfb, 0xad, 0xa1, 0xea, 0xb1, 0x10, 0xb9, 0xcf, 0x64, 0x2b, 0x96, 0x42, 0x0b, 0xb2,
+	0xad, 0x82, 0x28, 0x0e, 0x51, 0x4b, 0xe6, 0x5d, 0xa0, 0x6c, 0x7c, 0xb7, 0x60, 0x7f, 0x10, 0x28,
+	0xdd, 0x9d, 0x67, 0x29, 0x8a, 0x97, 0x09, 0x2a, 0x4d, 0x1e, 0xc2, 0x66, 0xa2, 0x50, 0xba, 0x81,
+	0x5f, 0xb3, 0xea, 0x56, 0xb3, 0x4c, 0x37, 0xb2, 0xb0, 0xef, 0x93, 0x03, 0x00, 0x85, 0x4a, 0x05,
+	0x82, 0x67, 0x9c, 0x6d, 0xb8, 0xf2, 0x1c, 0xe9, 0xfb, 0xe4, 0x09, 0x54, 0x22, 0x36, 0x75, 0x25,
+	0xaa, 0x24, 0xd4, 0xaa, 0x56, 0xaa, 0x5b, 0xcd, 0x12, 0x85, 0x88, 0x4d, 0xe9, 0x0c, 0x21, 0x1f,
+	0x00, 0x38, 0x4e, 0xb5, 0xab, 0xc5, 0x05, 0xf2, 0xda, 0x5a, 0xdd, 0x6a, 0x56, 0xda, 0xed, 0xd6,
+	0xd2, 0x54, 0xad, 0xdb, 0x26, 0x1a, 0xe2, 0x54, 0x1f, 0x67, 0x35, 0xa3, 0x98, 0x5d, 0x26, 0x48,
+	0xcb, 0x3c, 0x07, 0x1a, 0x5f, 0xe0, 0xe9, 0x5f, 0x54, 0x90, 0x26, 0xec, 0x08, 0xf3, 0xb5, 0x20,
+	0xcc, 0x6a, 0x5b, 0xb4, 0x08, 0x93, 0x17, 0xb0, 0x87, 0xdc, 0x93, 0x69, 0xac, 0x03, 0xc1, 0xdf,
+	0x63, 0x7a, 0xa2, 0x30, 0x5f, 0xf5, 0x26, 0xd1, 0xf8, 0x61, 0xc3, 0xc1, 0xca, 0xf3, 0x49, 0x0d,
+	0x36, 0xaf, 0x50, 0x66, 0x0a, 0x99, 0x13, 0x4b, 0x34, 0x0f, 0xaf, 0xcb, 0x6c, 0xaf, 0x90, 0xb9,
+	0x54, 0x94, 0x59, 0xc1, 0x3d, 0x3f, 0xe5, 0x2c, 0x12, 0xfe, 0x99, 0xbb, 0x24, 0x67, 0xa9, 0x59,
+	0x69, 0x77, 0xff, 0x45, 0xce, 0x56, 0x6f, 0xde, 0x67, 0x81, 0x38, 0x5c, 0xcb, 0x94, 0xee, 0xf9,
+	0x45, 0x9c, 0xbc, 0x84, 0x7d, 0x9c, 0xc6, 0x81, 0x4c, 0x5d, 0x8c, 0x85, 0x37, 0x71, 0x15, 0x7a,
+	0x82, 0xfb, 0xaa, 0xb6, 0x6e, 0x76, 0x22, 0x33, 0xce, 0xc9, 0xa8, 0xf1, 0x8c, 0x79, 0xd4, 0x83,
+	0x07, 0xb7, 0xb7, 0x27, 0xbb, 0x50, 0xba, 0xc0, 0x74, 0xee, 0xad, 0xec, 0x93, 0xec, 0xc3, 0xfa,
+	0x15, 0x0b, 0x13, 0x9c, 0x0b, 0x31, 0x0b, 0xde, 0xda, 0x47, 0x56, 0xe3, 0xab, 0x0d, 0xf7, 0x0b,
+	0x3b, 0xa8, 0x58, 0x70, 0x85, 0x99, 0xb0, 0x2a, 0xf1, 0x3c, 0x54, 0xca, 0x74, 0xba, 0x4b, 0xf3,
+	0x90, 0xbc, 0x83, 0x2d, 0x94, 0x52, 0x48, 0x57, 0x22, 0x53, 0x82, 0x9b, 0xa6, 0xd5, 0xf6, 0xb3,
+	0x55, 0xca, 0x38, 0x59, 0x3e, 0x35, 0xe9, 0xb4, 0x82, 0xbf, 0x02, 0x32, 0x80, 0xbd, 0xfc, 0x15,
+	0x8d, 0x93, 0x28, 0x62, 0x32, 0xc0, 0xcc, 0xd9, 0x99, 0xd4, 0x8f, 0x0b, 0x0d, 0xbb, 0x4b, 0x79,
+	0x29, 0xbd, 0x59, 0xf8, 0x3f, 0x1e, 0xc0, 0x37, 0x0b, 0x76, 0x0a, 0x27, 0x93, 0x43, 0xd8, 0xfe,
+	0x28, 0x64, 0xc4, 0xf4, 0xe9, 0x92, 0xf3, 0x96, 0x41, 0x52, 0x87, 0x8a, 0xf8, 0xc4, 0x51, 0x9e,
+	0x28, 0x94, 0x0b, 0x0f, 0x5e, 0x87, 0x48, 0x15, 0xec, 0x85, 0x01, 0xed, 0xc0, 0x27, 0x04, 0xd6,
+	0x38, 0x8b, 0xd0, 0x0c, 0x5e, 0xa6, 0xe6, 0x3b, 0xbb, 0x3a, 0x4f, 0x84, 0x42, 0x1a, 0x27, 0x94,
+	0xe9, 0x2c, 0xb8, 0xee, 0xfa, 0x8d, 0x25, 0xd7, 0x37, 0x34, 0x54, 0xf3, 0x71, 0x7b, 0xa8, 0x59,
+	0x10, 0x92, 0xa3, 0xec, 0x22, 0xcd, 0xe0, 0x66, 0xce, 0x3f, 0x0b, 0x9b, 0xa7, 0x67, 0xaf, 0x7a,
+	0x12, 0x9c, 0x4f, 0xc2, 0xe0, 0x7c, 0xa2, 0xd1, 0xef, 0xb1, 0x54, 0xd5, 0xec, 0x7a, 0xa9, 0x59,
+	0xa6, 0x45, 0xf8, 0xf9, 0x67, 0xa8, 0xfd, 0xee, 0xbe, 0x49, 0x13, 0x0e, 0x07, 0xfd, 0xf1, 0xb1,
+	0xdb, 0xed, 0x0c, 0x9c, 0x61, 0xaf, 0x43, 0xc7, 0xae, 0x43, 0xe9, 0x88, 0xba, 0xd4, 0xe9, 0x8c,
+	0x47, 0x43, 0x77, 0x38, 0x9a, 0xc5, 0xbb, 0x77, 0xc8, 0x1b, 0x78, 0xb5, 0x2a, 0xb3, 0x3f, 0x3c,
+	0x76, 0xe8, 0xb0, 0x33, 0x70, 0xc7, 0x0e, 0x3d, 0x75, 0xe8, 0xbc, 0xcc, 0x3a, 0xdb, 0x30, 0xbf,
+	0xdf, 0xd7, 0x3f, 0x03, 0x00, 0x00, 0xff, 0xff, 0xea, 0x2a, 0x6d, 0x59, 0x90, 0x05, 0x00, 0x00,
 }

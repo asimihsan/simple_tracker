@@ -2,12 +2,20 @@ import * as cdk from '@aws-cdk/core';
 
 import * as apigateway from '@aws-cdk/aws-apigateway';
 import * as certificatemanager from '@aws-cdk/aws-certificatemanager';
+import * as cfn from '@aws-cdk/aws-cloudformation';
+import * as cr from '@aws-cdk/custom-resources';
+import * as eventstargets from '@aws-cdk/aws-events-targets';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
+import * as kms from '@aws-cdk/aws-kms';
 import * as lambda from '@aws-cdk/aws-lambda';
+import * as r53targets from '@aws-cdk/aws-route53-targets';
 import * as route53 from '@aws-cdk/aws-route53';
-import * as targets from '@aws-cdk/aws-route53-targets';
-import path = require('path');
+
 import { RemovalPolicy } from '@aws-cdk/core';
+import { Rule, Schedule } from '@aws-cdk/aws-events';
+import { RetentionDays } from '@aws-cdk/aws-logs';
+
+import path = require('path');
 
 export class CdkStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, apiDomainName: string, props?: cdk.StackProps) {
@@ -42,16 +50,23 @@ export class CdkStack extends cdk.Stack {
       // TODO if Prod make this RETAIN
       removalPolicy: RemovalPolicy.DESTROY,
     });
+    // ------------------------------------------------------------------------
 
-    const paginationTokenTable = new dynamodb.Table(this, 'PaginationTokenTable', {
-      partitionKey: { name: 'Id', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'SessionIdAndUserId', type: dynamodb.AttributeType.STRING },
+    // ------------------------------------------------------------------------
+    //  KMS key for encrypting pagination tokens.
+    // ------------------------------------------------------------------------
+    const paginationKey = new kms.Key(this, 'PaginationKey', {
+      enableKeyRotation: true
+    });
+
+    const paginationEphemeralKeyTable = new dynamodb.Table(this, 'PaginationEphemeralKeyTable', {
+      partitionKey: { name: 'DateTime_Shard', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
 
       // TODO if Prod make this RETAIN
       removalPolicy: RemovalPolicy.DESTROY,
 
-      timeToLiveAttribute: 'ExpiryEpochSeconds'
+      timeToLiveAttribute: 'ExpiryEpochSeconds',
     });
     // ------------------------------------------------------------------------
 
@@ -64,9 +79,10 @@ export class CdkStack extends cdk.Stack {
         "USER_TABLE_NAME": userTable.tableName,
         "SESSION_TABLE_NAME": sessionTable.tableName,
         "CALENDAR_TABLE_NAME": calendarTable.tableName,
-        "PAGINATION_TOKEN_TABLE_NAME": paginationTokenTable.tableName,
+        "PAGINATION_EPHEMERAL_KEY_TABLE_NAME": paginationEphemeralKeyTable.tableName,
       },
       handler: 'main',
+      logRetention: RetentionDays.ONE_MONTH,
       memorySize: 1024,
       runtime: lambda.Runtime.GO_1_X,
       timeout: cdk.Duration.seconds(10),
@@ -87,10 +103,12 @@ export class CdkStack extends cdk.Stack {
       'dynamodb:UpdateItem',
       'dynamodb:DeleteItem',
     )
-    paginationTokenTable.grant(lambdaFunction,
+    paginationEphemeralKeyTable.grant(lambdaFunction,
       'dynamodb:GetItem',
-      'dynamodb:PutItem',
-    )
+    );
+    paginationKey.grant(lambdaFunction,
+      'kms:Decrypt',
+    );
 
     // const lambdaFunctionVersion = new lambda.Version(this, 'LambdaFunctionVersion_' + lambdaVersionLabel + "_", {
     //   lambda: lambdaFunction,
@@ -100,6 +118,36 @@ export class CdkStack extends cdk.Stack {
     //   version: lambdaFunctionVersion,
     //   aliasName: 'live',
     // });
+    // ------------------------------------------------------------------------
+
+    // ------------------------------------------------------------------------
+    //  Pagination keys.
+    // ------------------------------------------------------------------------
+    const paginationKeyLambda = new lambda.Function(this, 'PaginationKeyLambda', {
+      code: lambda.Code.fromAsset(path.join(__dirname, '../../ephemeral-key-lambda/build')),
+      environment: {
+        "PAGINATION_KEY_ARN": paginationKey.keyArn,
+        "PAGINATION_EPHEMERAL_KEY_TABLE_NAME": paginationEphemeralKeyTable.tableName,
+      },
+      handler: 'main',
+      logRetention: RetentionDays.ONE_MONTH,
+      memorySize: 1024,
+      runtime: lambda.Runtime.GO_1_X,
+      timeout: cdk.Duration.seconds(30),
+      tracing: lambda.Tracing.ACTIVE
+    });
+    paginationKey.grant(paginationKeyLambda,
+      'kms:GenerateDataKeyWithoutPlaintext',
+    );
+    paginationEphemeralKeyTable.grant(paginationKeyLambda,
+      'dynamodb:GetItem',
+      'dynamodb:PutItem',
+    );
+
+    new Rule(this, 'PaginationEphemeralKeyScheduleRule', {
+      schedule: Schedule.cron({ minute: '0/15' }),
+      targets: [new eventstargets.LambdaFunction(paginationKeyLambda)],
+    })
     // ------------------------------------------------------------------------
 
     // ------------------------------------------------------------------------
@@ -131,7 +179,7 @@ export class CdkStack extends cdk.Stack {
     new route53.ARecord(this, "ApiDnsAlias", {
       zone: hostedZone,
       recordName: apiDomainName + ".",
-      target: route53.RecordTarget.fromAlias(new targets.ApiGatewayDomain(apiGatewayDomain))
+      target: route53.RecordTarget.fromAlias(new r53targets.ApiGatewayDomain(apiGatewayDomain))
     });
     // ------------------------------------------------------------------------    
   }

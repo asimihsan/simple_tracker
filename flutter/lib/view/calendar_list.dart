@@ -14,39 +14,63 @@
 //  limitations under the License.
 // ============================================================================
 
+import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_tracker/localizations.dart';
+import 'package:simple_tracker/state/calendar_list_model.dart';
 import 'package:simple_tracker/state/calendar_repository.dart';
+import 'dart:developer' as developer;
+
+import 'package:simple_tracker/state/user_model.dart';
 
 Widget getCalendarList(BuildContext context) {
   final AppLocalizations localizations =
       Localizations.of<AppLocalizations>(context, AppLocalizations);
-  final String title = localizations.calendarListTitle;
-
-  Widget child = MultiProvider(
-    providers: [
-      Provider(
-        create: (_) => new CalendarRepository("https://preprod-simple-tracker.ihsan.io/"),
-      )
-    ],
-    child: new CalendarList(),
-  );
-
   return Scaffold(
     appBar: AppBar(
-      title: Text(title),
+      title: Text(localizations.calendarListTitle),
     ),
     body: SafeArea(
-      child: child,
+      child: new CalendarList(),
       minimum: const EdgeInsets.symmetric(horizontal: 16.0),
     ),
   );
 }
 
-class CalendarList extends StatelessWidget {
+class CalendarList extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return new CalendarListState();
+  }
+}
+
+class CalendarListState extends State<CalendarList> with AfterLayoutMixin<CalendarList> {
+  @override
+  void afterFirstLayout(BuildContext context) {
+    developer.log("CalendarList afterFirstLayout");
+    refreshListCalendars(context);
+  }
+
+  void refreshListCalendars(BuildContext context) {
+    final CalendarRepository calendarRepository =
+        Provider.of<CalendarRepository>(context, listen: false);
+    final UserModel userModel = Provider.of<UserModel>(context, listen: false);
+    final CalendarListModel calendarListModel =
+        Provider.of<CalendarListModel>(context, listen: false);
+    calendarRepository.listCalendars(
+        userId: userModel.userId,
+        sessionId: userModel.sessionId,
+        calendarListModel: calendarListModel);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Text("Calendar list view");
+    return Consumer<CalendarListModel>(builder: (context, calendarList, child) {
+      if (calendarList.loading == true) {
+        return Text("Loading...");
+      }
+      return Text("Calendar list view");
+    });
   }
 }

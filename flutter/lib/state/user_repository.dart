@@ -16,6 +16,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
+import 'package:simple_tracker/exception/CouldNotDeserializeResponseException.dart';
 import 'package:simple_tracker/exception/InternalServerErrorException.dart';
 import 'package:simple_tracker/exception/UserMissingOrPasswordIncorrectException.dart';
 import 'package:simple_tracker/proto/user.pb.dart';
@@ -94,6 +95,7 @@ class UserRepository {
       developer.log("response proto", error: responseProto.toDebugString());
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
+      throw new CouldNotDeserializeResponseException();
     }
 
     if (response.statusCode == 200) {

@@ -7,16 +7,19 @@
 
 import 'dart:core' as $core;
 
+import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
-import 'google/protobuf/wrappers.pb.dart' as $0;
+import 'calendar.pbenum.dart';
+
+export 'calendar.pbenum.dart';
 
 class ListCalendarsRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo('ListCalendarsRequest', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
     ..aOS(1, 'userId')
     ..aOS(2, 'sessionId')
-    ..aOM<$0.Int32Value>(3, 'maxResults', subBuilder: $0.Int32Value.create)
-    ..aOM<$0.BytesValue>(4, 'nextToken', subBuilder: $0.BytesValue.create)
+    ..aInt64(3, 'maxResults')
+    ..aOM<ListCalendarsRequestNextTokenOpaque>(4, 'nextToken', subBuilder: ListCalendarsRequestNextTokenOpaque.create)
     ..hasRequiredFields = false
   ;
 
@@ -54,35 +57,74 @@ class ListCalendarsRequest extends $pb.GeneratedMessage {
   void clearSessionId() => clearField(2);
 
   @$pb.TagNumber(3)
-  $0.Int32Value get maxResults => $_getN(2);
+  $fixnum.Int64 get maxResults => $_getI64(2);
   @$pb.TagNumber(3)
-  set maxResults($0.Int32Value v) { setField(3, v); }
+  set maxResults($fixnum.Int64 v) { $_setInt64(2, v); }
   @$pb.TagNumber(3)
   $core.bool hasMaxResults() => $_has(2);
   @$pb.TagNumber(3)
   void clearMaxResults() => clearField(3);
-  @$pb.TagNumber(3)
-  $0.Int32Value ensureMaxResults() => $_ensure(2);
 
   @$pb.TagNumber(4)
-  $0.BytesValue get nextToken => $_getN(3);
+  ListCalendarsRequestNextTokenOpaque get nextToken => $_getN(3);
   @$pb.TagNumber(4)
-  set nextToken($0.BytesValue v) { setField(4, v); }
+  set nextToken(ListCalendarsRequestNextTokenOpaque v) { setField(4, v); }
   @$pb.TagNumber(4)
   $core.bool hasNextToken() => $_has(3);
   @$pb.TagNumber(4)
   void clearNextToken() => clearField(4);
   @$pb.TagNumber(4)
-  $0.BytesValue ensureNextToken() => $_ensure(3);
+  ListCalendarsRequestNextTokenOpaque ensureNextToken() => $_ensure(3);
+}
+
+class ListCalendarsRequestNextTokenOpaque extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('ListCalendarsRequestNextTokenOpaque', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
+    ..a<$core.List<$core.int>>(1, 'opaqueNextToken', $pb.PbFieldType.OY, protoName: 'opaqueNextToken')
+    ..aOS(2, 'encryptionKeyUsed', protoName: 'encryptionKeyUsed')
+    ..hasRequiredFields = false
+  ;
+
+  ListCalendarsRequestNextTokenOpaque._() : super();
+  factory ListCalendarsRequestNextTokenOpaque() => create();
+  factory ListCalendarsRequestNextTokenOpaque.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ListCalendarsRequestNextTokenOpaque.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  ListCalendarsRequestNextTokenOpaque clone() => ListCalendarsRequestNextTokenOpaque()..mergeFromMessage(this);
+  ListCalendarsRequestNextTokenOpaque copyWith(void Function(ListCalendarsRequestNextTokenOpaque) updates) => super.copyWith((message) => updates(message as ListCalendarsRequestNextTokenOpaque));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ListCalendarsRequestNextTokenOpaque create() => ListCalendarsRequestNextTokenOpaque._();
+  ListCalendarsRequestNextTokenOpaque createEmptyInstance() => create();
+  static $pb.PbList<ListCalendarsRequestNextTokenOpaque> createRepeated() => $pb.PbList<ListCalendarsRequestNextTokenOpaque>();
+  @$core.pragma('dart2js:noInline')
+  static ListCalendarsRequestNextTokenOpaque getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListCalendarsRequestNextTokenOpaque>(create);
+  static ListCalendarsRequestNextTokenOpaque _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<$core.int> get opaqueNextToken => $_getN(0);
+  @$pb.TagNumber(1)
+  set opaqueNextToken($core.List<$core.int> v) { $_setBytes(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasOpaqueNextToken() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOpaqueNextToken() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get encryptionKeyUsed => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set encryptionKeyUsed($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasEncryptionKeyUsed() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearEncryptionKeyUsed() => clearField(2);
 }
 
 class ListCalendarsRequestNextToken extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo('ListCalendarsRequestNextToken', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
-    ..a<$core.int>(1, 'version', $pb.PbFieldType.O3)
+    ..aInt64(1, 'version')
     ..aOS(2, 'userId')
     ..aOS(3, 'sessionId')
-    ..aOM<$0.StringValue>(4, 'nextTokenInner', subBuilder: $0.StringValue.create)
-    ..a<$core.int>(5, 'expiryEpochSeconds', $pb.PbFieldType.O3, protoName: 'expiryEpochSeconds')
+    ..m<$core.String, $core.String>(4, 'dynamodbNextToken', entryClassName: 'ListCalendarsRequestNextToken.DynamodbNextTokenEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OS, packageName: const $pb.PackageName('simpletracker'))
+    ..aInt64(5, 'expiryEpochSeconds')
     ..hasRequiredFields = false
   ;
 
@@ -102,9 +144,9 @@ class ListCalendarsRequestNextToken extends $pb.GeneratedMessage {
   static ListCalendarsRequestNextToken _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.int get version => $_getIZ(0);
+  $fixnum.Int64 get version => $_getI64(0);
   @$pb.TagNumber(1)
-  set version($core.int v) { $_setSignedInt32(0, v); }
+  set version($fixnum.Int64 v) { $_setInt64(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasVersion() => $_has(0);
   @$pb.TagNumber(1)
@@ -129,20 +171,12 @@ class ListCalendarsRequestNextToken extends $pb.GeneratedMessage {
   void clearSessionId() => clearField(3);
 
   @$pb.TagNumber(4)
-  $0.StringValue get nextTokenInner => $_getN(3);
-  @$pb.TagNumber(4)
-  set nextTokenInner($0.StringValue v) { setField(4, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasNextTokenInner() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearNextTokenInner() => clearField(4);
-  @$pb.TagNumber(4)
-  $0.StringValue ensureNextTokenInner() => $_ensure(3);
+  $core.Map<$core.String, $core.String> get dynamodbNextToken => $_getMap(3);
 
   @$pb.TagNumber(5)
-  $core.int get expiryEpochSeconds => $_getIZ(4);
+  $fixnum.Int64 get expiryEpochSeconds => $_getI64(4);
   @$pb.TagNumber(5)
-  set expiryEpochSeconds($core.int v) { $_setSignedInt32(4, v); }
+  set expiryEpochSeconds($fixnum.Int64 v) { $_setInt64(4, v); }
   @$pb.TagNumber(5)
   $core.bool hasExpiryEpochSeconds() => $_has(4);
   @$pb.TagNumber(5)
@@ -152,8 +186,9 @@ class ListCalendarsRequestNextToken extends $pb.GeneratedMessage {
 class ListCalendarsResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo('ListCalendarsResponse', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
     ..aOB(1, 'success')
-    ..pc<CalendarSummary>(2, 'calendarSummaries', $pb.PbFieldType.PM, protoName: 'calendarSummaries', subBuilder: CalendarSummary.create)
-    ..aOM<$0.BytesValue>(3, 'nextToken', subBuilder: $0.BytesValue.create)
+    ..e<ListCalendarsErrorReason>(2, 'errorReason', $pb.PbFieldType.OE, defaultOrMaker: ListCalendarsErrorReason.LIST_CALENDARS_ERROR_REASON_NO_ERROR, valueOf: ListCalendarsErrorReason.valueOf, enumValues: ListCalendarsErrorReason.values)
+    ..pc<CalendarSummary>(3, 'calendarSummaries', $pb.PbFieldType.PM, protoName: 'calendarSummaries', subBuilder: CalendarSummary.create)
+    ..aOM<ListCalendarsRequestNextTokenOpaque>(4, 'nextToken', subBuilder: ListCalendarsRequestNextTokenOpaque.create)
     ..hasRequiredFields = false
   ;
 
@@ -182,27 +217,37 @@ class ListCalendarsResponse extends $pb.GeneratedMessage {
   void clearSuccess() => clearField(1);
 
   @$pb.TagNumber(2)
-  $core.List<CalendarSummary> get calendarSummaries => $_getList(1);
+  ListCalendarsErrorReason get errorReason => $_getN(1);
+  @$pb.TagNumber(2)
+  set errorReason(ListCalendarsErrorReason v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorReason() => clearField(2);
 
   @$pb.TagNumber(3)
-  $0.BytesValue get nextToken => $_getN(2);
-  @$pb.TagNumber(3)
-  set nextToken($0.BytesValue v) { setField(3, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasNextToken() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearNextToken() => clearField(3);
-  @$pb.TagNumber(3)
-  $0.BytesValue ensureNextToken() => $_ensure(2);
+  $core.List<CalendarSummary> get calendarSummaries => $_getList(2);
+
+  @$pb.TagNumber(4)
+  ListCalendarsRequestNextTokenOpaque get nextToken => $_getN(3);
+  @$pb.TagNumber(4)
+  set nextToken(ListCalendarsRequestNextTokenOpaque v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasNextToken() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearNextToken() => clearField(4);
+  @$pb.TagNumber(4)
+  ListCalendarsRequestNextTokenOpaque ensureNextToken() => $_ensure(3);
 }
 
 class CalendarSummary extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo('CalendarSummary', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
-    ..a<$core.int>(1, 'formatVersion', $pb.PbFieldType.O3, protoName: 'formatVersion')
-    ..aOS(2, 'id')
-    ..aOS(3, 'name')
-    ..aOS(4, 'color')
-    ..a<$core.int>(5, 'version', $pb.PbFieldType.O3)
+    ..aInt64(1, 'formatVersion', protoName: 'formatVersion')
+    ..aOS(2, 'ownerUserid', protoName: 'ownerUserid')
+    ..aOS(3, 'id')
+    ..aOS(4, 'name')
+    ..aOS(5, 'color')
+    ..aInt64(6, 'version')
     ..hasRequiredFields = false
   ;
 
@@ -222,49 +267,58 @@ class CalendarSummary extends $pb.GeneratedMessage {
   static CalendarSummary _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.int get formatVersion => $_getIZ(0);
+  $fixnum.Int64 get formatVersion => $_getI64(0);
   @$pb.TagNumber(1)
-  set formatVersion($core.int v) { $_setSignedInt32(0, v); }
+  set formatVersion($fixnum.Int64 v) { $_setInt64(0, v); }
   @$pb.TagNumber(1)
   $core.bool hasFormatVersion() => $_has(0);
   @$pb.TagNumber(1)
   void clearFormatVersion() => clearField(1);
 
   @$pb.TagNumber(2)
-  $core.String get id => $_getSZ(1);
+  $core.String get ownerUserid => $_getSZ(1);
   @$pb.TagNumber(2)
-  set id($core.String v) { $_setString(1, v); }
+  set ownerUserid($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
-  $core.bool hasId() => $_has(1);
+  $core.bool hasOwnerUserid() => $_has(1);
   @$pb.TagNumber(2)
-  void clearId() => clearField(2);
+  void clearOwnerUserid() => clearField(2);
 
   @$pb.TagNumber(3)
-  $core.String get name => $_getSZ(2);
+  $core.String get id => $_getSZ(2);
   @$pb.TagNumber(3)
-  set name($core.String v) { $_setString(2, v); }
+  set id($core.String v) { $_setString(2, v); }
   @$pb.TagNumber(3)
-  $core.bool hasName() => $_has(2);
+  $core.bool hasId() => $_has(2);
   @$pb.TagNumber(3)
-  void clearName() => clearField(3);
+  void clearId() => clearField(3);
 
   @$pb.TagNumber(4)
-  $core.String get color => $_getSZ(3);
+  $core.String get name => $_getSZ(3);
   @$pb.TagNumber(4)
-  set color($core.String v) { $_setString(3, v); }
+  set name($core.String v) { $_setString(3, v); }
   @$pb.TagNumber(4)
-  $core.bool hasColor() => $_has(3);
+  $core.bool hasName() => $_has(3);
   @$pb.TagNumber(4)
-  void clearColor() => clearField(4);
+  void clearName() => clearField(4);
 
   @$pb.TagNumber(5)
-  $core.int get version => $_getIZ(4);
+  $core.String get color => $_getSZ(4);
   @$pb.TagNumber(5)
-  set version($core.int v) { $_setSignedInt32(4, v); }
+  set color($core.String v) { $_setString(4, v); }
   @$pb.TagNumber(5)
-  $core.bool hasVersion() => $_has(4);
+  $core.bool hasColor() => $_has(4);
   @$pb.TagNumber(5)
-  void clearVersion() => clearField(5);
+  void clearColor() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get version => $_getI64(5);
+  @$pb.TagNumber(6)
+  set version($fixnum.Int64 v) { $_setInt64(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasVersion() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearVersion() => clearField(6);
 }
 
 class CalendarDetail extends $pb.GeneratedMessage {

@@ -18,6 +18,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_tracker/localizations.dart';
+import 'package:simple_tracker/state/calendar_list_model.dart';
+import 'package:simple_tracker/state/calendar_repository.dart';
 import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/view/user_login.dart';
 
@@ -34,6 +36,12 @@ class MyApp extends StatelessWidget {
         providers: [
           Provider(
             create: (_) => new UserModel.notLoggedIn(),
+          ),
+          ListenableProvider(
+            create: (_) => new CalendarListModel(),
+          ),
+          Provider(
+            create: (_) => new CalendarRepository("https://preprod-simple-tracker.ihsan.io/"),
           )
         ],
         child: MaterialApp(

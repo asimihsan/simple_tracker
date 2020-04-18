@@ -24,37 +24,47 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-lambda-go/lambdacontext"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/aws/aws-xray-sdk-go/strategy/ctxmissing"
 	"github.com/aws/aws-xray-sdk-go/xray"
 	"github.com/golang/protobuf/proto"
+	"github.com/patrickmn/go-cache"
 
 	simpletracker "lambda/proto"
 )
 
 var (
-	sess                        *session.Session
-	dynamoDbClient              *dynamodb.DynamoDB
-	userTableName               string
-	sessionTableName            string
-	calendarTableName           string
-	paginationTokenTableName    string
-	ErrFailedToBase64DecodeBody = errors.New("failed to base-64 decode body")
+	sess                            *session.Session
+	dynamoDbClient                  *dynamodb.DynamoDB
+	kmsClient                       *kms.KMS
+	userTableName                   string
+	sessionTableName                string
+	calendarTableName               string
+	paginationKeyArn                string
+	paginationEphemeralKeyTableName string
+	paginationKeyCache 				*cache.Cache
+	ErrFailedToBase64DecodeBody     = errors.New("failed to base-64 decode body")
 )
 
 func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (apiGatewayResponse events.APIGatewayProxyResponse, err error) {
 	_ = xray.Capture(ctx, "LambdaHandleRequest", func(ctx1 context.Context) (err error) {
 		recordRequestIds(ctx1, request)
+
 		switch request.Path {
 		case "/create_user":
 			apiGatewayResponse, err = handleCreateUserRequest(ctx1, request)
 		case "/login_user":
 			apiGatewayResponse, err = handleLoginUserRequest(ctx1, request)
+		case "/list_calendars":
+			apiGatewayResponse, err = handleListCalendarsRequest(ctx1, request)
 		default:
 			apiGatewayResponse = events.APIGatewayProxyResponse{Body: "Unknown API endpoint", StatusCode: 200}
 		}
@@ -221,6 +231,55 @@ func handleCreateUserRequest(ctx context.Context, request events.APIGatewayProxy
 	}, nil
 }
 
+func handleListCalendarsRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	requestBody, err := getRequestBody(request)
+	if err != nil {
+		fmt.Println("handleListCalendarsRequest failed to get body")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "failed to get body", StatusCode: 400}, nil
+	}
+
+	listCalendarsRequest := &simpletracker.ListCalendarsRequest{}
+	if err := proto.Unmarshal([]byte(requestBody), listCalendarsRequest); err != nil {
+		fmt.Println("handleListCalendarsRequest failed to parse list calendars request proto")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "failed to parse list calendars request proto", StatusCode: 400}, nil
+	}
+
+	responseHeaders := make(map[string]string)
+	responseHeaders["Content-Type"] = "application/protobuf"
+
+	listCalendarsResp, err := handleListCalendarsRequestInner(
+		listCalendarsRequest,
+		dynamoDbClient,
+		kmsClient,
+		calendarTableName,
+		paginationKeyCache,
+		paginationEphemeralKeyTableName,
+		ctx)
+	if err != nil {
+		fmt.Println("ListCalendars handling failed.")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "ListCalendars handling failed.", StatusCode: 400}, nil
+	}
+	resp, err := proto.Marshal(listCalendarsResp)
+	if err != nil {
+		fmt.Println("Failed to serialize create user response")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "Failed to serialize create user response", StatusCode: 500}, nil
+	}
+	return events.APIGatewayProxyResponse{
+		Body:            base64.StdEncoding.EncodeToString(resp),
+		Headers:         responseHeaders,
+		StatusCode:      200,
+		IsBase64Encoded: true,
+	}, nil
+}
+
 func initialize() {
 	_ = xray.Configure(xray.Config{
 		LogLevel:               "trace",
@@ -228,12 +287,17 @@ func initialize() {
 	})
 	sess = session.Must(session.NewSession())
 	dynamoDbClient = dynamodb.New(sess)
+	kmsClient = kms.New(sess, aws.NewConfig())
 	xray.AWS(dynamoDbClient.Client)
+	xray.AWS(kmsClient.Client)
 
 	userTableName = os.Getenv("USER_TABLE_NAME")
 	sessionTableName = os.Getenv("SESSION_TABLE_NAME")
 	calendarTableName = os.Getenv("CALENDAR_TABLE_NAME")
-	paginationTokenTableName = os.Getenv("PAGINATION_TOKEN_TABLE_NAME")
+	paginationKeyArn = os.Getenv("PAGINATION_KEY_ARN")
+	paginationEphemeralKeyTableName = os.Getenv("PAGINATION_EPHEMERAL_KEY_TABLE_NAME")
+
+	paginationKeyCache = cache.New(5 * time.Minute, 10 * time.Minute)
 }
 
 func main() {

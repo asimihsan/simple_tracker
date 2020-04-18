@@ -22,6 +22,7 @@ import 'package:provider/provider.dart';
 import 'package:simple_tracker/exception/InternalServerErrorException.dart';
 import 'package:simple_tracker/exception/UserMissingOrPasswordIncorrectException.dart';
 import 'package:simple_tracker/localizations.dart';
+import 'package:simple_tracker/state/calendar_list_model.dart';
 import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/state/user_repository.dart';
 import 'package:simple_tracker/view/calendar_list.dart';

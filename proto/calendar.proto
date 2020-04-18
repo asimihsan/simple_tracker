@@ -1,25 +1,27 @@
 syntax = "proto3";
 
-import "google/protobuf/wrappers.proto";
-
 package simpletracker;
 
 message ListCalendarsRequest {
     string user_id = 1;
     string session_id = 2;
 
-    // Maximum number of calendar summaries per response page.
-    google.protobuf.Int32Value max_results = 3;
+    // Maximum number of calendar summaries per response page. If 0 or smaller then server will enforce an arbitrary
+    // default value.
+    int64 max_results = 3;
 
-    // This is a serialized version of ListCalendarsRequestNextToken. This token must be
-    // opaque to clients and not deserializable to a ListCalendarsRequestNextToken. Servers
-    // will probably encrypt ListCalendarsRequestNextToken. Clients must simply pass in a
-    // received next_token into here.
-    google.protobuf.BytesValue next_token = 4;
+    // This is a pagination token for the ListCalendars API. This is opaque to clients and clients cannot deserialize it
+    // to ListCalendarsRequestNextToken. If clients want to resume pagination they should re-use this.
+    ListCalendarsRequestNextTokenOpaque next_token = 4;
+}
+
+message ListCalendarsRequestNextTokenOpaque {
+    bytes opaqueNextToken = 1;
+    string encryptionKeyUsed = 2;
 }
 
 message ListCalendarsRequestNextToken {
-    int32 version = 1;
+    int64 version = 1;
 
     // The user ID inside the token must not be used for authorization purposes. Rather you first
     // authorize the request parameters, and then compare to the inner user_id.
@@ -29,29 +31,37 @@ message ListCalendarsRequestNextToken {
     // authorize the request parameters, and then compare to the inner session_id.
     string session_id = 3;
 
-    // Thiis is what a server wants to use for some other service call as a pagination token.
-    google.protobuf.StringValue next_token_inner = 4;
+    // This is how we'll resume the DynamoDB query, using the last evaluated sort key, i.e. calendar ID. It may be
+    // absent (empty map), meaning there are no more pages.
+    map<string, string> dynamodb_next_token = 4;
 
     // Pagination tokens can expire to prevent indefinite re-use.
-    int32 expiryEpochSeconds = 5;
+    int64 expiry_epoch_seconds = 5;
 }
 
 message ListCalendarsResponse {
     bool success = 1;
-    repeated CalendarSummary calendarSummaries = 2;
-    google.protobuf.BytesValue next_token = 3;
+    ListCalendarsErrorReason error_reason = 2;
+    repeated CalendarSummary calendarSummaries = 3;
+    ListCalendarsRequestNextTokenOpaque next_token = 4;
+}
+
+enum ListCalendarsErrorReason {
+    LIST_CALENDARS_ERROR_REASON_NO_ERROR = 0;
+    LIST_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR = 1;
 }
 
 message CalendarSummary {
     // Format version field (not an OCC field).
-    int32 formatVersion = 1;
+    int64 formatVersion = 1;
 
-    string id = 2;
-    string name = 3;
-    string color = 4;
+    string ownerUserid = 2;
+    string id = 3;
+    string name = 4;
+    string color = 5;
 
     // OCC version field.
-    int32 version = 5;
+    int64 version = 6;
 }
 
 message CalendarDetail {

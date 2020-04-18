@@ -15,13 +15,74 @@
 // ============================================================================
 
 import 'package:meta/meta.dart';
+import 'package:simple_tracker/exception/CouldNotDeserializeResponseException.dart';
+import 'package:simple_tracker/exception/InternalServerErrorException.dart';
+import 'package:simple_tracker/proto/calendar.pb.dart';
+import 'package:simple_tracker/state/calendar_list_model.dart';
 import 'package:simple_tracker/state/calendar_model.dart';
+import 'package:simple_tracker/state/calendar_summary_model.dart';
 import 'package:simple_tracker/state/user_model.dart';
+import 'package:http/http.dart' as http;
+import 'dart:developer' as developer;
 
 class CalendarRepository {
   final String baseUrl;
 
   CalendarRepository(this.baseUrl);
+
+  Future<List<CalendarSummaryModel>> listCalendars(
+      {@required String userId,
+      @required String sessionId,
+      @required CalendarListModel calendarListModel}) async {
+    calendarListModel.loading = true;
+
+    var requestProto = ListCalendarsRequest();
+    requestProto.userId = userId;
+    requestProto.sessionId = sessionId;
+    var listCalendarsRequestSerialized = requestProto.writeToBuffer();
+
+    var url = baseUrl + "list_calendars";
+    Map<String, String> headers = {
+      "Accept": "application/protobuf",
+      "Content-Type": "application/protobuf",
+    };
+    var response = await http.post(url, headers: headers, body: listCalendarsRequestSerialized);
+
+    if (response.headers.containsKey("x-amzn-trace-id")) {
+      developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
+    }
+    if (response.headers.containsKey("x-amzn-requestid")) {
+      developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
+    }
+
+    if (response.statusCode != 200) {
+      calendarListModel.loading = false;
+      throw new InternalServerErrorException();
+    }
+
+    ListCalendarsResponse responseProto;
+    try {
+      responseProto = ListCalendarsResponse.fromBuffer(response.bodyBytes);
+    } catch (e) {
+      developer.log("could not deserialize response as proto", error: e);
+      calendarListModel.loading = false;
+      throw new CouldNotDeserializeResponseException();
+    }
+    developer.log("ListCalendarsResponse", error: responseProto);
+
+    List<CalendarSummaryModel> result =
+        responseProto.calendarSummaries.map((externalCalendarSummary) {
+      return new CalendarSummaryModel(
+          externalCalendarSummary.formatVersion.toInt(),
+          externalCalendarSummary.id,
+          externalCalendarSummary.name,
+          externalCalendarSummary.color,
+          externalCalendarSummary.version.toInt());
+    }).toList(growable: false);
+    calendarListModel.setCalendarSummaries(result);
+    calendarListModel.loading = false;
+    return result;
+  }
 
   Future<CalendarModel> getCalendar({@required String userId, @required String calendarId}) async {
     // TODO this would actually call a server, here just pretend data.
