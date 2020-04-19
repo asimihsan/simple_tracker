@@ -28,7 +28,7 @@ type EphemeralKey struct {
 	DateTime_Shard     string
 	EncryptedDataKey   []byte
 	KeyArn             string
-	EpochExpirySeconds int64
+	ExpiryEpochSeconds int64
 }
 
 type handler struct {
@@ -109,7 +109,7 @@ func process(currentPartitionKey string, expiryEpochSecs int64, ctx context.Cont
 		DateTime_Shard:     currentPartitionKey,
 		EncryptedDataKey:   keyResp.CiphertextBlob,
 		KeyArn:             paginationKeyArn,
-		EpochExpirySeconds: expiryEpochSecs,
+		ExpiryEpochSeconds: expiryEpochSecs,
 	}
 	av, err := dynamodbattribute.MarshalMap(ephemeralKey)
 	if err != nil {
