@@ -23,6 +23,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -33,18 +34,22 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/aws/aws-xray-sdk-go/xray"
+	"github.com/oklog/ulid"
 	"github.com/patrickmn/go-cache"
-	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
+	"github.com/valyala/gozstd"
 
 	simpletracker "lambda/proto"
 )
 
 var (
-	ErrNoPaginationKeyFoundInDdb = errors.New("no pagination key found in DynamoDB")
-	ErrPaginationKeyIsNotCorrectSize = errors.New("pagination key is not 32 bytes large")
-	maxResultsLimit int64 = 100
+	ErrNoPaginationKeyFoundInDdb           = errors.New("no pagination key found in DynamoDB")
+	ErrPaginationKeyIsNotCorrectSize       = errors.New("pagination key is not 32 bytes large")
+	maxResultsLimit                  int64 = 100
+	ulidEntropy                            = ulid.Monotonic(rand.Reader, 0)
 )
 
 type CalendarSummary struct {
@@ -57,8 +62,13 @@ type CalendarSummary struct {
 }
 
 type CalendarDetail struct {
-	summary         CalendarSummary
-	highlightedDays []string
+	FormatVersion   int64
+	OwnerUserId     string
+	Id              string
+	Name            string
+	Color           string
+	Version         int64
+	HighlightedDays []byte
 }
 
 func getPaginationKeyId() string {
@@ -215,16 +225,30 @@ func convertDynamoDbItemToCalendarSummary(item map[string]*dynamodb.AttributeVal
 	}, nil
 }
 
-
 func handleListCalendarsRequestInner(
 	request *simpletracker.ListCalendarsRequest,
 	dynamoDbClient *dynamodb.DynamoDB,
 	kmsClient *kms.KMS,
+	sessionTableName string,
 	calendarTableName string,
 	paginationKeyCache *cache.Cache,
 	paginationEphemeralKeyTableName string,
 	ctx context.Context,
 ) (*simpletracker.ListCalendarsResponse, error) {
+
+	resp := &simpletracker.ListCalendarsResponse{
+		Success:           false,
+		CalendarSummaries: make([]*simpletracker.CalendarSummary, 0, 1),
+		NextToken:         nil,
+	}
+
+	if _, err := VerifySession(request.UserId, request.SessionId, dynamoDbClient, sessionTableName, ctx); err != nil {
+		fmt.Println("Could not verify session.")
+		resp.Success = false
+		resp.ErrorReason = simpletracker.ListCalendarsErrorReason_LIST_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR
+		return resp, nil
+	}
+
 	var limit int64
 	if request.MaxResults > maxResultsLimit || request.MaxResults <= 0 {
 		limit = maxResultsLimit
@@ -244,12 +268,6 @@ func handleListCalendarsRequestInner(
 		log.Printf("ListCalendars next token present")
 	}
 
-	resp := &simpletracker.ListCalendarsResponse{
-		Success:              false,
-		CalendarSummaries:    make([]*simpletracker.CalendarSummary, 0, 1),
-		NextToken:            nil,
-	}
-
 	result, err := ListCalendars(
 		request.UserId,
 		limit,
@@ -263,14 +281,14 @@ func handleListCalendarsRequestInner(
 	}
 
 	resp.Success = true
-	for _, internalCalendarSummary := range(result) {
+	for _, internalCalendarSummary := range result {
 		externalCalendarSummary := &simpletracker.CalendarSummary{
-			FormatVersion:        internalCalendarSummary.FormatVersion,
-			OwnerUserid:          internalCalendarSummary.OwnerUserId,
-			Id:                   internalCalendarSummary.Id,
-			Name:                 internalCalendarSummary.Name,
-			Color:                internalCalendarSummary.Color,
-			Version:              internalCalendarSummary.Version,
+			FormatVersion: internalCalendarSummary.FormatVersion,
+			OwnerUserid:   internalCalendarSummary.OwnerUserId,
+			Id:            internalCalendarSummary.Id,
+			Name:          internalCalendarSummary.Name,
+			Color:         internalCalendarSummary.Color,
+			Version:       internalCalendarSummary.Version,
 		}
 		resp.CalendarSummaries = append(resp.CalendarSummaries, externalCalendarSummary)
 	}
@@ -325,7 +343,7 @@ func ListCalendars(
 		return nil, err
 	}
 
-	result := make([]*CalendarSummary, len(queryResp.Items))
+	result := make([]*CalendarSummary, 0, len(queryResp.Items))
 	for _, item := range queryResp.Items {
 		converted, err := convertDynamoDbItemToCalendarSummary(item)
 		if err != nil {
@@ -334,4 +352,132 @@ func ListCalendars(
 		result = append(result, converted)
 	}
 	return result, nil
+}
+
+func handleCreateCalendarRequestInner(
+	request *simpletracker.CreateCalendarRequest,
+	dynamoDbClient *dynamodb.DynamoDB,
+	calendarTableName string,
+	ctx context.Context,
+) (*simpletracker.CreateCalendarResponse, error) {
+
+	resp := &simpletracker.CreateCalendarResponse{}
+
+	if _, err := VerifySession(request.UserId, request.SessionId, dynamoDbClient, sessionTableName, ctx); err != nil {
+		fmt.Println("Could not verify session.")
+		resp.Success = false
+		resp.ErrorReason = simpletracker.CreateCalendarErrorReason_CREATE_CALENDAR_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR
+		return resp, nil
+	}
+
+	result, err := CreateCalendar(
+		request.UserId,
+		request.Name,
+		request.Color,
+		dynamoDbClient,
+		calendarTableName,
+		ctx,
+	)
+	if err != nil {
+		return resp, err
+	}
+
+	highlightedDays, err := highlightedDaysDeserialize(result.HighlightedDays)
+	if err != nil {
+		fmt.Println("handleCreateCalendarRequestInner could not deserialize highlightedDays")
+		resp.Success = false
+		resp.ErrorReason = simpletracker.CreateCalendarErrorReason_CREATE_CALENDAR_ERROR_REASON_INTERNAL_SERVER_ERROR
+		return resp, nil
+	}
+	resp.Success = true
+	resp.ErrorReason = simpletracker.CreateCalendarErrorReason_CREATE_CALENDAR_ERROR_REASON_NO_ERROR
+	resp.CalendarDetail = &simpletracker.CalendarDetail{
+		Summary:              &simpletracker.CalendarSummary{
+			FormatVersion:        result.FormatVersion,
+			OwnerUserid:          result.OwnerUserId,
+			Id:                   result.Id,
+			Name:                 result.Name,
+			Color:                result.Color,
+			Version:              result.Version,
+		},
+		HighlightedDays:      highlightedDays,
+	}
+	return resp, nil
+}
+
+func highlightedDaysSerialize(input []string) (output []byte, err error) {
+	serializedBytes, err := json.Marshal(input)
+	if err != nil {
+		fmt.Println("Failed to serialize highlightedDays")
+		return
+	}
+	output = gozstd.CompressLevel(nil, serializedBytes, 19)
+	return
+}
+
+func highlightedDaysDeserialize(input []byte) (output []string, err error) {
+	decompressedBytes, err := gozstd.Decompress(nil, input)
+	if err != nil {
+		fmt.Println("Failed to decompress highlightedDays")
+		return
+	}
+
+	var deserialized []string
+	err = json.Unmarshal(decompressedBytes, &deserialized)
+	if err != nil {
+		fmt.Println("Failed to deserialize highlightedDays")
+	}
+
+	return deserialized, nil
+}
+
+func CreateCalendar(
+	userId string,
+	name string,
+	color string,
+	dynamoDbClient *dynamodb.DynamoDB,
+	calendarTableName string,
+	ctx context.Context,
+) (*CalendarDetail, error) {
+
+	newCalendarId := ulid.MustNew(ulid.Now(), ulidEntropy).String()
+	highlightedDays := make([]string, 0, 1)
+	highlightedDaysSerialized, err := highlightedDaysSerialize(highlightedDays)
+	if err != nil {
+		fmt.Println("CreateCalendar failed to serialize empty highlightedDays")
+		_ = xray.AddError(ctx, err)
+		return nil, err
+	}
+
+	newCalendar := &CalendarDetail{
+		FormatVersion:   1,
+		OwnerUserId:     userId,
+		Id:              newCalendarId,
+		Name:            name,
+		Color:           color,
+		HighlightedDays: highlightedDaysSerialized,
+		Version:         0,
+	}
+	av, err := dynamodbattribute.MarshalMap(newCalendar)
+	if err != nil {
+		fmt.Println("CreateSession failed to marshal new calendar")
+		fmt.Println(err.Error())
+		_ = xray.AddError(ctx, err)
+		return nil, err
+	}
+
+	if err := xray.Capture(ctx, "CreateCalendar_PutItem", func(ctx1 context.Context) (err error) {
+		input := &dynamodb.PutItemInput{
+			Item:      av,
+			TableName: aws.String(calendarTableName),
+		}
+		_, err = dynamoDbClient.PutItemWithContext(ctx1, input)
+		return err
+	}); err != nil {
+		fmt.Println("CreateCalendar failed to PutItem to DynamoDB")
+		fmt.Println(err.Error())
+		return nil, err
+	}
+
+	return newCalendar, nil
 }

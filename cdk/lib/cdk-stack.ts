@@ -98,10 +98,11 @@ export class CdkStack extends cdk.Stack {
       'dynamodb:PutItem',
     )
     calendarTable.grant(lambdaFunction,
+      'dynamodb:DeleteItem',
       'dynamodb:GetItem',
+      'dynamodb:PutItem',
       'dynamodb:Query',
       'dynamodb:UpdateItem',
-      'dynamodb:DeleteItem',
     )
     paginationEphemeralKeyTable.grant(lambdaFunction,
       'dynamodb:GetItem',

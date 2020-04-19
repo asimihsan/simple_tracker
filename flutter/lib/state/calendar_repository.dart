@@ -14,6 +14,7 @@
 //  limitations under the License.
 // ============================================================================
 
+import 'package:color/color.dart';
 import 'package:meta/meta.dart';
 import 'package:simple_tracker/exception/CouldNotDeserializeResponseException.dart';
 import 'package:simple_tracker/exception/InternalServerErrorException.dart';
@@ -29,6 +30,46 @@ class CalendarRepository {
   final String baseUrl;
 
   CalendarRepository(this.baseUrl);
+
+  Future<void> createCalendar(
+      {@required String userId,
+      @required String sessionId,
+      @required String name,
+      @required String color}) async {
+    var requestProto = CreateCalendarRequest();
+    requestProto.userId = userId;
+    requestProto.sessionId = sessionId;
+    requestProto.name = name;
+    requestProto.color = color;
+    var createCalendarRequestSerialized = requestProto.writeToBuffer();
+
+    var url = baseUrl + "create_calendar";
+    Map<String, String> headers = {
+      "Accept": "application/protobuf",
+      "Content-Type": "application/protobuf",
+    };
+    var response = await http.post(url, headers: headers, body: createCalendarRequestSerialized);
+    if (response.headers.containsKey("x-amzn-trace-id")) {
+      developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
+    }
+    if (response.headers.containsKey("x-amzn-requestid")) {
+      developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
+    }
+
+    if (response.statusCode != 200) {
+      throw new InternalServerErrorException();
+    }
+
+    CreateCalendarResponse responseProto;
+    try {
+      responseProto = CreateCalendarResponse.fromBuffer(response.bodyBytes);
+    } catch (e) {
+      developer.log("could not deserialize response as proto", error: e);
+      throw new CouldNotDeserializeResponseException();
+    }
+    developer.log("CreateCalendarResponse", error: responseProto);
+    return;
+  }
 
   Future<List<CalendarSummaryModel>> listCalendars(
       {@required String userId,

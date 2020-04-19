@@ -10,6 +10,16 @@ const ListCalendarsErrorReason$json = const {
   '2': const [
     const {'1': 'LIST_CALENDARS_ERROR_REASON_NO_ERROR', '2': 0},
     const {'1': 'LIST_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR', '2': 1},
+    const {'1': 'LIST_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR', '2': 2},
+  ],
+};
+
+const CreateCalendarErrorReason$json = const {
+  '1': 'CreateCalendarErrorReason',
+  '2': const [
+    const {'1': 'CREATE_CALENDAR_ERROR_REASON_NO_ERROR', '2': 0},
+    const {'1': 'CREATE_CALENDAR_ERROR_REASON_INTERNAL_SERVER_ERROR', '2': 1},
+    const {'1': 'CREATE_CALENDAR_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR', '2': 2},
   ],
 };
 
@@ -79,6 +89,25 @@ const CalendarDetail$json = const {
   '2': const [
     const {'1': 'summary', '3': 1, '4': 1, '5': 11, '6': '.simpletracker.CalendarSummary', '10': 'summary'},
     const {'1': 'highlightedDays', '3': 2, '4': 3, '5': 9, '10': 'highlightedDays'},
+  ],
+};
+
+const CreateCalendarRequest$json = const {
+  '1': 'CreateCalendarRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'session_id', '3': 2, '4': 1, '5': 9, '10': 'sessionId'},
+    const {'1': 'name', '3': 3, '4': 1, '5': 9, '10': 'name'},
+    const {'1': 'color', '3': 4, '4': 1, '5': 9, '10': 'color'},
+  ],
+};
+
+const CreateCalendarResponse$json = const {
+  '1': 'CreateCalendarResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_reason', '3': 2, '4': 1, '5': 14, '6': '.simpletracker.CreateCalendarErrorReason', '10': 'errorReason'},
+    const {'1': 'calendarDetail', '3': 3, '4': 1, '5': 11, '6': '.simpletracker.CalendarDetail', '10': 'calendarDetail'},
   ],
 };
 

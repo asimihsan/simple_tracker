@@ -14,12 +14,16 @@
 //  limitations under the License.
 // ============================================================================
 
+import 'package:color/color.dart' as color3p;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
+import 'package:simple_tracker/exception/InternalServerErrorException.dart';
 import 'package:simple_tracker/localizations.dart';
 import 'package:simple_tracker/state/calendar_repository.dart';
+import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/view/calendar_list.dart';
 
 Widget getCreateCalendar(BuildContext context) {
@@ -117,9 +121,33 @@ class CreateCalendarFormState extends State<CreateCalendarForm> {
                   }
                   Scaffold.of(context).showSnackBar(
                       SnackBar(content: Text(localizations.createCalendarCreatingCalendar)));
+                  final userModel = Provider.of<UserModel>(context, listen: false);
 
-                  // Do something....when successful pop route....
-                  Navigator.maybePop(context);
+                  calendarRepository
+                      .createCalendar(
+                    userId: userModel.userId,
+                    sessionId: userModel.sessionId,
+                    name: _name.text,
+                    color:
+                        color3p.Color.rgb(currentColor.red, currentColor.green, currentColor.blue)
+                            .toHexColor()
+                            .toCssString(),
+                  )
+                      .then((_) {
+                    Scaffold.of(context).removeCurrentSnackBar();
+                    Navigator.maybePop(context);
+                  }).catchError((err) {
+                    Scaffold.of(context).removeCurrentSnackBar();
+                    if (err is InternalServerErrorException) {
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          backgroundColor: Colors.deepOrange,
+                          content: Text(localizations.internalServerErrorException)));
+                    } else {
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          backgroundColor: Colors.deepOrange,
+                          content: Text("Unknown error occurred!!")));
+                    }
+                  });
                 }),
           )
         ]));

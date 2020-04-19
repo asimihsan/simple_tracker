@@ -65,6 +65,8 @@ func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 			apiGatewayResponse, err = handleLoginUserRequest(ctx1, request)
 		case "/list_calendars":
 			apiGatewayResponse, err = handleListCalendarsRequest(ctx1, request)
+		case "/create_calendar":
+			apiGatewayResponse, err = handleCreateCalendarRequest(ctx1, request)
 		default:
 			apiGatewayResponse = events.APIGatewayProxyResponse{Body: "Unknown API endpoint", StatusCode: 200}
 		}
@@ -255,6 +257,7 @@ func handleListCalendarsRequest(ctx context.Context, request events.APIGatewayPr
 		listCalendarsRequest,
 		dynamoDbClient,
 		kmsClient,
+		sessionTableName,
 		calendarTableName,
 		paginationKeyCache,
 		paginationEphemeralKeyTableName,
@@ -271,6 +274,53 @@ func handleListCalendarsRequest(ctx context.Context, request events.APIGatewayPr
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "Failed to serialize create user response", StatusCode: 500}, nil
+	}
+	return events.APIGatewayProxyResponse{
+		Body:            base64.StdEncoding.EncodeToString(resp),
+		Headers:         responseHeaders,
+		StatusCode:      200,
+		IsBase64Encoded: true,
+	}, nil
+}
+
+func handleCreateCalendarRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	requestBody, err := getRequestBody(request)
+	if err != nil {
+		fmt.Println("handleCreateCalendarRequest failed to get body")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "failed to get body", StatusCode: 400}, nil
+	}
+
+	createCalendarRequest := &simpletracker.CreateCalendarRequest{}
+	if err := proto.Unmarshal([]byte(requestBody), createCalendarRequest); err != nil {
+		fmt.Println("handleCreateCalendarRequest failed to parse create calendar request request proto")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "failed to parse create calendar request proto", StatusCode: 400}, nil
+	}
+
+	responseHeaders := make(map[string]string)
+	responseHeaders["Content-Type"] = "application/protobuf"
+
+	createCalendarResp, err := handleCreateCalendarRequestInner(
+		createCalendarRequest,
+		dynamoDbClient,
+		calendarTableName,
+		ctx,
+	)
+	if err != nil {
+		fmt.Println("CreateCalendar handling failed.")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "CreateCalendar handling failed.", StatusCode: 400}, nil
+	}
+	resp, err := proto.Marshal(createCalendarResp)
+	if err != nil {
+		fmt.Println("Failed to serialize create calendar response")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "Failed to serialize create calendar response", StatusCode: 500}, nil
 	}
 	return events.APIGatewayProxyResponse{
 		Body:            base64.StdEncoding.EncodeToString(resp),

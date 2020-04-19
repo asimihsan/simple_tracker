@@ -105,11 +105,13 @@ func CreateSession(userId string,
 	return &session, nil
 }
 
-func VerifySession(userId string,
+func VerifySession(
+	userId string,
 	sessionId string,
 	client *dynamodb.DynamoDB,
 	sessionTableName string,
-	ctx context.Context) (*Session, error) {
+	ctx context.Context,
+) (*Session, error) {
 
 	var resp *dynamodb.GetItemOutput
 	if err := xray.Capture(ctx, "VerifySession_GetItem", func(ctx1 context.Context) (err error) {
@@ -153,7 +155,7 @@ func VerifySession(userId string,
 		return nil, ErrSessionNotFound
 	}
 
-	existingSessionId := *resp.Item["SessionId"].S
+	existingSessionId := *resp.Item["Id"].S
 	existingUserId := *resp.Item["UserId"].S
 	epochExpirySeconds, err := strconv.ParseInt(*resp.Item["EpochExpirySeconds"].N, 10, 64)
 	if err != nil {

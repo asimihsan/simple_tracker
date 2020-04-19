@@ -49,6 +49,7 @@ message ListCalendarsResponse {
 enum ListCalendarsErrorReason {
     LIST_CALENDARS_ERROR_REASON_NO_ERROR = 0;
     LIST_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR = 1;
+    LIST_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR = 2;
 }
 
 message CalendarSummary {
@@ -67,4 +68,23 @@ message CalendarSummary {
 message CalendarDetail {
     CalendarSummary summary = 1;
     repeated string highlightedDays = 2;
+}
+
+message CreateCalendarRequest {
+    string user_id = 1;
+    string session_id = 2;
+    string name = 3;
+    string color = 4;   
+}
+
+message CreateCalendarResponse {
+    bool success = 1;
+    CreateCalendarErrorReason error_reason = 2;
+    CalendarDetail calendarDetail = 3;
+}
+
+enum CreateCalendarErrorReason {
+    CREATE_CALENDAR_ERROR_REASON_NO_ERROR = 0;
+    CREATE_CALENDAR_ERROR_REASON_INTERNAL_SERVER_ERROR = 1;
+    CREATE_CALENDAR_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR = 2;
 }

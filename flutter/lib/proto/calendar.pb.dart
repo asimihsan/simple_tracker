@@ -358,3 +358,117 @@ class CalendarDetail extends $pb.GeneratedMessage {
   $core.List<$core.String> get highlightedDays => $_getList(1);
 }
 
+class CreateCalendarRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('CreateCalendarRequest', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
+    ..aOS(1, 'userId')
+    ..aOS(2, 'sessionId')
+    ..aOS(3, 'name')
+    ..aOS(4, 'color')
+    ..hasRequiredFields = false
+  ;
+
+  CreateCalendarRequest._() : super();
+  factory CreateCalendarRequest() => create();
+  factory CreateCalendarRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateCalendarRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  CreateCalendarRequest clone() => CreateCalendarRequest()..mergeFromMessage(this);
+  CreateCalendarRequest copyWith(void Function(CreateCalendarRequest) updates) => super.copyWith((message) => updates(message as CreateCalendarRequest));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CreateCalendarRequest create() => CreateCalendarRequest._();
+  CreateCalendarRequest createEmptyInstance() => create();
+  static $pb.PbList<CreateCalendarRequest> createRepeated() => $pb.PbList<CreateCalendarRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CreateCalendarRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateCalendarRequest>(create);
+  static CreateCalendarRequest _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get sessionId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set sessionId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSessionId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSessionId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get name => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set name($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearName() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get color => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set color($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasColor() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearColor() => clearField(4);
+}
+
+class CreateCalendarResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('CreateCalendarResponse', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
+    ..aOB(1, 'success')
+    ..e<CreateCalendarErrorReason>(2, 'errorReason', $pb.PbFieldType.OE, defaultOrMaker: CreateCalendarErrorReason.CREATE_CALENDAR_ERROR_REASON_NO_ERROR, valueOf: CreateCalendarErrorReason.valueOf, enumValues: CreateCalendarErrorReason.values)
+    ..aOM<CalendarDetail>(3, 'calendarDetail', protoName: 'calendarDetail', subBuilder: CalendarDetail.create)
+    ..hasRequiredFields = false
+  ;
+
+  CreateCalendarResponse._() : super();
+  factory CreateCalendarResponse() => create();
+  factory CreateCalendarResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateCalendarResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  CreateCalendarResponse clone() => CreateCalendarResponse()..mergeFromMessage(this);
+  CreateCalendarResponse copyWith(void Function(CreateCalendarResponse) updates) => super.copyWith((message) => updates(message as CreateCalendarResponse));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CreateCalendarResponse create() => CreateCalendarResponse._();
+  CreateCalendarResponse createEmptyInstance() => create();
+  static $pb.PbList<CreateCalendarResponse> createRepeated() => $pb.PbList<CreateCalendarResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CreateCalendarResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateCalendarResponse>(create);
+  static CreateCalendarResponse _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  CreateCalendarErrorReason get errorReason => $_getN(1);
+  @$pb.TagNumber(2)
+  set errorReason(CreateCalendarErrorReason v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorReason() => clearField(2);
+
+  @$pb.TagNumber(3)
+  CalendarDetail get calendarDetail => $_getN(2);
+  @$pb.TagNumber(3)
+  set calendarDetail(CalendarDetail v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCalendarDetail() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCalendarDetail() => clearField(3);
+  @$pb.TagNumber(3)
+  CalendarDetail ensureCalendarDetail() => $_ensure(2);
+}
+
