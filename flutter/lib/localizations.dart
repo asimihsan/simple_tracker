@@ -45,6 +45,13 @@ class AppLocalizations {
       'user_login_confirm_password_does_not_match':
           'Confirmation password does not match original password',
       'calendar_list_title': 'Calendar List',
+      'create_calendar_name': 'Calendar name',
+      'create_calendar_error_name_empty': 'Calendar name cannot be empty',
+      'create_calendar_error_name_too_long': 'Calendar name must be at most 40 characters long.',
+      'create_calendar_creating_calendar': 'Creating calendar...',
+      'create_calendar_title': 'Create calendar',
+      'create_calendar_submit_button': 'Create calendar',
+      'create_calendar_color': 'Calendar color (click icon)',
     },
   };
 
@@ -123,6 +130,34 @@ class AppLocalizations {
 
   String get calendarListTitle {
     return _localizedValues[locale.languageCode]['calendar_list_title'];
+  }
+
+  String get createCalendarName {
+    return _localizedValues[locale.languageCode]['create_calendar_name'];
+  }
+
+  String get createCalendarErrorNameEmpty {
+    return _localizedValues[locale.languageCode]['create_calendar_error_name_empty'];
+  }
+
+  String get createCalendarErrorNameTooLong {
+    return _localizedValues[locale.languageCode]['create_calendar_error_name_too_long'];
+  }
+
+  String get createCalendarCreatingCalendar {
+    return _localizedValues[locale.languageCode]['create_calendar_creating_calendar'];
+  }
+
+  String get createCalendarTitle {
+    return _localizedValues[locale.languageCode]['create_calendar_title'];
+  }
+
+  String get createCalendarSubmitButton {
+    return _localizedValues[locale.languageCode]['create_calendar_submit_button'];
+  }
+
+  String get createCalendarColor {
+    return _localizedValues[locale.languageCode]['create_calendar_color'];
   }
 }
 

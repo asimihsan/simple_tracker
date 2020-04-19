@@ -226,10 +226,10 @@ func handleListCalendarsRequestInner(
 	ctx context.Context,
 ) (*simpletracker.ListCalendarsResponse, error) {
 	var limit int64
-	if request.MaxResults == nil || request.MaxResults.Value > maxResultsLimit || request.MaxResults.Value <= 0 {
+	if request.MaxResults > maxResultsLimit || request.MaxResults <= 0 {
 		limit = maxResultsLimit
 	} else {
-		limit = request.MaxResults.Value
+		limit = request.MaxResults
 	}
 
 	_, err := getPaginationKey(

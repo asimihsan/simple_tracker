@@ -297,7 +297,7 @@ func initialize() {
 	paginationKeyArn = os.Getenv("PAGINATION_KEY_ARN")
 	paginationEphemeralKeyTableName = os.Getenv("PAGINATION_EPHEMERAL_KEY_TABLE_NAME")
 
-	paginationKeyCache = cache.New(5 * time.Minute, 10 * time.Minute)
+	paginationKeyCache = cache.New(1 * time.Hour, 10 * time.Minute)
 }
 
 func main() {
