@@ -125,6 +125,16 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
   }
 
   Widget calendarSummaryModelToListViewWidget(CalendarSummaryModel calendarSummaryModel) {
-    return Text(calendarSummaryModel.name);
+    return Row(
+      children: <Widget>[
+        Container(
+          width: 50.0,
+          height: 50.0,
+          decoration: BoxDecoration(color: calendarSummaryModel.color),
+          margin: EdgeInsets.fromLTRB(0, 0, 16.0, 8.0),
+        ),
+        Text(calendarSummaryModel.name),
+      ],
+    );
   }
 }

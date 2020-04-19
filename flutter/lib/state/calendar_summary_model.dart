@@ -14,6 +14,10 @@
 //  limitations under the License.
 // ============================================================================
 
+import 'package:color/color.dart' as color3p;
+
+import 'package:flutter/material.dart';
+
 class CalendarSummaryModel {
   final int _formatVersion;
   final String _id;
@@ -25,7 +29,10 @@ class CalendarSummaryModel {
 
   int get version => _version;
 
-  String get color => _color;
+  Color get color {
+    color3p.RgbColor rgbColor = color3p.Color.hex(_color).toRgbColor();
+    return Color.fromARGB(255, rgbColor.r, rgbColor.g, rgbColor.b);
+  }
 
   String get name => _name;
 
