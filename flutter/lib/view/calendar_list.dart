@@ -24,6 +24,7 @@ import 'package:simple_tracker/state/calendar_summary_model.dart';
 import 'dart:developer' as developer;
 
 import 'package:simple_tracker/state/user_model.dart';
+import 'package:simple_tracker/view/calendar_detail.dart';
 import 'package:simple_tracker/view/create_calendar_view.dart';
 
 Widget getCalendarList(BuildContext context) {
@@ -86,7 +87,7 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
       }
       List<Widget> calendarSummaries = calendarList
           .getCalendarSummariesInNameOrder()
-          .map((calendarSummary) => calendarSummaryModelToListViewWidget(calendarSummary))
+          .map((calendarSummary) => calendarSummaryModelToListViewWidget(calendarSummary, context))
           .toList();
       if (calendarSummaries.length == 0) {
         return emptyList(context, "You don't have any calendars!");
@@ -100,12 +101,7 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
               padding: EdgeInsets.all(32.0),
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                children: calendarSummaries
-                    .map((calendarSummary) => Container(
-                          height: 50,
-                          child: calendarSummary,
-                        ))
-                    .toList(),
+                children: calendarSummaries,
               )));
     });
   }
@@ -124,17 +120,22 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
             )));
   }
 
-  Widget calendarSummaryModelToListViewWidget(CalendarSummaryModel calendarSummaryModel) {
-    return Row(
-      children: <Widget>[
-        Container(
-          width: 50.0,
-          height: 50.0,
-          decoration: BoxDecoration(color: calendarSummaryModel.color),
-          margin: EdgeInsets.fromLTRB(0, 0, 16.0, 8.0),
-        ),
-        Text(calendarSummaryModel.name),
-      ],
-    );
+  Widget calendarSummaryModelToListViewWidget(
+      CalendarSummaryModel calendarSummaryModel, BuildContext context) {
+    return Card(
+        child: ListTile(
+      leading: Container(
+        width: 50.0,
+        height: 50.0,
+        decoration: BoxDecoration(color: calendarSummaryModel.color),
+      ),
+      title: Text(calendarSummaryModel.name),
+      onTap: () {
+        final List<CalendarSummaryModel> calendarSummaryModels = new List();
+        calendarSummaryModels.add(calendarSummaryModel);
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => getCalendarDetail(calendarSummaryModels)));
+      },
+    ));
   }
 }

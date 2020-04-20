@@ -16,8 +16,8 @@ message ListCalendarsRequest {
 }
 
 message ListCalendarsRequestNextTokenOpaque {
-    bytes opaqueNextToken = 1;
-    string encryptionKeyUsed = 2;
+    bytes opaque_next_token = 1;
+    string encryption_key_used = 2;
 }
 
 message ListCalendarsRequestNextToken {
@@ -67,7 +67,14 @@ message CalendarSummary {
 
 message CalendarDetail {
     CalendarSummary summary = 1;
-    repeated string highlightedDays = 2;
+
+    // Highlighted days is a list of strings. This field is first JSON-serialized and then ZLIB-compressed.
+    bytes highlighted_days = 2;
+}
+
+// Helper proto for a list of strings for highlighted days
+message ListOfStrings {
+    repeated string strings = 1;
 }
 
 message CreateCalendarRequest {
@@ -80,11 +87,32 @@ message CreateCalendarRequest {
 message CreateCalendarResponse {
     bool success = 1;
     CreateCalendarErrorReason error_reason = 2;
-    CalendarDetail calendarDetail = 3;
+    CalendarDetail calendar_detail = 3;
 }
 
 enum CreateCalendarErrorReason {
     CREATE_CALENDAR_ERROR_REASON_NO_ERROR = 0;
     CREATE_CALENDAR_ERROR_REASON_INTERNAL_SERVER_ERROR = 1;
     CREATE_CALENDAR_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR = 2;
+}
+
+message GetCalendarsRequest {
+    string user_id = 1;
+    string session_id = 2;
+    repeated string calendar_ids = 3;
+}
+
+message GetCalendarsResponse {
+    bool success = 1;
+    GetCalendarsErrorReason error_reason = 2;
+    repeated CalendarDetail calendar_details = 3;
+}
+
+enum GetCalendarsErrorReason {
+    GET_CALENDARS_ERROR_REASON_NO_ERROR = 0;
+    GET_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR = 1;
+    GET_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR = 2;
+    GET_CALENDARS_ERROR_REASON_DO_NOT_OWN_CALENDAR_ERROR = 3;
+    GET_CALENDARS_ERROR_REASON_CALENDAR_NOT_FOUND_ERROR = 4;
+    GET_CALENDARS_ERROR_REASON_TOO_MANY_CALENDARS_ERROR = 5;
 }

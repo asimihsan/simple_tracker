@@ -19,6 +19,8 @@
 package main
 
 import (
+	"bytes"
+	"compress/zlib"
 	"context"
 	"crypto/aes"
 	"crypto/cipher"
@@ -27,8 +29,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	_ "log"
+	"sort"
 	"strconv"
 	"time"
 
@@ -38,6 +42,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/aws/aws-xray-sdk-go/xray"
+	"github.com/golang/protobuf/proto"
 	"github.com/oklog/ulid"
 	"github.com/patrickmn/go-cache"
 	"github.com/valyala/gozstd"
@@ -48,6 +53,7 @@ import (
 var (
 	ErrNoPaginationKeyFoundInDdb           = errors.New("no pagination key found in DynamoDB")
 	ErrPaginationKeyIsNotCorrectSize       = errors.New("pagination key is not 32 bytes large")
+	ErrCalendarNotFound = errors.New("calendar not found")
 	maxResultsLimit                  int64 = 100
 	ulidEntropy                            = ulid.Monotonic(rand.Reader, 0)
 )
@@ -382,13 +388,21 @@ func handleCreateCalendarRequestInner(
 		return resp, err
 	}
 
-	highlightedDays, err := highlightedDaysDeserialize(result.HighlightedDays)
+	highlightedDays, err := highlightedDaysDeserializeInternal(result.HighlightedDays)
 	if err != nil {
-		fmt.Println("handleCreateCalendarRequestInner could not deserialize highlightedDays")
+		fmt.Println("handleCreateCalendarRequestInner could not deserialize internal highlightedDays")
 		resp.Success = false
 		resp.ErrorReason = simpletracker.CreateCalendarErrorReason_CREATE_CALENDAR_ERROR_REASON_INTERNAL_SERVER_ERROR
 		return resp, nil
 	}
+	highlightedDaysExternal, err := highlightedDaysSerializeExternal(highlightedDays)
+	if err != nil {
+		fmt.Printf("handleCreateCalendarRequestInner could not serialize highlightedDays for external: %s\n", err.Error())
+		resp.Success = false
+		resp.ErrorReason = simpletracker.CreateCalendarErrorReason_CREATE_CALENDAR_ERROR_REASON_INTERNAL_SERVER_ERROR
+		return resp, nil
+	}
+
 	resp.Success = true
 	resp.ErrorReason = simpletracker.CreateCalendarErrorReason_CREATE_CALENDAR_ERROR_REASON_NO_ERROR
 	resp.CalendarDetail = &simpletracker.CalendarDetail{
@@ -400,12 +414,62 @@ func handleCreateCalendarRequestInner(
 			Color:                result.Color,
 			Version:              result.Version,
 		},
-		HighlightedDays:      highlightedDays,
+		HighlightedDays:      highlightedDaysExternal,
 	}
 	return resp, nil
 }
 
-func highlightedDaysSerialize(input []string) (output []byte, err error) {
+func highlightedDaysSerializeExternal(input []string) (output []byte, err error) {
+	listOfStrings := simpletracker.ListOfStrings{
+		Strings:              input,
+	}
+	serializedBytes, err := proto.Marshal(&listOfStrings)
+	if err != nil {
+		fmt.Printf("Failed to serialize highlightedDays: %s\n", err.Error())
+		return
+	}
+	var b bytes.Buffer
+	w, err := zlib.NewWriterLevel(&b, zlib.BestCompression)
+	if err != nil {
+		fmt.Printf("Failed to create ZLIB compressor: %s\n", err.Error())
+		return
+	}
+	_, err = w.Write(serializedBytes)
+	if err != nil {
+		fmt.Printf("Failed to ZLIB compress highlighted days: %s\n", err.Error())
+		return
+	}
+	err = w.Close()
+	if err != nil {
+		fmt.Printf("Failed to close ZLIB compressor for highlighted days: %s\n", err.Error())
+		return
+	}
+	output = b.Bytes()
+	return
+}
+
+func highlightedDaysDeserializeExternal(input []byte) (output []string, err error) {
+	r, err := zlib.NewReader(bytes.NewReader(input))
+	if err != nil {
+		fmt.Printf("Failed to create ZLIB decompressor: %s\n", err.Error())
+		return
+	}
+	decompressedBytes, err := ioutil.ReadAll(r)
+	if err != nil {
+		fmt.Printf("Failed to ZLIB decompress highlightedDays: %s\n", err.Error())
+		return
+	}
+
+	deserialized := simpletracker.ListOfStrings{}
+	err = proto.Unmarshal(decompressedBytes, &deserialized)
+	if err != nil {
+		fmt.Println("Failed to deserialize external highlightedDays")
+	}
+
+	return deserialized.Strings, nil
+}
+
+func highlightedDaysSerializeInternal(input []string) (output []byte, err error) {
 	serializedBytes, err := json.Marshal(input)
 	if err != nil {
 		fmt.Println("Failed to serialize highlightedDays")
@@ -415,7 +479,7 @@ func highlightedDaysSerialize(input []string) (output []byte, err error) {
 	return
 }
 
-func highlightedDaysDeserialize(input []byte) (output []string, err error) {
+func highlightedDaysDeserializeInternal(input []byte) (output []string, err error) {
 	decompressedBytes, err := gozstd.Decompress(nil, input)
 	if err != nil {
 		fmt.Println("Failed to decompress highlightedDays")
@@ -442,7 +506,7 @@ func CreateCalendar(
 
 	newCalendarId := ulid.MustNew(ulid.Now(), ulidEntropy).String()
 	highlightedDays := make([]string, 0, 1)
-	highlightedDaysSerialized, err := highlightedDaysSerialize(highlightedDays)
+	highlightedDaysSerialized, err := highlightedDaysSerializeInternal(highlightedDays)
 	if err != nil {
 		fmt.Println("CreateCalendar failed to serialize empty highlightedDays")
 		_ = xray.AddError(ctx, err)
@@ -480,4 +544,169 @@ func CreateCalendar(
 	}
 
 	return newCalendar, nil
+}
+
+
+func handleGetCalendarsRequestInner(
+	request *simpletracker.GetCalendarsRequest,
+	dynamoDbClient *dynamodb.DynamoDB,
+	calendarTableName string,
+	ctx context.Context,
+) (*simpletracker.GetCalendarsResponse, error) {
+
+	resp := &simpletracker.GetCalendarsResponse{
+		CalendarDetails:      make([]*simpletracker.CalendarDetail, 0, 1),
+	}
+
+	if _, err := VerifySession(request.UserId, request.SessionId, dynamoDbClient, sessionTableName, ctx); err != nil {
+		fmt.Println("Could not verify session.")
+		resp.Success = false
+		resp.ErrorReason = simpletracker.GetCalendarsErrorReason_GET_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR
+		return resp, nil
+	}
+
+	result, err := GetCalendars(
+		request.UserId,
+		request.CalendarIds,
+		dynamoDbClient,
+		calendarTableName,
+		ctx,
+	)
+	if err != nil {
+		return resp, err
+	}
+
+	resp.Success = true
+	resp.ErrorReason = simpletracker.GetCalendarsErrorReason_GET_CALENDARS_ERROR_REASON_NO_ERROR
+	for _, internalCalendarDetail := range(result) {
+		externalCalendarDetail := &simpletracker.CalendarDetail{
+			Summary: &simpletracker.CalendarSummary{
+				FormatVersion: internalCalendarDetail.FormatVersion,
+				OwnerUserid:   internalCalendarDetail.OwnerUserId,
+				Id:            internalCalendarDetail.Id,
+				Name:          internalCalendarDetail.Name,
+				Color:         internalCalendarDetail.Color,
+				Version:       internalCalendarDetail.Version,
+			},
+			HighlightedDays: internalCalendarDetail.HighlightedDays,
+		}
+		resp.CalendarDetails = append(resp.CalendarDetails, externalCalendarDetail)
+	}
+
+	return resp, nil
+}
+
+func removeDuplicatesAndSort(input []string) []string {
+	seen := map[string]bool{}
+	output := make([]string, 0, 1)
+
+	for _, elem := range input {
+		_, ok := seen[elem]
+		if ok {
+			continue;
+		}
+		output = append(output, elem)
+		seen[elem] = true
+	}
+	sort.Strings(output)
+	return output
+}
+
+func GetCalendars(
+	userId string,
+	calendarIds []string,
+	dynamoDbClient *dynamodb.DynamoDB,
+	calendarTableName string,
+	ctx context.Context,
+) ([]*CalendarDetail, error) {
+	var result = make([]*CalendarDetail, 0, 1)
+
+	calendarIdsDeduped := removeDuplicatesAndSort(calendarIds)
+	for _, calendarId := range calendarIdsDeduped {
+		calendarDetail, err := getCalendarInternal(userId, calendarId, dynamoDbClient, calendarTableName, ctx)
+		if err != nil {
+			return result, err
+		}
+		result = append(result, calendarDetail)
+	}
+
+	return result, nil
+}
+
+func convertDynamoDbItemToCalendarDetail(item map[string]*dynamodb.AttributeValue) (*CalendarDetail, error) {
+	calendarSummary, err := convertDynamoDbItemToCalendarSummary(item)
+	if err != nil {
+		fmt.Println("getCalendarInternal could not convert response to CalendarSummary")
+		fmt.Println(err.Error())
+		return nil, err
+	}
+
+	highlightedDaysSerializedInternal := item["HighlightedDays"].B
+	highlightedDays, err := highlightedDaysDeserializeInternal(highlightedDaysSerializedInternal)
+	if err != nil {
+		fmt.Println("getCalendarInternal could not deserialize internal highlightedDays")
+		fmt.Println(err.Error())
+		return nil, err
+	}
+	highlightedDaysSerializedExternal, err := highlightedDaysSerializeExternal(highlightedDays)
+	if err != nil {
+		fmt.Println("getCalendarInternal could not serialize highlightedDays to external")
+		fmt.Println(err.Error())
+		return nil, err
+	}
+
+	return &CalendarDetail{
+		FormatVersion:   calendarSummary.FormatVersion,
+		OwnerUserId:     calendarSummary.OwnerUserId,
+		Id:              calendarSummary.Id,
+		Name:            calendarSummary.Name,
+		Color:           calendarSummary.Color,
+		Version:         calendarSummary.Version,
+		HighlightedDays: highlightedDaysSerializedExternal,
+	}, nil
+}
+
+func getCalendarInternal(
+	userId string,
+	calendarId string,
+	dynamoDbClient *dynamodb.DynamoDB,
+	calendarTableName string,
+	ctx context.Context,	
+) (*CalendarDetail, error) {
+	var getResp *dynamodb.GetItemOutput
+	if err := xray.Capture(ctx, "getCalendarInternal_GetItem", func(ctx1 context.Context) (err error) {
+		input := &dynamodb.GetItemInput{
+			Key: map[string]*dynamodb.AttributeValue{
+				"OwnerUserId": {
+					S: aws.String(userId),
+				},
+				"Id": {
+					S: aws.String(calendarId),
+				},
+			},
+			ConsistentRead: aws.Bool(false),
+			TableName:      aws.String(calendarTableName),
+		}
+		getResp, err = dynamoDbClient.GetItemWithContext(ctx1, input)
+		if err != nil {
+			return err
+		}
+		if len(getResp.Item) == 0 {
+			fmt.Printf("no calendar found for userId %s calendarId %s\n", userId, calendarId)
+			return ErrCalendarNotFound
+		}
+		return nil
+	}); err != nil {
+		fmt.Println("getCalendarInternal failed to GetItem from DynamoDB")
+		fmt.Println(err.Error())
+		return nil, err
+	}
+
+	calendarDetail, err := convertDynamoDbItemToCalendarDetail(getResp.Item)
+	if err != nil {
+		fmt.Println("getCalendarInternal could not convert response to CalendarDetail")
+		fmt.Println(err.Error())
+		return nil, err
+	}
+	return calendarDetail, nil
 }

@@ -43,3 +43,26 @@ class CreateCalendarErrorReason extends $pb.ProtobufEnum {
   const CreateCalendarErrorReason._($core.int v, $core.String n) : super(v, n);
 }
 
+class GetCalendarsErrorReason extends $pb.ProtobufEnum {
+  static const GetCalendarsErrorReason GET_CALENDARS_ERROR_REASON_NO_ERROR = GetCalendarsErrorReason._(0, 'GET_CALENDARS_ERROR_REASON_NO_ERROR');
+  static const GetCalendarsErrorReason GET_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR = GetCalendarsErrorReason._(1, 'GET_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR');
+  static const GetCalendarsErrorReason GET_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR = GetCalendarsErrorReason._(2, 'GET_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR');
+  static const GetCalendarsErrorReason GET_CALENDARS_ERROR_REASON_DO_NOT_OWN_CALENDAR_ERROR = GetCalendarsErrorReason._(3, 'GET_CALENDARS_ERROR_REASON_DO_NOT_OWN_CALENDAR_ERROR');
+  static const GetCalendarsErrorReason GET_CALENDARS_ERROR_REASON_CALENDAR_NOT_FOUND_ERROR = GetCalendarsErrorReason._(4, 'GET_CALENDARS_ERROR_REASON_CALENDAR_NOT_FOUND_ERROR');
+  static const GetCalendarsErrorReason GET_CALENDARS_ERROR_REASON_TOO_MANY_CALENDARS_ERROR = GetCalendarsErrorReason._(5, 'GET_CALENDARS_ERROR_REASON_TOO_MANY_CALENDARS_ERROR');
+
+  static const $core.List<GetCalendarsErrorReason> values = <GetCalendarsErrorReason> [
+    GET_CALENDARS_ERROR_REASON_NO_ERROR,
+    GET_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR,
+    GET_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR,
+    GET_CALENDARS_ERROR_REASON_DO_NOT_OWN_CALENDAR_ERROR,
+    GET_CALENDARS_ERROR_REASON_CALENDAR_NOT_FOUND_ERROR,
+    GET_CALENDARS_ERROR_REASON_TOO_MANY_CALENDARS_ERROR,
+  ];
+
+  static final $core.Map<$core.int, GetCalendarsErrorReason> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static GetCalendarsErrorReason valueOf($core.int value) => _byValue[value];
+
+  const GetCalendarsErrorReason._($core.int v, $core.String n) : super(v, n);
+}
+

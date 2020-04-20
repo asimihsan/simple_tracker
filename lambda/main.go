@@ -67,8 +67,10 @@ func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 			apiGatewayResponse, err = handleListCalendarsRequest(ctx1, request)
 		case "/create_calendar":
 			apiGatewayResponse, err = handleCreateCalendarRequest(ctx1, request)
+		case "/get_calendars":
+			apiGatewayResponse, err = handleGetCalendarsRequest(ctx1, request)
 		default:
-			apiGatewayResponse = events.APIGatewayProxyResponse{Body: "Unknown API endpoint", StatusCode: 200}
+			apiGatewayResponse = events.APIGatewayProxyResponse{Body: "Unknown API endpoint", StatusCode: 400}
 		}
 		return
 	})
@@ -321,6 +323,53 @@ func handleCreateCalendarRequest(ctx context.Context, request events.APIGatewayP
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "Failed to serialize create calendar response", StatusCode: 500}, nil
+	}
+	return events.APIGatewayProxyResponse{
+		Body:            base64.StdEncoding.EncodeToString(resp),
+		Headers:         responseHeaders,
+		StatusCode:      200,
+		IsBase64Encoded: true,
+	}, nil
+}
+
+func handleGetCalendarsRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	requestBody, err := getRequestBody(request)
+	if err != nil {
+		fmt.Println("handleGetCalendarsRequest failed to get body")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "failed to get body", StatusCode: 400}, nil
+	}
+
+	getCalendarsRequest := &simpletracker.GetCalendarsRequest{}
+	if err := proto.Unmarshal([]byte(requestBody), getCalendarsRequest); err != nil {
+		fmt.Println("handleGetCalendarsRequest failed to parse request proto")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "failed to parse request proto", StatusCode: 400}, nil
+	}
+
+	responseHeaders := make(map[string]string)
+	responseHeaders["Content-Type"] = "application/protobuf"
+
+	getCalendarsResp, err := handleGetCalendarsRequestInner(
+		getCalendarsRequest,
+		dynamoDbClient,
+		calendarTableName,
+		ctx,
+	)
+	if err != nil {
+		fmt.Println("GetCalendars handling failed.")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "GetCalendars handling failed.", StatusCode: 400}, nil
+	}
+	resp, err := proto.Marshal(getCalendarsResp)
+	if err != nil {
+		fmt.Println("Failed to serialize get calendars response")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "Failed to serialize get calendars response", StatusCode: 500}, nil
 	}
 	return events.APIGatewayProxyResponse{
 		Body:            base64.StdEncoding.EncodeToString(resp),

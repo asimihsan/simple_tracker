@@ -16,29 +16,43 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:simple_tracker/view/detail_view.dart';
-import 'package:simple_tracker/state/calendar_model.dart';
+import 'package:simple_tracker/state/calendar_detail_model.dart';
 import 'package:simple_tracker/state/calendar_repository.dart';
-import 'dart:developer' as developer;
-
+import 'package:simple_tracker/state/calendar_summary_model.dart';
 import 'package:simple_tracker/state/user_model.dart';
+import 'package:simple_tracker/view/detail_view.dart';
 
-Widget getCalendarDetail() {
-  return MultiProvider(
-    providers: [
-      Provider(create: (_) => new CalendarRepository("https://preprod-simple-tracker.ihsan.io/")),
-    ],
-    child: CalendarDetailWidget(),
-  );
+Widget getCalendarDetail(List<CalendarSummaryModel> calendarSummaryModels) {
+  return CalendarDetailWidget(calendarSummaryModels: calendarSummaryModels);
 }
 
-class CalendarDetailWidget extends StatelessWidget {
-  CalendarDetailWidget({Key key}) : super(key: key);
+class CalendarDetailWidget extends StatefulWidget {
+  final List<CalendarSummaryModel> calendarSummaryModels;
+
+  const CalendarDetailWidget({this.calendarSummaryModels});
+
+  @override
+  State<StatefulWidget> createState() {
+    return _CalendarDetailWidgetState(calendarSummaryModels);
+  }
+}
+
+class _CalendarDetailWidgetState extends State<CalendarDetailWidget> {
+  final List<CalendarSummaryModel> calendarSummaryModels;
+
+  _CalendarDetailWidgetState(this.calendarSummaryModels);
 
   Widget _buildHomePage(Widget child) {
+    String title;
+    if (calendarSummaryModels.length == 1) {
+      title = calendarSummaryModels[0].name;
+    } else {
+      title = "Multiple calendars";
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text("Simple Tracker"),
+        title: Text(title),
       ),
       body: child,
     );
@@ -46,26 +60,34 @@ class CalendarDetailWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<CalendarModel>(
-        future: downloadCalendar(context),
-        builder: (context, snapshot) {
-          final CalendarModel calendarModel = snapshot?.data;
-          if (calendarModel == null) {
-            developer.log("MyHomePage calendar is null...");
+    return FutureBuilder<CalendarDetailModel>(
+        future: _downloadCalendars(context),
+        builder: (BuildContext context, AsyncSnapshot<CalendarDetailModel> snapshot) {
+          final CalendarDetailModel calendarDetailModel = snapshot?.data;
+          if (calendarDetailModel == null) {
             return _buildHomePage(new CircularProgressIndicator());
           }
-          developer.log("MyHomePage calendar is non-null...");
+          if (snapshot.hasError) {
+            return Text("Error loading calendars!!");
+          }
           return MultiProvider(
-              providers: [ChangeNotifierProvider(create: (_) => calendarModel)],
-              child: _buildHomePage(DetailView()));
+            providers: [ListenableProvider(create: (_) => calendarDetailModel)],
+            child: _buildHomePage(DetailView()),
+          );
         });
   }
 
-  Future<CalendarModel> downloadCalendar(BuildContext context) async {
-    // TODO put this somewhere else, for now also login.
-    Provider.of<UserModel>(context).login("userId", "userAuthenticationToken");
-
-    final CalendarRepository repository = Provider.of<CalendarRepository>(context, listen: false);
-    return repository.getCalendar(userId: "userId", calendarId: "calendarId");
+  Future<CalendarDetailModel> _downloadCalendars(BuildContext context) async {
+    final CalendarRepository calendarRepository =
+        Provider.of<CalendarRepository>(context, listen: false);
+    final UserModel userModel = Provider.of<UserModel>(context, listen: false);
+    return calendarRepository.getCalendars(
+      userId: userModel.userId,
+      sessionId: userModel.sessionId,
+      calendarIds: this
+          .calendarSummaryModels
+          .map((calendarSummaryModel) => calendarSummaryModel.id)
+          .toList(),
+    );
   }
 }

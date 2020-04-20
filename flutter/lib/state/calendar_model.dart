@@ -14,94 +14,47 @@
 //  limitations under the License.
 // ============================================================================
 
-import 'dart:collection';
+import 'dart:core';
 
-import 'package:flutter/foundation.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter/material.dart';
+import 'package:simple_tracker/state/calendar_summary_model.dart';
 
-class CalendarModel extends ChangeNotifier {
-  bool _isLoaded;
-  String _id;
-  String _name;
-  List<String> _highlightedDays;
+class CalendarModel {
+  final CalendarSummaryModel calendarSummaryModel;
+  final List<String> _highlightedDays;
 
-  // This is a derived calculated field.
-  Set<DateTime> _highlightedDateTimes;
+  // This is a derived field calculated once.
+  Set<DateTime> _highlightedDaysAsDateTimes = Set();
 
-  // This is a Flutter-UI-only field to indicate DateTimes that are currently refreshing.
-  Set<DateTime> _refreshingDateTimes;
-
-  static final _formatter = new DateFormat('yyyy-MM-dd');
-
-  CalendarModel.notLoaded() {
-    this._isLoaded = false;
-    this._id = null;
-    this._name = null;
-    this._highlightedDays = null;
-    this._highlightedDateTimes = null;
-    this._refreshingDateTimes = null;
+  CalendarModel(this.calendarSummaryModel, this._highlightedDays) {
+    this._highlightedDaysAsDateTimes = _highlightedDays
+        .map((highlightedDayString) => DateTime.parse(highlightedDayString))
+        .toSet();
   }
 
-  CalendarModel.withContent(String id, String name, List<String> highlightedDays) {
-    this._isLoaded = true;
-    this._id = id;
-    this._name = name;
-    this._highlightedDays = highlightedDays;
-    this._highlightedDateTimes =
-        _highlightedDays.map((dayString) => DateTime.parse(dayString)).toSet();
-    this._refreshingDateTimes = new HashSet();
+  String get id => calendarSummaryModel.id;
+
+  Color get color => calendarSummaryModel.color;
+
+  Set<DateTime> get highlightedDaysAsDateTimes => this._highlightedDaysAsDateTimes;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (!(other is CalendarModel)) {
+      return false;
+    }
+    if (!(other.runtimeType == runtimeType)) {
+      return false;
+    }
+    final CalendarModel otherObject = other;
+    return id == otherObject.id;
   }
 
-  bool get isLoaded => _isLoaded;
-
-  String get id => _id;
-
-  String get name => _name;
-
-  void setContent(CalendarModel other) {
-    this._id = other._id;
-    this._name = other._name;
-    this._highlightedDays = other._highlightedDays;
-    notifyListeners();
-  }
-
-  void _setHighlightedDays(Set<DateTime> newHighlightedDateTimes) {
-    _highlightedDateTimes = newHighlightedDateTimes;
-    _highlightedDays = newHighlightedDateTimes
-        .map((dateTime) => _formatter.format(dateTime))
-        .toList(growable: false);
-    _highlightedDays.sort();
-  }
-
-  bool isDateTimeHighlighted(DateTime dateTime) {
-    return _highlightedDateTimes.contains(dateTime);
-  }
-
-  void addHighlightedDay(DateTime dateTime) {
-    Set<DateTime> currentHighlightedDays = _highlightedDateTimes;
-    currentHighlightedDays.add(dateTime);
-    _setHighlightedDays(currentHighlightedDays);
-    notifyListeners();
-  }
-
-  void removeHighlightedDay(DateTime dateTime) {
-    Set<DateTime> currentHighlightedDays = _highlightedDateTimes;
-    currentHighlightedDays.remove(dateTime);
-    _setHighlightedDays(currentHighlightedDays);
-    notifyListeners();
-  }
-
-  void addRefreshingDateTime(DateTime dateTime) {
-    this._refreshingDateTimes.add(dateTime);
-    notifyListeners();
-  }
-
-  void removeRefreshingDateTime(DateTime dateTime) {
-    this._refreshingDateTimes.remove(dateTime);
-    notifyListeners();
-  }
-
-  bool isRefreshingDateTime(DateTime dateTime) {
-    return this._refreshingDateTimes.contains(dateTime);
+  @override
+  int get hashCode {
+    return id.hashCode;
   }
 }

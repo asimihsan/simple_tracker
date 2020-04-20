@@ -79,8 +79,8 @@ class ListCalendarsRequest extends $pb.GeneratedMessage {
 
 class ListCalendarsRequestNextTokenOpaque extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo('ListCalendarsRequestNextTokenOpaque', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
-    ..a<$core.List<$core.int>>(1, 'opaqueNextToken', $pb.PbFieldType.OY, protoName: 'opaqueNextToken')
-    ..aOS(2, 'encryptionKeyUsed', protoName: 'encryptionKeyUsed')
+    ..a<$core.List<$core.int>>(1, 'opaqueNextToken', $pb.PbFieldType.OY)
+    ..aOS(2, 'encryptionKeyUsed')
     ..hasRequiredFields = false
   ;
 
@@ -324,7 +324,7 @@ class CalendarSummary extends $pb.GeneratedMessage {
 class CalendarDetail extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo('CalendarDetail', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
     ..aOM<CalendarSummary>(1, 'summary', subBuilder: CalendarSummary.create)
-    ..pPS(2, 'highlightedDays', protoName: 'highlightedDays')
+    ..a<$core.List<$core.int>>(2, 'highlightedDays', $pb.PbFieldType.OY)
     ..hasRequiredFields = false
   ;
 
@@ -355,7 +355,38 @@ class CalendarDetail extends $pb.GeneratedMessage {
   CalendarSummary ensureSummary() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  $core.List<$core.String> get highlightedDays => $_getList(1);
+  $core.List<$core.int> get highlightedDays => $_getN(1);
+  @$pb.TagNumber(2)
+  set highlightedDays($core.List<$core.int> v) { $_setBytes(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasHighlightedDays() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearHighlightedDays() => clearField(2);
+}
+
+class ListOfStrings extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('ListOfStrings', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
+    ..pPS(1, 'strings')
+    ..hasRequiredFields = false
+  ;
+
+  ListOfStrings._() : super();
+  factory ListOfStrings() => create();
+  factory ListOfStrings.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory ListOfStrings.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  ListOfStrings clone() => ListOfStrings()..mergeFromMessage(this);
+  ListOfStrings copyWith(void Function(ListOfStrings) updates) => super.copyWith((message) => updates(message as ListOfStrings));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static ListOfStrings create() => ListOfStrings._();
+  ListOfStrings createEmptyInstance() => create();
+  static $pb.PbList<ListOfStrings> createRepeated() => $pb.PbList<ListOfStrings>();
+  @$core.pragma('dart2js:noInline')
+  static ListOfStrings getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ListOfStrings>(create);
+  static ListOfStrings _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<$core.String> get strings => $_getList(0);
 }
 
 class CreateCalendarRequest extends $pb.GeneratedMessage {
@@ -423,7 +454,7 @@ class CreateCalendarResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo('CreateCalendarResponse', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
     ..aOB(1, 'success')
     ..e<CreateCalendarErrorReason>(2, 'errorReason', $pb.PbFieldType.OE, defaultOrMaker: CreateCalendarErrorReason.CREATE_CALENDAR_ERROR_REASON_NO_ERROR, valueOf: CreateCalendarErrorReason.valueOf, enumValues: CreateCalendarErrorReason.values)
-    ..aOM<CalendarDetail>(3, 'calendarDetail', protoName: 'calendarDetail', subBuilder: CalendarDetail.create)
+    ..aOM<CalendarDetail>(3, 'calendarDetail', subBuilder: CalendarDetail.create)
     ..hasRequiredFields = false
   ;
 
@@ -470,5 +501,95 @@ class CreateCalendarResponse extends $pb.GeneratedMessage {
   void clearCalendarDetail() => clearField(3);
   @$pb.TagNumber(3)
   CalendarDetail ensureCalendarDetail() => $_ensure(2);
+}
+
+class GetCalendarsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('GetCalendarsRequest', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
+    ..aOS(1, 'userId')
+    ..aOS(2, 'sessionId')
+    ..pPS(3, 'calendarIds')
+    ..hasRequiredFields = false
+  ;
+
+  GetCalendarsRequest._() : super();
+  factory GetCalendarsRequest() => create();
+  factory GetCalendarsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCalendarsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  GetCalendarsRequest clone() => GetCalendarsRequest()..mergeFromMessage(this);
+  GetCalendarsRequest copyWith(void Function(GetCalendarsRequest) updates) => super.copyWith((message) => updates(message as GetCalendarsRequest));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetCalendarsRequest create() => GetCalendarsRequest._();
+  GetCalendarsRequest createEmptyInstance() => create();
+  static $pb.PbList<GetCalendarsRequest> createRepeated() => $pb.PbList<GetCalendarsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetCalendarsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCalendarsRequest>(create);
+  static GetCalendarsRequest _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get sessionId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set sessionId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSessionId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSessionId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.List<$core.String> get calendarIds => $_getList(2);
+}
+
+class GetCalendarsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('GetCalendarsResponse', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
+    ..aOB(1, 'success')
+    ..e<GetCalendarsErrorReason>(2, 'errorReason', $pb.PbFieldType.OE, defaultOrMaker: GetCalendarsErrorReason.GET_CALENDARS_ERROR_REASON_NO_ERROR, valueOf: GetCalendarsErrorReason.valueOf, enumValues: GetCalendarsErrorReason.values)
+    ..pc<CalendarDetail>(3, 'calendarDetails', $pb.PbFieldType.PM, subBuilder: CalendarDetail.create)
+    ..hasRequiredFields = false
+  ;
+
+  GetCalendarsResponse._() : super();
+  factory GetCalendarsResponse() => create();
+  factory GetCalendarsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetCalendarsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  GetCalendarsResponse clone() => GetCalendarsResponse()..mergeFromMessage(this);
+  GetCalendarsResponse copyWith(void Function(GetCalendarsResponse) updates) => super.copyWith((message) => updates(message as GetCalendarsResponse));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GetCalendarsResponse create() => GetCalendarsResponse._();
+  GetCalendarsResponse createEmptyInstance() => create();
+  static $pb.PbList<GetCalendarsResponse> createRepeated() => $pb.PbList<GetCalendarsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetCalendarsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetCalendarsResponse>(create);
+  static GetCalendarsResponse _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  GetCalendarsErrorReason get errorReason => $_getN(1);
+  @$pb.TagNumber(2)
+  set errorReason(GetCalendarsErrorReason v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorReason() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.List<CalendarDetail> get calendarDetails => $_getList(2);
 }
 

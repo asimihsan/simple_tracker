@@ -14,13 +14,13 @@
 //  limitations under the License.
 // ============================================================================
 
+import 'dart:developer' as developer;
+
 import 'package:date_calendar/date_calendar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:developer' as developer;
-
-import 'package:simple_tracker/state/calendar_model.dart';
+import 'package:simple_tracker/state/calendar_detail_model.dart';
 import 'package:simple_tracker/state/calendar_repository.dart';
 import 'package:simple_tracker/state/user_model.dart';
 
@@ -57,7 +57,7 @@ class CalenderMonth extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<CalendarModel>(builder: (context, calendar, child) {
+    return Consumer<CalendarDetailModel>(builder: (context, calendarDetailModel, child) {
       final CalendarRepository calendarRepository =
           Provider.of<CalendarRepository>(context, listen: false);
       final UserModel userModel = Provider.of<UserModel>(context, listen: false);
@@ -81,11 +81,11 @@ class CalenderMonth extends StatelessWidget {
       for (var i = 0; i <= 40; i++) {
         final DateTime currentDateTime = currentCalendar.toDateTimeLocal();
         if (i + 1 < startingWeekday) {
-          currentRow.add(dayWidget(context, currentCalendar.day, true /*blank*/, calendar,
-              currentDateTime, calendarRepository, userModel));
+          currentRow.add(dayWidget(context, currentCalendar.day, true /*blank*/,
+              calendarDetailModel, currentDateTime, calendarRepository, userModel));
         } else {
-          currentRow.add(dayWidget(context, currentCalendar.day, false /*blank*/, calendar,
-              currentDateTime, calendarRepository, userModel));
+          currentRow.add(dayWidget(context, currentCalendar.day, false /*blank*/,
+              calendarDetailModel, currentDateTime, calendarRepository, userModel));
           currentCalendar = currentCalendar.addDays(1);
         }
         currentRow.add(Spacer());
@@ -120,7 +120,7 @@ class CalenderMonth extends StatelessWidget {
       final BuildContext context,
       final int index,
       final bool isBlank,
-      final CalendarModel calendarModel,
+      final CalendarDetailModel calendarDetailModel,
       final DateTime currentDateTime,
       final CalendarRepository calendarRepository,
       final UserModel userModel) {
@@ -136,9 +136,12 @@ class CalenderMonth extends StatelessWidget {
       backgroundColor = Colors.white;
       onTapHandler = () {};
     } else {
-      final bool highlighted = calendarModel.isDateTimeHighlighted(currentDateTime);
-      final bool refreshing = calendarModel.isRefreshingDateTime(currentDateTime);
-      backgroundColor = highlighted ? Colors.orangeAccent : Colors.white;
+      final List<Color> colors = calendarDetailModel.getColorsForDateTime(currentDateTime);
+      final bool refreshing = calendarDetailModel.isRefreshingDateTime(currentDateTime);
+
+      // TODO let us see more than one background color.
+      backgroundColor = colors.length > 0 ? colors[0] : Colors.white;
+
       child = refreshing
           ? new CircularProgressIndicator()
           : Text(
@@ -148,11 +151,13 @@ class CalenderMonth extends StatelessWidget {
             );
       onTapHandler = () {
         developer.log("Pressed index $index");
-        if (highlighted) {
-          calendarRepository.removeHighlightedDay(userModel, calendarModel, currentDateTime);
-        } else {
-          calendarRepository.addHighlightedDay(userModel, calendarModel, currentDateTime);
-        }
+
+        // TODO get clicks working again.
+//        if (highlighted) {
+//          calendarRepository.removeHighlightedDay(userModel, calendarDetailModel, currentDateTime);
+//        } else {
+//          calendarRepository.addHighlightedDay(userModel, calendarDetailModel, currentDateTime);
+//        }
       };
     }
 
