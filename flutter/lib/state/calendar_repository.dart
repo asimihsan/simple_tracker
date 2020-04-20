@@ -27,6 +27,7 @@ import 'package:simple_tracker/state/calendar_detail_model.dart';
 import 'package:simple_tracker/state/calendar_list_model.dart';
 import 'package:simple_tracker/state/calendar_model.dart';
 import 'package:simple_tracker/state/calendar_summary_model.dart';
+import 'package:simple_tracker/state/user_model.dart';
 
 class CalendarRepository {
   final String baseUrl;
@@ -201,28 +202,19 @@ class CalendarRepository {
     return result;
   }
 
-//  Future<CalendarModel> getCalendar({@required String userId, @required String calendarId}) async {
-//    // TODO this would actually call a server, here just pretend data.
-//    await Future.delayed(Duration(seconds: 3));
-//
-//    List<String> highlightedDays = new List();
-//    highlightedDays.add("2020-03-05");
-//    highlightedDays.add("2020-04-01");
-//    highlightedDays.add("2020-04-03");
-//
-//    return new CalendarModel.withContent("calendarId", "Migraines", highlightedDays);
-//  }
-//
-//  Future<void> addHighlightedDay(@required UserModel userModel,
-//      @required CalendarModel calendarModel, @required DateTime dateTime) async {
-//    calendarModel.addRefreshingDateTime(dateTime);
-//
-//    // TODO this would actually call a server, here just pretend data.
-//    await Future.delayed(Duration(seconds: 1));
-//
-//    calendarModel.addHighlightedDay(dateTime);
-//    calendarModel.removeRefreshingDateTime(dateTime);
-//  }
+  Future<void> addHighlightedDay(
+      {@required UserModel userModel,
+      @required CalendarDetailModel calendarDetailModel,
+      @required String calendarId,
+      @required DateTime dateTime}) async {
+    calendarModel.addRefreshingDateTime(dateTime);
+
+    // TODO this would actually call a server, here just pretend data.
+    await Future.delayed(Duration(seconds: 1));
+
+    calendarModel.addHighlightedDay(dateTime);
+    calendarModel.removeRefreshingDateTime(dateTime);
+  }
 //
 //  Future<void> removeHighlightedDay(@required UserModel userModel,
 //      @required CalendarModel calendarModel, @required DateTime dateTime) async {

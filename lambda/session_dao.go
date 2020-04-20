@@ -43,7 +43,7 @@ var (
 type Session struct {
 	Id                 string
 	UserId             string
-	EpochExpirySeconds int64
+	ExpiryEpochSeconds int64
 }
 
 func CreateSession(userId string,
@@ -63,7 +63,7 @@ func CreateSession(userId string,
 	expiryTime := time.Now().Add(time.Hour * 24)
 	expiryEpochSecs := expiryTime.Unix()
 
-	session := Session{Id: canonical_id, UserId: userId, EpochExpirySeconds: expiryEpochSecs}
+	session := Session{Id: canonical_id, UserId: userId, ExpiryEpochSeconds: expiryEpochSecs}
 	av, err := dynamodbattribute.MarshalMap(session)
 	if err != nil {
 		fmt.Println("CreateSession failed to marshal session")
@@ -157,7 +157,7 @@ func VerifySession(
 
 	existingSessionId := *resp.Item["Id"].S
 	existingUserId := *resp.Item["UserId"].S
-	epochExpirySeconds, err := strconv.ParseInt(*resp.Item["EpochExpirySeconds"].N, 10, 64)
+	expiryEpochSeconds, err := strconv.ParseInt(*resp.Item["ExpiryEpochSeconds"].N, 10, 64)
 	if err != nil {
 		fmt.Println("Could not deserialize session EpochExpirySeconds")
 		_ = xray.AddError(ctx, ErrSessionCouldNotDeserializeEpoch)
@@ -173,6 +173,6 @@ func VerifySession(
 	return &Session{
 		Id:                 existingSessionId,
 		UserId:             existingUserId,
-		EpochExpirySeconds: epochExpirySeconds,
+		ExpiryEpochSeconds: expiryEpochSeconds,
 	}, nil
 }

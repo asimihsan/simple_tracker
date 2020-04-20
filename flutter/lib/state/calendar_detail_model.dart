@@ -57,14 +57,16 @@ class CalendarDetailModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<Color> getColorsForDateTime(DateTime dateTime) {
-    List<Color> result;
+  List<CalendarModel> getHighlightedCalendarModelsForDateTime(DateTime dateTime) {
     if (!_highlightedDateTimes.containsKey(dateTime)) {
-      result = List();
-    } else {
-      result = _highlightedDateTimes[dateTime].map((calendarModel) => calendarModel.color);
+      return List.unmodifiable(List());
     }
-    return List.unmodifiable(result);
+    return List.unmodifiable(_highlightedDateTimes[dateTime]);
+  }
+
+  List<Color> getColorsForDateTime(DateTime dateTime) {
+    return getHighlightedCalendarModelsForDateTime(dateTime)
+        .map((calendarModel) => calendarModel.color);
   }
 
   bool isRefreshingDateTime(DateTime dateTime) {
@@ -79,12 +81,6 @@ class CalendarDetailModel extends ChangeNotifier {
 
     // TODO done with call, first refresh entire model
 
-    // Remove the refreshing indicator
-    removeRefreshingDateTime(dateTime);
-
-    // Notify at the end
-    notifyListeners();
-
     List<CalendarModel> existing = new List();
     if (_highlightedDateTimes.containsKey(dateTime)) {
       existing = _highlightedDateTimes[dateTime].toList();
@@ -94,6 +90,12 @@ class CalendarDetailModel extends ChangeNotifier {
     }
     existing.sort((a, b) => a.id.compareTo(b.id));
     _highlightedDateTimes[dateTime] = List.unmodifiable(existing);
+
+    // Remove the refreshing indicator
+    removeRefreshingDateTime(dateTime);
+
+    // Notify at the end
+    notifyListeners();
   }
 
   void removeHighlightedDay(CalendarModel calendarModel, DateTime dateTime) {

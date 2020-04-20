@@ -69,6 +69,8 @@ func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 			apiGatewayResponse, err = handleCreateCalendarRequest(ctx1, request)
 		case "/get_calendars":
 			apiGatewayResponse, err = handleGetCalendarsRequest(ctx1, request)
+		case "/update_calendars":
+			apiGatewayResponse, err = handleUpdateCalendarsRequest(ctx1, request)
 		default:
 			apiGatewayResponse = events.APIGatewayProxyResponse{Body: "Unknown API endpoint", StatusCode: 400}
 		}
@@ -370,6 +372,54 @@ func handleGetCalendarsRequest(ctx context.Context, request events.APIGatewayPro
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "Failed to serialize get calendars response", StatusCode: 500}, nil
+	}
+	return events.APIGatewayProxyResponse{
+		Body:            base64.StdEncoding.EncodeToString(resp),
+		Headers:         responseHeaders,
+		StatusCode:      200,
+		IsBase64Encoded: true,
+	}, nil
+}
+
+func handleUpdateCalendarsRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	requestBody, err := getRequestBody(request)
+	if err != nil {
+		fmt.Println("handleUpdateCalendarsRequest failed to get body")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "failed to get body", StatusCode: 400}, nil
+	}
+
+	updateCalendarsRequest := &simpletracker.UpdateCalendarsRequest{}
+	if err := proto.Unmarshal([]byte(requestBody), updateCalendarsRequest); err != nil {
+		fmt.Println("handleUpdateCalendarsRequest failed to parse request proto")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "failed to parse request proto", StatusCode: 400}, nil
+	}
+
+	responseHeaders := make(map[string]string)
+	responseHeaders["Content-Type"] = "application/protobuf"
+
+	updateCalendarsResp, err := handleUpdateCalendarsRequestInner(
+		updateCalendarsRequest,
+		dynamoDbClient,
+		sessionTableName,
+		calendarTableName,
+		ctx,
+	)
+	if err != nil {
+		fmt.Println("UpdateCalendars handling failed.")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "UpdateCalendars handling failed.", StatusCode: 400}, nil
+	}
+	resp, err := proto.Marshal(updateCalendarsResp)
+	if err != nil {
+		fmt.Println("Failed to serialize update calendars response")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "Failed to serialize update calendars response", StatusCode: 500}, nil
 	}
 	return events.APIGatewayProxyResponse{
 		Body:            base64.StdEncoding.EncodeToString(resp),

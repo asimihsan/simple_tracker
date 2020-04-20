@@ -116,3 +116,44 @@ enum GetCalendarsErrorReason {
     GET_CALENDARS_ERROR_REASON_CALENDAR_NOT_FOUND_ERROR = 4;
     GET_CALENDARS_ERROR_REASON_TOO_MANY_CALENDARS_ERROR = 5;
 }
+
+message UpdateCalendarsRequest {
+    string user_id = 1;
+    string session_id = 2;
+
+    // Map calendar ID to actions on that calendar
+    map<string, UpdateCalendarAction> actions = 3;
+}
+
+message UpdateCalendarAction {
+    string calendar_id = 1;
+    int64 existing_version = 2;
+    UpdateCalendarActionType action_type = 3;
+    string new_name = 4;
+    string new_color = 5;
+    string add_highlighted_day = 6;
+    string remove_highlighted_day = 7;
+}
+
+enum UpdateCalendarActionType {
+    UPDATE_CALENDAR_ACTION_TYPE_CHANGE_NAME = 0;
+    UPDATE_CALENDAR_ACTION_TYPE_CHANGE_COLOR = 1;
+    UPDATE_CALENDAR_ACTION_TYPE_CHANGE_NAME_AND_COLOR = 2;
+    UPDATE_CALENDAR_ACTION_TYPE_ADD_HIGHLIGHTED_DAY = 3;
+    UPDATE_CALENDAR_ACTION_TYPE_REMOVE_HIGHLIGHTED_DAY = 4;
+}
+
+message UpdateCalendarsResponse {
+    bool success = 1;
+    GetCalendarsErrorReason error_reason = 2;
+    repeated CalendarDetail calendar_details = 3;
+}
+
+enum UpdateCalendarsErrorReason {
+    UPDATE_CALENDARS_ERROR_REASON_NO_ERROR = 0;
+    UPDATE_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR = 1;
+    UPDATE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR = 2;
+    UPDATE_CALENDARS_ERROR_REASON_DO_NOT_OWN_CALENDAR_ERROR = 3;
+    UPDATE_CALENDARS_ERROR_REASON_CALENDAR_NOT_FOUND_ERROR = 4;
+    UPDATE_CALENDARS_ERROR_REASON_TOO_MANY_CALENDARS_ERROR = 5;
+}

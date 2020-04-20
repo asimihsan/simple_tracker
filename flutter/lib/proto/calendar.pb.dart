@@ -593,3 +593,184 @@ class GetCalendarsResponse extends $pb.GeneratedMessage {
   $core.List<CalendarDetail> get calendarDetails => $_getList(2);
 }
 
+class UpdateCalendarsRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('UpdateCalendarsRequest', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
+    ..aOS(1, 'userId')
+    ..aOS(2, 'sessionId')
+    ..m<$core.String, UpdateCalendarAction>(3, 'actions', entryClassName: 'UpdateCalendarsRequest.ActionsEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OM, valueCreator: UpdateCalendarAction.create, packageName: const $pb.PackageName('simpletracker'))
+    ..hasRequiredFields = false
+  ;
+
+  UpdateCalendarsRequest._() : super();
+  factory UpdateCalendarsRequest() => create();
+  factory UpdateCalendarsRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateCalendarsRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  UpdateCalendarsRequest clone() => UpdateCalendarsRequest()..mergeFromMessage(this);
+  UpdateCalendarsRequest copyWith(void Function(UpdateCalendarsRequest) updates) => super.copyWith((message) => updates(message as UpdateCalendarsRequest));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UpdateCalendarsRequest create() => UpdateCalendarsRequest._();
+  UpdateCalendarsRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateCalendarsRequest> createRepeated() => $pb.PbList<UpdateCalendarsRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateCalendarsRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateCalendarsRequest>(create);
+  static UpdateCalendarsRequest _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get sessionId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set sessionId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSessionId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSessionId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.Map<$core.String, UpdateCalendarAction> get actions => $_getMap(2);
+}
+
+class UpdateCalendarAction extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('UpdateCalendarAction', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
+    ..aOS(1, 'calendarId')
+    ..aInt64(2, 'existingVersion')
+    ..e<UpdateCalendarActionType>(3, 'actionType', $pb.PbFieldType.OE, defaultOrMaker: UpdateCalendarActionType.UPDATE_CALENDAR_ACTION_TYPE_CHANGE_NAME, valueOf: UpdateCalendarActionType.valueOf, enumValues: UpdateCalendarActionType.values)
+    ..aOS(4, 'newName')
+    ..aOS(5, 'newColor')
+    ..aOS(6, 'addHighlightedDay')
+    ..aOS(7, 'removeHighlightedDay')
+    ..hasRequiredFields = false
+  ;
+
+  UpdateCalendarAction._() : super();
+  factory UpdateCalendarAction() => create();
+  factory UpdateCalendarAction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateCalendarAction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  UpdateCalendarAction clone() => UpdateCalendarAction()..mergeFromMessage(this);
+  UpdateCalendarAction copyWith(void Function(UpdateCalendarAction) updates) => super.copyWith((message) => updates(message as UpdateCalendarAction));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UpdateCalendarAction create() => UpdateCalendarAction._();
+  UpdateCalendarAction createEmptyInstance() => create();
+  static $pb.PbList<UpdateCalendarAction> createRepeated() => $pb.PbList<UpdateCalendarAction>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateCalendarAction getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateCalendarAction>(create);
+  static UpdateCalendarAction _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get calendarId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set calendarId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasCalendarId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCalendarId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get existingVersion => $_getI64(1);
+  @$pb.TagNumber(2)
+  set existingVersion($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasExistingVersion() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearExistingVersion() => clearField(2);
+
+  @$pb.TagNumber(3)
+  UpdateCalendarActionType get actionType => $_getN(2);
+  @$pb.TagNumber(3)
+  set actionType(UpdateCalendarActionType v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasActionType() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearActionType() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get newName => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set newName($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasNewName() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearNewName() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get newColor => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set newColor($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasNewColor() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearNewColor() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get addHighlightedDay => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set addHighlightedDay($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasAddHighlightedDay() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearAddHighlightedDay() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get removeHighlightedDay => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set removeHighlightedDay($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasRemoveHighlightedDay() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearRemoveHighlightedDay() => clearField(7);
+}
+
+class UpdateCalendarsResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('UpdateCalendarsResponse', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
+    ..aOB(1, 'success')
+    ..e<GetCalendarsErrorReason>(2, 'errorReason', $pb.PbFieldType.OE, defaultOrMaker: GetCalendarsErrorReason.GET_CALENDARS_ERROR_REASON_NO_ERROR, valueOf: GetCalendarsErrorReason.valueOf, enumValues: GetCalendarsErrorReason.values)
+    ..pc<CalendarDetail>(3, 'calendarDetails', $pb.PbFieldType.PM, subBuilder: CalendarDetail.create)
+    ..hasRequiredFields = false
+  ;
+
+  UpdateCalendarsResponse._() : super();
+  factory UpdateCalendarsResponse() => create();
+  factory UpdateCalendarsResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateCalendarsResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  UpdateCalendarsResponse clone() => UpdateCalendarsResponse()..mergeFromMessage(this);
+  UpdateCalendarsResponse copyWith(void Function(UpdateCalendarsResponse) updates) => super.copyWith((message) => updates(message as UpdateCalendarsResponse));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static UpdateCalendarsResponse create() => UpdateCalendarsResponse._();
+  UpdateCalendarsResponse createEmptyInstance() => create();
+  static $pb.PbList<UpdateCalendarsResponse> createRepeated() => $pb.PbList<UpdateCalendarsResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateCalendarsResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateCalendarsResponse>(create);
+  static UpdateCalendarsResponse _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  GetCalendarsErrorReason get errorReason => $_getN(1);
+  @$pb.TagNumber(2)
+  set errorReason(GetCalendarsErrorReason v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorReason() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.List<CalendarDetail> get calendarDetails => $_getList(2);
+}
+

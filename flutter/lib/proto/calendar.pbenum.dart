@@ -66,3 +66,47 @@ class GetCalendarsErrorReason extends $pb.ProtobufEnum {
   const GetCalendarsErrorReason._($core.int v, $core.String n) : super(v, n);
 }
 
+class UpdateCalendarActionType extends $pb.ProtobufEnum {
+  static const UpdateCalendarActionType UPDATE_CALENDAR_ACTION_TYPE_CHANGE_NAME = UpdateCalendarActionType._(0, 'UPDATE_CALENDAR_ACTION_TYPE_CHANGE_NAME');
+  static const UpdateCalendarActionType UPDATE_CALENDAR_ACTION_TYPE_CHANGE_COLOR = UpdateCalendarActionType._(1, 'UPDATE_CALENDAR_ACTION_TYPE_CHANGE_COLOR');
+  static const UpdateCalendarActionType UPDATE_CALENDAR_ACTION_TYPE_CHANGE_NAME_AND_COLOR = UpdateCalendarActionType._(2, 'UPDATE_CALENDAR_ACTION_TYPE_CHANGE_NAME_AND_COLOR');
+  static const UpdateCalendarActionType UPDATE_CALENDAR_ACTION_TYPE_ADD_HIGHLIGHTED_DAY = UpdateCalendarActionType._(3, 'UPDATE_CALENDAR_ACTION_TYPE_ADD_HIGHLIGHTED_DAY');
+  static const UpdateCalendarActionType UPDATE_CALENDAR_ACTION_TYPE_REMOVE_HIGHLIGHTED_DAY = UpdateCalendarActionType._(4, 'UPDATE_CALENDAR_ACTION_TYPE_REMOVE_HIGHLIGHTED_DAY');
+
+  static const $core.List<UpdateCalendarActionType> values = <UpdateCalendarActionType> [
+    UPDATE_CALENDAR_ACTION_TYPE_CHANGE_NAME,
+    UPDATE_CALENDAR_ACTION_TYPE_CHANGE_COLOR,
+    UPDATE_CALENDAR_ACTION_TYPE_CHANGE_NAME_AND_COLOR,
+    UPDATE_CALENDAR_ACTION_TYPE_ADD_HIGHLIGHTED_DAY,
+    UPDATE_CALENDAR_ACTION_TYPE_REMOVE_HIGHLIGHTED_DAY,
+  ];
+
+  static final $core.Map<$core.int, UpdateCalendarActionType> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static UpdateCalendarActionType valueOf($core.int value) => _byValue[value];
+
+  const UpdateCalendarActionType._($core.int v, $core.String n) : super(v, n);
+}
+
+class UpdateCalendarsErrorReason extends $pb.ProtobufEnum {
+  static const UpdateCalendarsErrorReason UPDATE_CALENDARS_ERROR_REASON_NO_ERROR = UpdateCalendarsErrorReason._(0, 'UPDATE_CALENDARS_ERROR_REASON_NO_ERROR');
+  static const UpdateCalendarsErrorReason UPDATE_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR = UpdateCalendarsErrorReason._(1, 'UPDATE_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR');
+  static const UpdateCalendarsErrorReason UPDATE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR = UpdateCalendarsErrorReason._(2, 'UPDATE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR');
+  static const UpdateCalendarsErrorReason UPDATE_CALENDARS_ERROR_REASON_DO_NOT_OWN_CALENDAR_ERROR = UpdateCalendarsErrorReason._(3, 'UPDATE_CALENDARS_ERROR_REASON_DO_NOT_OWN_CALENDAR_ERROR');
+  static const UpdateCalendarsErrorReason UPDATE_CALENDARS_ERROR_REASON_CALENDAR_NOT_FOUND_ERROR = UpdateCalendarsErrorReason._(4, 'UPDATE_CALENDARS_ERROR_REASON_CALENDAR_NOT_FOUND_ERROR');
+  static const UpdateCalendarsErrorReason UPDATE_CALENDARS_ERROR_REASON_TOO_MANY_CALENDARS_ERROR = UpdateCalendarsErrorReason._(5, 'UPDATE_CALENDARS_ERROR_REASON_TOO_MANY_CALENDARS_ERROR');
+
+  static const $core.List<UpdateCalendarsErrorReason> values = <UpdateCalendarsErrorReason> [
+    UPDATE_CALENDARS_ERROR_REASON_NO_ERROR,
+    UPDATE_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR,
+    UPDATE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR,
+    UPDATE_CALENDARS_ERROR_REASON_DO_NOT_OWN_CALENDAR_ERROR,
+    UPDATE_CALENDARS_ERROR_REASON_CALENDAR_NOT_FOUND_ERROR,
+    UPDATE_CALENDARS_ERROR_REASON_TOO_MANY_CALENDARS_ERROR,
+  ];
+
+  static final $core.Map<$core.int, UpdateCalendarsErrorReason> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static UpdateCalendarsErrorReason valueOf($core.int value) => _byValue[value];
+
+  const UpdateCalendarsErrorReason._($core.int v, $core.String n) : super(v, n);
+}
+
