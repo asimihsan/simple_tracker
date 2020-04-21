@@ -25,7 +25,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -472,9 +471,12 @@ func highlightedDaysDeserializeExternal(input []byte) (output []string, err erro
 }
 
 func highlightedDaysSerializeInternal(input []string) (output []byte, err error) {
-	serializedBytes, err := json.Marshal(input)
+	listOfStrings := simpletracker.ListOfStrings{
+		Strings:              input,
+	}
+	serializedBytes, err := proto.Marshal(&listOfStrings)
 	if err != nil {
-		fmt.Println("Failed to serialize highlightedDays")
+		fmt.Printf("Failed to serialize highlightedDays: %s\n", err.Error())
 		return
 	}
 	output = gozstd.CompressLevel(nil, serializedBytes, 19)
@@ -488,13 +490,13 @@ func highlightedDaysDeserializeInternal(input []byte) (output []string, err erro
 		return
 	}
 
-	var deserialized []string
-	err = json.Unmarshal(decompressedBytes, &deserialized)
+	deserialized := simpletracker.ListOfStrings{}
+	err = proto.Unmarshal(decompressedBytes, &deserialized)
 	if err != nil {
-		fmt.Println("Failed to deserialize highlightedDays")
+		fmt.Println("Failed to deserialize external highlightedDays")
 	}
 
-	return deserialized, nil
+	return deserialized.Strings, nil
 }
 
 func CreateCalendar(
@@ -572,6 +574,7 @@ func handleGetCalendarsRequestInner(
 		request.CalendarIds,
 		dynamoDbClient,
 		calendarTableName,
+		true /*highlightedDaysShouldUseExternal*/,
 		ctx,
 	)
 	if err != nil {
@@ -619,13 +622,21 @@ func GetCalendars(
 	calendarIds []string,
 	dynamoDbClient *dynamodb.DynamoDB,
 	calendarTableName string,
+	highlightedDaysShouldUseExternal bool,
 	ctx context.Context,
 ) ([]*CalendarDetail, error) {
 	var result = make([]*CalendarDetail, 0, 1)
 
 	calendarIdsDeduped := removeDuplicatesAndSort(calendarIds)
 	for _, calendarId := range calendarIdsDeduped {
-		calendarDetail, err := getCalendarInternal(userId, calendarId, dynamoDbClient, calendarTableName, ctx)
+		calendarDetail, err := getCalendarInternal(
+			userId,
+			calendarId,
+			dynamoDbClient,
+			calendarTableName,
+			highlightedDaysShouldUseExternal,
+			ctx,
+		)
 		if err != nil {
 			return result, err
 		}
@@ -635,13 +646,18 @@ func GetCalendars(
 	return result, nil
 }
 
-func convertDynamoDbItemToCalendarDetail(item map[string]*dynamodb.AttributeValue) (*CalendarDetail, error) {
+func convertDynamoDbItemToCalendarDetail(
+	item map[string]*dynamodb.AttributeValue,
+	highlightedDaysShouldUseExternal bool,
+) (*CalendarDetail, error) {
 	calendarSummary, err := convertDynamoDbItemToCalendarSummary(item)
 	if err != nil {
 		fmt.Println("getCalendarInternal could not convert response to CalendarSummary")
 		fmt.Println(err.Error())
 		return nil, err
 	}
+
+	var highlightedDaysSerialized []byte
 
 	highlightedDaysSerializedInternal := item["HighlightedDays"].B
 	highlightedDays, err := highlightedDaysDeserializeInternal(highlightedDaysSerializedInternal)
@@ -657,6 +673,12 @@ func convertDynamoDbItemToCalendarDetail(item map[string]*dynamodb.AttributeValu
 		return nil, err
 	}
 
+	if (highlightedDaysShouldUseExternal) {
+		highlightedDaysSerialized = highlightedDaysSerializedExternal
+	} else {
+		highlightedDaysSerialized = highlightedDaysSerializedInternal
+	}
+
 	return &CalendarDetail{
 		FormatVersion:   calendarSummary.FormatVersion,
 		OwnerUserId:     calendarSummary.OwnerUserId,
@@ -664,7 +686,7 @@ func convertDynamoDbItemToCalendarDetail(item map[string]*dynamodb.AttributeValu
 		Name:            calendarSummary.Name,
 		Color:           calendarSummary.Color,
 		Version:         calendarSummary.Version,
-		HighlightedDays: highlightedDaysSerializedExternal,
+		HighlightedDays: highlightedDaysSerialized,
 	}, nil
 }
 
@@ -673,6 +695,7 @@ func getCalendarInternal(
 	calendarId string,
 	dynamoDbClient *dynamodb.DynamoDB,
 	calendarTableName string,
+	highlightedDaysShouldUseExternal bool,
 	ctx context.Context,	
 ) (*CalendarDetail, error) {
 	var getResp *dynamodb.GetItemOutput
@@ -704,13 +727,57 @@ func getCalendarInternal(
 		return nil, err
 	}
 
-	calendarDetail, err := convertDynamoDbItemToCalendarDetail(getResp.Item)
+	calendarDetail, err := convertDynamoDbItemToCalendarDetail(getResp.Item, highlightedDaysShouldUseExternal)
 	if err != nil {
 		fmt.Println("getCalendarInternal could not convert response to CalendarDetail")
 		fmt.Println(err.Error())
 		return nil, err
 	}
 	return calendarDetail, nil
+}
+
+func handleUpdateCalendarsRequestInner(
+	request *simpletracker.UpdateCalendarsRequest,
+	dynamoDbClient *dynamodb.DynamoDB,
+	sessionTableName string,
+	calendarTableName string,
+	ctx context.Context,
+) (*simpletracker.UpdateCalendarsResponse, error) {
+
+	resp := &simpletracker.UpdateCalendarsResponse{
+		CalendarDetails:      make([]*simpletracker.CalendarDetail, 0, 1),
+	}
+
+	if _, err := VerifySession(request.UserId, request.SessionId, dynamoDbClient, sessionTableName, ctx); err != nil {
+		fmt.Println("Could not verify session.")
+		resp.Success = false
+		resp.ErrorReason = simpletracker.UpdateCalendarsErrorReason_UPDATE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR
+		return resp, nil
+	}
+
+	result, err := UpdateCalendars(request.UserId, request.Actions, dynamoDbClient, calendarTableName, ctx)
+	if err != nil {
+		return resp, err
+	}
+
+	resp.Success = true
+	resp.ErrorReason = simpletracker.UpdateCalendarsErrorReason_UPDATE_CALENDARS_ERROR_REASON_NO_ERROR
+	for _, internalCalendarDetail := range(result) {
+		externalCalendarDetail := &simpletracker.CalendarDetail{
+			Summary: &simpletracker.CalendarSummary{
+				FormatVersion: internalCalendarDetail.FormatVersion,
+				OwnerUserid:   internalCalendarDetail.OwnerUserId,
+				Id:            internalCalendarDetail.Id,
+				Name:          internalCalendarDetail.Name,
+				Color:         internalCalendarDetail.Color,
+				Version:       internalCalendarDetail.Version,
+			},
+			HighlightedDays: internalCalendarDetail.HighlightedDays,
+		}
+		resp.CalendarDetails = append(resp.CalendarDetails, externalCalendarDetail)
+	}
+
+	return resp, nil
 }
 
 func UpdateCalendars(
@@ -725,7 +792,14 @@ func UpdateCalendars(
 		calendarIds = append(calendarIds, action.CalendarId)
 	}
 
-	existingCalendars, err := GetCalendars(userId, calendarIds, dynamoDbClient, calendarTableName, ctx)
+	existingCalendars, err := GetCalendars(
+		userId,
+		calendarIds,
+		dynamoDbClient,
+		calendarTableName,
+		false /*highlightedDaysShouldUseExternal*/,
+		ctx,
+	)
 	if err != nil {
 		fmt.Printf("UpdateCalendars could not get existing calendars: %s\n", err.Error())
 		return nil, ErrUpdateCalendarsCouldNotGetExistingCalendars
@@ -741,6 +815,8 @@ func UpdateCalendars(
 		var newName *string
 		var newColor *string
 		var newHighlightedDays *[]byte
+		existingCalendar := existingCalendarsLookup[action.CalendarId]
+
 		switch action.ActionType {
 		case simpletracker.UpdateCalendarActionType_UPDATE_CALENDAR_ACTION_TYPE_CHANGE_NAME:
 			newName = &action.NewName
@@ -753,28 +829,48 @@ func UpdateCalendars(
 			newColor = &action.NewColor
 			break;
 		case simpletracker.UpdateCalendarActionType_UPDATE_CALENDAR_ACTION_TYPE_ADD_HIGHLIGHTED_DAY:
+			newHighlightedDays, err = addHighlightedDay(existingCalendar.HighlightedDays, action.AddHighlightedDay)
+			if err != nil {
+				fmt.Printf("failed to add highlighted day %s to calendar ID %s: %s\n",
+					action.AddHighlightedDay, existingCalendar.Id, err.Error())
+				return nil, err
+			}
 			break;
 		case simpletracker.UpdateCalendarActionType_UPDATE_CALENDAR_ACTION_TYPE_REMOVE_HIGHLIGHTED_DAY:
+			newHighlightedDays, err = removeHighlightedDay(existingCalendar.HighlightedDays, action.RemoveHighlightedDay)
+			if err != nil {
+				fmt.Printf("failed to remove highlighted day %s to calendar ID %s: %s\n",
+					action.RemoveHighlightedDay, existingCalendar.Id, err.Error())
+				return nil, err
+			}
 			break;
 		default:
 			fmt.Printf("Unknown action type: %s", action.ActionType)
 			return nil, ErrUpdateCalendarsUnknownActionType
 		}
-	}
 
-	calendarIdsDeduped := removeDuplicatesAndSort(calendarIds)
-	for _, calendarId := range calendarIdsDeduped {
-		calendarDetail, err := getCalendarInternal(userId, calendarId, dynamoDbClient, calendarTableName, ctx)
+		newCalendarDetail, err := updateCalendarInternal(
+			userId,
+			action.CalendarId,
+			action.ExistingVersion,
+			newName,
+			newColor,
+			newHighlightedDays,
+			dynamoDbClient,
+			calendarTableName,
+			ctx,
+		)
 		if err != nil {
-			return result, err
+			fmt.Printf("Failed to update calendar ID %s: %s\n", action.CalendarId, err.Error())
+			return nil, err
 		}
-		result = append(result, calendarDetail)
+		result = append(result, newCalendarDetail)
 	}
 
 	return result, nil
 }
 
-func addHighlightedDay(highlightedDaysInternalSerialized []byte, highlightedDay string) ([]byte, error) {
+func addHighlightedDay(highlightedDaysInternalSerialized []byte, highlightedDay string) (*[]byte, error) {
 	highlightedDaysInternal, err := highlightedDaysDeserializeInternal(highlightedDaysInternalSerialized)
 	if err != nil {
 		fmt.Printf("addHighlightedDay could not deserialize internal highlightedDays: %s", err.Error())
@@ -789,7 +885,35 @@ func addHighlightedDay(highlightedDaysInternalSerialized []byte, highlightedDay 
 		fmt.Printf("addHighlightedDay could not serialize internal highlightedDays: %s", err.Error())
 		return nil, err
 	}
-	return newHighlightedDaysInternalSerialized, nil
+	return &newHighlightedDaysInternalSerialized, nil
+}
+
+func removeHighlightedDay(highlightedDaysInternalSerialized []byte, highlightedDay string) (*[]byte, error) {
+	highlightedDaysInternal, err := highlightedDaysDeserializeInternal(highlightedDaysInternalSerialized)
+	if err != nil {
+		fmt.Printf("removeHighlightedDay could not deserialize internal highlightedDays: %s", err.Error())
+		return nil, err
+	}
+
+	highlightedDaysInternal = removeElementFromStringSlice(highlightedDaysInternal, highlightedDay)
+	highlightedDaysInternal = removeDuplicatesAndSort(highlightedDaysInternal)
+
+	newHighlightedDaysInternalSerialized, err := highlightedDaysSerializeInternal(highlightedDaysInternal)
+	if err != nil {
+		fmt.Printf("removeHighlightedDay could not serialize internal highlightedDays: %s", err.Error())
+		return nil, err
+	}
+	return &newHighlightedDaysInternalSerialized, nil
+}
+
+func removeElementFromStringSlice(slice []string, item string) []string {
+	result := make([]string, 0, len(slice))
+	for _, actualItem := range slice {
+		if item != actualItem {
+			result = append(result, actualItem)
+		}
+	}
+	return result
 }
 
 func updateCalendarInternal(
@@ -851,7 +975,7 @@ func updateCalendarInternal(
 		fmt.Println(err.Error())
 		return nil, err
 	}
-	calendarDetail, err := convertDynamoDbItemToCalendarDetail(updateResp.Attributes)
+	calendarDetail, err := convertDynamoDbItemToCalendarDetail(updateResp.Attributes, true /*highlightedDaysShouldUseExternal*/)
 	if err != nil {
 		fmt.Println("updateCalendarInternal could not convert response to CalendarDetail")
 		fmt.Println(err.Error())

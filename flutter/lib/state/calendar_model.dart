@@ -36,6 +36,8 @@ class CalendarModel {
 
   Color get color => calendarSummaryModel.color;
 
+  int get version => calendarSummaryModel.version;
+
   Set<DateTime> get highlightedDaysAsDateTimes => this._highlightedDaysAsDateTimes;
 
   @override

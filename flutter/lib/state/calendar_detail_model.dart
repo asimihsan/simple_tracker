@@ -33,16 +33,46 @@ class CalendarDetailModel extends ChangeNotifier {
 
   bool get loading => _loading;
 
+  List<CalendarModel> get calendarModels {
+    List<CalendarModel> result = _calendarModels.values.toList();
+    result.sort((a, b) => a.id.compareTo(b.id));
+    return result;
+  }
+
   CalendarDetailModel() {
     _loading = true;
   }
 
-  setupFromCalendarModels(List<CalendarModel> calendarModels) {
+  setupUpdatedCalendarModels(List<CalendarModel> updatedCalendarModels) {
+    _setupUpdatedCalendarModels(updatedCalendarModels);
+    _setupHighlightedDateTimes();
+    _loading = false;
+    notifyListeners();
+  }
+
+  setupCalendarModelsFromScratch(List<CalendarModel> calendarModels) {
+    _setupCalendarModelsFromScratch(calendarModels);
+    _setupHighlightedDateTimes();
+    _loading = false;
+    notifyListeners();
+  }
+
+  void _setupUpdatedCalendarModels(List<CalendarModel> updatedCalendarModels) {
+    updatedCalendarModels.forEach((calendarModel) {
+      _calendarModels[calendarModel.id] = calendarModel;
+    });
+  }
+
+  void _setupCalendarModelsFromScratch(List<CalendarModel> calendarModels) {
     _calendarModels.clear();
-    _highlightedDateTimes.clear();
-    _refreshingDateTimes.clear();
     calendarModels.forEach((calendarModel) {
       _calendarModels[calendarModel.id] = calendarModel;
+    });
+  }
+
+  void _setupHighlightedDateTimes() {
+    _highlightedDateTimes.clear();
+    _calendarModels.values.forEach((calendarModel) {
       calendarModel.highlightedDaysAsDateTimes.forEach((dateTime) {
         if (!_highlightedDateTimes.containsKey(dateTime)) {
           _highlightedDateTimes[dateTime] = new List();
@@ -53,8 +83,6 @@ class CalendarDetailModel extends ChangeNotifier {
         }
       });
     });
-    _loading = false;
-    notifyListeners();
   }
 
   List<CalendarModel> getHighlightedCalendarModelsForDateTime(DateTime dateTime) {
@@ -66,50 +94,12 @@ class CalendarDetailModel extends ChangeNotifier {
 
   List<Color> getColorsForDateTime(DateTime dateTime) {
     return getHighlightedCalendarModelsForDateTime(dateTime)
-        .map((calendarModel) => calendarModel.color);
+        .map((calendarModel) => calendarModel.color)
+        .toList();
   }
 
   bool isRefreshingDateTime(DateTime dateTime) {
     return this._refreshingDateTimes.contains(dateTime);
-  }
-
-  void addHighlightedDay(CalendarModel calendarModel, DateTime dateTime) {
-    addRefreshingDateTime(dateTime);
-    notifyListeners();
-
-    // TODO call with CalendarRepository
-
-    // TODO done with call, first refresh entire model
-
-    List<CalendarModel> existing = new List();
-    if (_highlightedDateTimes.containsKey(dateTime)) {
-      existing = _highlightedDateTimes[dateTime].toList();
-    }
-    if (!existing.contains(calendarModel)) {
-      existing.add(calendarModel);
-    }
-    existing.sort((a, b) => a.id.compareTo(b.id));
-    _highlightedDateTimes[dateTime] = List.unmodifiable(existing);
-
-    // Remove the refreshing indicator
-    removeRefreshingDateTime(dateTime);
-
-    // Notify at the end
-    notifyListeners();
-  }
-
-  void removeHighlightedDay(CalendarModel calendarModel, DateTime dateTime) {
-    addRefreshingDateTime(dateTime);
-    notifyListeners();
-
-    // TODO call with CalendarRepository
-
-    // TODO done with call, first refresh entire model
-
-    // Remove the refreshing indicator
-    removeRefreshingDateTime(dateTime);
-
-    // Notify at the en
   }
 
   void addRefreshingDateTime(DateTime dateTime) {

@@ -21,6 +21,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_tracker/state/calendar_detail_model.dart';
+import 'package:simple_tracker/state/calendar_model.dart';
 import 'package:simple_tracker/state/calendar_repository.dart';
 import 'package:simple_tracker/state/user_model.dart';
 
@@ -136,11 +137,13 @@ class CalenderMonth extends StatelessWidget {
       backgroundColor = Colors.white;
       onTapHandler = () {};
     } else {
+      final List<CalendarModel> calendarModels = calendarDetailModel.calendarModels;
       final List<Color> colors = calendarDetailModel.getColorsForDateTime(currentDateTime);
+      final bool highlighted = colors.length > 0;
       final bool refreshing = calendarDetailModel.isRefreshingDateTime(currentDateTime);
 
       // TODO let us see more than one background color.
-      backgroundColor = colors.length > 0 ? colors[0] : Colors.white;
+      backgroundColor = highlighted ? colors[0] : Colors.white;
 
       child = refreshing
           ? new CircularProgressIndicator()
@@ -151,13 +154,19 @@ class CalenderMonth extends StatelessWidget {
             );
       onTapHandler = () {
         developer.log("Pressed index $index");
-
-        // TODO get clicks working again.
-//        if (highlighted) {
-//          calendarRepository.removeHighlightedDay(userModel, calendarDetailModel, currentDateTime);
-//        } else {
-//          calendarRepository.addHighlightedDay(userModel, calendarDetailModel, currentDateTime);
-//        }
+        if (highlighted) {
+          calendarRepository.removeHighlightedDay(
+              userModel: userModel,
+              calendarDetailModel: calendarDetailModel,
+              calendarModel: calendarModels[0],
+              dateTime: currentDateTime);
+        } else {
+          calendarRepository.addHighlightedDay(
+              userModel: userModel,
+              calendarDetailModel: calendarDetailModel,
+              calendarModel: calendarModels[0],
+              dateTime: currentDateTime);
+        }
       };
     }
 

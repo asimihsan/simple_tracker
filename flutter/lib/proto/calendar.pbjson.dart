@@ -207,7 +207,7 @@ const UpdateCalendarsResponse$json = const {
   '1': 'UpdateCalendarsResponse',
   '2': const [
     const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
-    const {'1': 'error_reason', '3': 2, '4': 1, '5': 14, '6': '.simpletracker.GetCalendarsErrorReason', '10': 'errorReason'},
+    const {'1': 'error_reason', '3': 2, '4': 1, '5': 14, '6': '.simpletracker.UpdateCalendarsErrorReason', '10': 'errorReason'},
     const {'1': 'calendar_details', '3': 3, '4': 3, '5': 11, '6': '.simpletracker.CalendarDetail', '10': 'calendarDetails'},
   ],
 };

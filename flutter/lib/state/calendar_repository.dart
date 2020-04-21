@@ -18,6 +18,7 @@ import 'dart:developer' as developer;
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:fixnum/fixnum.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 import 'package:simple_tracker/exception/CouldNotDeserializeResponseException.dart';
@@ -28,8 +29,11 @@ import 'package:simple_tracker/state/calendar_list_model.dart';
 import 'package:simple_tracker/state/calendar_model.dart';
 import 'package:simple_tracker/state/calendar_summary_model.dart';
 import 'package:simple_tracker/state/user_model.dart';
+import 'package:intl/intl.dart';
 
 class CalendarRepository {
+  static final _formatter = new DateFormat('yyyy-MM-dd');
+
   final String baseUrl;
 
   CalendarRepository(this.baseUrl);
@@ -74,7 +78,7 @@ class CalendarRepository {
         .map((calendarDetail) => convertExternalCalendarDetailToCalendarModel(calendarDetail))
         .toList();
     final CalendarDetailModel calendarDetailModel = CalendarDetailModel();
-    calendarDetailModel.setupFromCalendarModels(calendarModels);
+    calendarDetailModel.setupCalendarModelsFromScratch(calendarModels);
     return calendarDetailModel;
   }
 
@@ -202,28 +206,113 @@ class CalendarRepository {
     return result;
   }
 
+  Future<void> removeHighlightedDay(
+      {@required UserModel userModel,
+      @required CalendarDetailModel calendarDetailModel,
+      @required CalendarModel calendarModel,
+      @required DateTime dateTime}) async {
+    calendarDetailModel.addRefreshingDateTime(dateTime);
+
+    var requestProto = UpdateCalendarsRequest();
+    requestProto.userId = userModel.userId;
+    requestProto.sessionId = userModel.sessionId;
+
+    var updateCalendarAction = UpdateCalendarAction();
+    updateCalendarAction.calendarId = calendarModel.id;
+    updateCalendarAction.existingVersion = new Int64(calendarModel.version);
+    updateCalendarAction.actionType =
+        UpdateCalendarActionType.UPDATE_CALENDAR_ACTION_TYPE_REMOVE_HIGHLIGHTED_DAY;
+    updateCalendarAction.removeHighlightedDay = _formatter.format(dateTime);
+    requestProto.actions[calendarModel.id] = updateCalendarAction;
+    var requestSerialized = requestProto.writeToBuffer();
+
+    var url = baseUrl + "update_calendars";
+    Map<String, String> headers = {
+      "Accept": "application/protobuf",
+      "Content-Type": "application/protobuf",
+    };
+    var response = await http.post(url, headers: headers, body: requestSerialized);
+    if (response.headers.containsKey("x-amzn-trace-id")) {
+      developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
+    }
+    if (response.headers.containsKey("x-amzn-requestid")) {
+      developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
+    }
+
+    if (response.statusCode != 200) {
+      calendarDetailModel.removeRefreshingDateTime(dateTime);
+      throw new InternalServerErrorException();
+    }
+
+    UpdateCalendarsResponse responseProto;
+    try {
+      responseProto = UpdateCalendarsResponse.fromBuffer(response.bodyBytes);
+    } catch (e) {
+      developer.log("could not deserialize response as proto", error: e);
+      calendarDetailModel.removeRefreshingDateTime(dateTime);
+      throw new CouldNotDeserializeResponseException();
+    }
+
+    final List<CalendarModel> calendarModels = responseProto.calendarDetails
+        .map((calendarDetail) => convertExternalCalendarDetailToCalendarModel(calendarDetail))
+        .toList();
+    calendarDetailModel.setupUpdatedCalendarModels(calendarModels);
+    calendarDetailModel.removeRefreshingDateTime(dateTime);
+    return calendarDetailModel;
+  }
+
   Future<void> addHighlightedDay(
       {@required UserModel userModel,
       @required CalendarDetailModel calendarDetailModel,
-      @required String calendarId,
+      @required CalendarModel calendarModel,
       @required DateTime dateTime}) async {
-    calendarModel.addRefreshingDateTime(dateTime);
+    calendarDetailModel.addRefreshingDateTime(dateTime);
 
-    // TODO this would actually call a server, here just pretend data.
-    await Future.delayed(Duration(seconds: 1));
+    var requestProto = UpdateCalendarsRequest();
+    requestProto.userId = userModel.userId;
+    requestProto.sessionId = userModel.sessionId;
 
-    calendarModel.addHighlightedDay(dateTime);
-    calendarModel.removeRefreshingDateTime(dateTime);
+    var updateCalendarAction = UpdateCalendarAction();
+    updateCalendarAction.calendarId = calendarModel.id;
+    updateCalendarAction.existingVersion = new Int64(calendarModel.version);
+    updateCalendarAction.actionType =
+        UpdateCalendarActionType.UPDATE_CALENDAR_ACTION_TYPE_ADD_HIGHLIGHTED_DAY;
+    updateCalendarAction.addHighlightedDay = _formatter.format(dateTime);
+    requestProto.actions[calendarModel.id] = updateCalendarAction;
+    var requestSerialized = requestProto.writeToBuffer();
+
+    var url = baseUrl + "update_calendars";
+    Map<String, String> headers = {
+      "Accept": "application/protobuf",
+      "Content-Type": "application/protobuf",
+    };
+    var response = await http.post(url, headers: headers, body: requestSerialized);
+    if (response.headers.containsKey("x-amzn-trace-id")) {
+      developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
+    }
+    if (response.headers.containsKey("x-amzn-requestid")) {
+      developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
+    }
+
+    if (response.statusCode != 200) {
+      calendarDetailModel.removeRefreshingDateTime(dateTime);
+      throw new InternalServerErrorException();
+    }
+
+    UpdateCalendarsResponse responseProto;
+    try {
+      responseProto = UpdateCalendarsResponse.fromBuffer(response.bodyBytes);
+    } catch (e) {
+      developer.log("could not deserialize response as proto", error: e);
+      calendarDetailModel.removeRefreshingDateTime(dateTime);
+      throw new CouldNotDeserializeResponseException();
+    }
+
+    final List<CalendarModel> calendarModels = responseProto.calendarDetails
+        .map((calendarDetail) => convertExternalCalendarDetailToCalendarModel(calendarDetail))
+        .toList();
+    calendarDetailModel.setupUpdatedCalendarModels(calendarModels);
+    calendarDetailModel.removeRefreshingDateTime(dateTime);
+    return calendarDetailModel;
   }
-//
-//  Future<void> removeHighlightedDay(@required UserModel userModel,
-//      @required CalendarModel calendarModel, @required DateTime dateTime) async {
-//    calendarModel.addRefreshingDateTime(dateTime);
-//
-//    // TODO this would actually call a server, here just pretend data.
-//    await Future.delayed(Duration(seconds: 1));
-//
-//    calendarModel.removeHighlightedDay(dateTime);
-//    calendarModel.removeRefreshingDateTime(dateTime);
-//  }
 }

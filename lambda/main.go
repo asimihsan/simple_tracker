@@ -398,6 +398,8 @@ func handleUpdateCalendarsRequest(ctx context.Context, request events.APIGateway
 			Body: "failed to parse request proto", StatusCode: 400}, nil
 	}
 
+	_ = xray.AddAnnotation(ctx, "UserId", updateCalendarsRequest.UserId)
+
 	responseHeaders := make(map[string]string)
 	responseHeaders["Content-Type"] = "application/protobuf"
 

@@ -732,7 +732,7 @@ class UpdateCalendarAction extends $pb.GeneratedMessage {
 class UpdateCalendarsResponse extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo('UpdateCalendarsResponse', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
     ..aOB(1, 'success')
-    ..e<GetCalendarsErrorReason>(2, 'errorReason', $pb.PbFieldType.OE, defaultOrMaker: GetCalendarsErrorReason.GET_CALENDARS_ERROR_REASON_NO_ERROR, valueOf: GetCalendarsErrorReason.valueOf, enumValues: GetCalendarsErrorReason.values)
+    ..e<UpdateCalendarsErrorReason>(2, 'errorReason', $pb.PbFieldType.OE, defaultOrMaker: UpdateCalendarsErrorReason.UPDATE_CALENDARS_ERROR_REASON_NO_ERROR, valueOf: UpdateCalendarsErrorReason.valueOf, enumValues: UpdateCalendarsErrorReason.values)
     ..pc<CalendarDetail>(3, 'calendarDetails', $pb.PbFieldType.PM, subBuilder: CalendarDetail.create)
     ..hasRequiredFields = false
   ;
@@ -762,9 +762,9 @@ class UpdateCalendarsResponse extends $pb.GeneratedMessage {
   void clearSuccess() => clearField(1);
 
   @$pb.TagNumber(2)
-  GetCalendarsErrorReason get errorReason => $_getN(1);
+  UpdateCalendarsErrorReason get errorReason => $_getN(1);
   @$pb.TagNumber(2)
-  set errorReason(GetCalendarsErrorReason v) { setField(2, v); }
+  set errorReason(UpdateCalendarsErrorReason v) { setField(2, v); }
   @$pb.TagNumber(2)
   $core.bool hasErrorReason() => $_has(1);
   @$pb.TagNumber(2)

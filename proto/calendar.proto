@@ -145,7 +145,7 @@ enum UpdateCalendarActionType {
 
 message UpdateCalendarsResponse {
     bool success = 1;
-    GetCalendarsErrorReason error_reason = 2;
+    UpdateCalendarsErrorReason error_reason = 2;
     repeated CalendarDetail calendar_details = 3;
 }
 
