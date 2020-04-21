@@ -931,13 +931,13 @@ func updateCalendarInternal(
 	updateExpression := expression.
 		Set(expression.Name("Version"), expression.Value(existingVersion + 1));
 	if newName != nil {
-		updateExpression = expression.Set(expression.Name("Name"), expression.Value(*newName))
+		updateExpression = updateExpression.Set(expression.Name("Name"), expression.Value(*newName))
 	}
 	if newColor != nil {
-		updateExpression = expression.Set(expression.Name("Color"), expression.Value(*newColor))
+		updateExpression = updateExpression.Set(expression.Name("Color"), expression.Value(*newColor))
 	}
 	if newHighlightedDays != nil {
-		updateExpression = expression.Set(expression.Name("HighlightedDays"), expression.Value(*newHighlightedDays))
+		updateExpression = updateExpression.Set(expression.Name("HighlightedDays"), expression.Value(*newHighlightedDays))
 	}
 	expr, err := expression.NewBuilder().
 		WithCondition(existingCondition).
