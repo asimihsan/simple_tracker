@@ -23,13 +23,17 @@ import 'package:provider/provider.dart';
 import 'package:simple_tracker/exception/InternalServerErrorException.dart';
 import 'package:simple_tracker/localizations.dart';
 import 'package:simple_tracker/state/calendar_repository.dart';
+import 'package:simple_tracker/state/calendar_summary_model.dart';
 import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/view/calendar_list.dart';
 
-Widget getCreateCalendar(BuildContext context) {
+Widget getCreateEditCalendar(BuildContext context,
+    {@required bool isCreate, CalendarSummaryModel existingCalendarSummaryModel}) {
   final AppLocalizations localizations =
       Localizations.of<AppLocalizations>(context, AppLocalizations);
-  final String title = localizations.createCalendarTitle;
+
+  final String title =
+      isCreate ? localizations.createCalendarTitle : localizations.editCalendarTitle;
 
   return new WillPopScope(
       onWillPop: () {
@@ -39,24 +43,43 @@ Widget getCreateCalendar(BuildContext context) {
       child: Scaffold(
           appBar: AppBar(title: Text(title)),
           body: SafeArea(
-            child: new CreateCalendarForm(),
+            child: new CreateEditCalendarForm(
+                isCreate: isCreate, existingCalendarSummaryModel: existingCalendarSummaryModel),
             minimum: const EdgeInsets.symmetric(horizontal: 16.0),
           )));
 }
 
-class CreateCalendarForm extends StatefulWidget {
+class CreateEditCalendarForm extends StatefulWidget {
+  final bool isCreate;
+  CalendarSummaryModel existingCalendarSummaryModel;
+
+  CreateEditCalendarForm({@required this.isCreate, this.existingCalendarSummaryModel});
+
   @override
   State<StatefulWidget> createState() {
-    return CreateCalendarFormState();
+    return CreateEditCalendarFormState(isCreate, existingCalendarSummaryModel);
   }
 }
 
-class CreateCalendarFormState extends State<CreateCalendarForm> {
+class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
+  final bool isCreate;
+  final CalendarSummaryModel existingCalendarSummaryModel;
+  final TextEditingController _name;
+  Color currentColor = Colors.lightGreen;
+
+  CreateEditCalendarFormState(bool isCreate, CalendarSummaryModel existingCalendarSummaryModel)
+      : this.isCreate = isCreate,
+        this.existingCalendarSummaryModel = existingCalendarSummaryModel,
+        this._name = isCreate
+            ? new TextEditingController()
+            : new TextEditingController(text: existingCalendarSummaryModel.name) {
+    if (existingCalendarSummaryModel != null) {
+      currentColor = existingCalendarSummaryModel.color;
+    }
+  }
+
   // Global key that uniquely identifies Form widget allows validation.
   final _formKey = GlobalKey<FormState>();
-
-  final TextEditingController _name = new TextEditingController();
-  Color currentColor = Colors.lightGreen;
 
   void changeColor(Color color, BuildContext context) {
     setState(() {
@@ -114,7 +137,9 @@ class CreateCalendarFormState extends State<CreateCalendarForm> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: RaisedButton(
-                child: Text(localizations.createCalendarSubmitButton),
+                child: Text(isCreate
+                    ? localizations.createCalendarSubmitButton
+                    : localizations.editCalendarSubmitButton),
                 onPressed: () {
                   if (!_formKey.currentState.validate()) {
                     return;
@@ -123,17 +148,27 @@ class CreateCalendarFormState extends State<CreateCalendarForm> {
                       SnackBar(content: Text(localizations.createCalendarCreatingCalendar)));
                   final userModel = Provider.of<UserModel>(context, listen: false);
 
-                  calendarRepository
-                      .createCalendar(
-                    userId: userModel.userId,
-                    sessionId: userModel.sessionId,
-                    name: _name.text,
-                    color:
-                        color3p.Color.rgb(currentColor.red, currentColor.green, currentColor.blue)
-                            .toHexColor()
-                            .toCssString(),
-                  )
-                      .then((_) {
+                  final Future<void> future = isCreate
+                      ? calendarRepository.createCalendar(
+                          userId: userModel.userId,
+                          sessionId: userModel.sessionId,
+                          name: _name.text,
+                          color: color3p.Color.rgb(
+                                  currentColor.red, currentColor.green, currentColor.blue)
+                              .toHexColor()
+                              .toCssString(),
+                        )
+                      : calendarRepository.updateCalendarNameColor(
+                          userModel: userModel,
+                          calendarSummaryModel: existingCalendarSummaryModel,
+                          name: _name.text,
+                          color: color3p.Color.rgb(
+                                  currentColor.red, currentColor.green, currentColor.blue)
+                              .toHexColor()
+                              .toCssString(),
+                        );
+
+                  future.then((_) {
                     Scaffold.of(context).removeCurrentSnackBar();
                     Navigator.maybePop(context);
                   }).catchError((err) {

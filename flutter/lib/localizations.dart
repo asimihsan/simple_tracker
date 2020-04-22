@@ -52,6 +52,8 @@ class AppLocalizations {
       'create_calendar_title': 'Create calendar',
       'create_calendar_submit_button': 'Create calendar',
       'create_calendar_color': 'Calendar color (click icon)',
+      'edit_calendar_title': 'Edit calendar',
+      'edit_calendar_submit_button': 'Save calendar',
     },
   };
 
@@ -158,6 +160,14 @@ class AppLocalizations {
 
   String get createCalendarColor {
     return _localizedValues[locale.languageCode]['create_calendar_color'];
+  }
+
+  String get editCalendarTitle {
+    return _localizedValues[locale.languageCode]['edit_calendar_title'];
+  }
+
+  String get editCalendarSubmitButton {
+    return _localizedValues[locale.languageCode]['edit_calendar_submit_button'];
   }
 }
 

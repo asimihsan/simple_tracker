@@ -27,7 +27,7 @@ import 'dart:developer' as developer;
 
 import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/view/calendar_detail.dart';
-import 'package:simple_tracker/view/create_calendar_view.dart';
+import 'package:simple_tracker/view/create_edit_calendar_view.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 Widget getCalendarList(BuildContext context) {
@@ -46,7 +46,7 @@ Widget getCalendarList(BuildContext context) {
         developer.log("Create new calendar click");
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => getCreateCalendar(context)),
+          MaterialPageRoute(builder: (context) => getCreateEditCalendar(context, isCreate: true)),
         );
       },
       child: Icon(Icons.add),
@@ -169,11 +169,18 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
       child: card,
       actions: <Widget>[
         IconSlideAction(
-          caption: 'Edit',
-          color: Colors.black45,
-          icon: Icons.edit,
-          onTap: () => developer.log("Edit: " + calendarSummaryModel.name),
-        ),
+            caption: 'Edit',
+            color: Colors.black45,
+            icon: Icons.edit,
+            onTap: () {
+              developer.log("Edit: " + calendarSummaryModel.name);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => getCreateEditCalendar(context,
+                        isCreate: false, existingCalendarSummaryModel: calendarSummaryModel)),
+              );
+            }),
       ],
       secondaryActions: <Widget>[
         IconSlideAction(

@@ -316,6 +316,53 @@ class CalendarRepository {
     return calendarDetailModel;
   }
 
+  Future<void> updateCalendarNameColor(
+      {@required UserModel userModel,
+      @required CalendarSummaryModel calendarSummaryModel,
+      @required String name,
+      @required String color}) async {
+    var requestProto = UpdateCalendarsRequest();
+    requestProto.userId = userModel.userId;
+    requestProto.sessionId = userModel.sessionId;
+
+    var updateCalendarAction = UpdateCalendarAction();
+    updateCalendarAction.calendarId = calendarSummaryModel.id;
+    updateCalendarAction.existingVersion = new Int64(calendarSummaryModel.version);
+    updateCalendarAction.actionType =
+        UpdateCalendarActionType.UPDATE_CALENDAR_ACTION_TYPE_CHANGE_NAME_AND_COLOR;
+    updateCalendarAction.newName = name;
+    updateCalendarAction.newColor = color;
+    requestProto.actions[calendarSummaryModel.id] = updateCalendarAction;
+    var requestSerialized = requestProto.writeToBuffer();
+
+    var url = baseUrl + "update_calendars";
+    Map<String, String> headers = {
+      "Accept": "application/protobuf",
+      "Content-Type": "application/protobuf",
+    };
+    var response = await http.post(url, headers: headers, body: requestSerialized);
+    if (response.headers.containsKey("x-amzn-trace-id")) {
+      developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
+    }
+    if (response.headers.containsKey("x-amzn-requestid")) {
+      developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
+    }
+
+    if (response.statusCode != 200) {
+      throw new InternalServerErrorException();
+    }
+
+    UpdateCalendarsResponse responseProto;
+    try {
+      responseProto = UpdateCalendarsResponse.fromBuffer(response.bodyBytes);
+    } catch (e) {
+      developer.log("could not deserialize response as proto", error: e);
+      throw new CouldNotDeserializeResponseException();
+    }
+
+    return;
+  }
+
   Future<void> deleteCalendar(
       {@required String userId, @required String sessionId, @required String calendarId}) async {
     var requestProto = DeleteCalendarRequest();
