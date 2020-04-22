@@ -111,7 +111,8 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
       }
       List<Widget> calendarSummariesWidgets = calendarList
           .getCalendarSummariesInNameOrder()
-          .map((calendarSummary) => calendarSummaryModelToListViewWidget(calendarSummary, context))
+          .map((calendarSummary) =>
+              calendarSummaryModelToListViewWidget(calendarList, calendarSummary, context))
           .toList();
       return new RefreshIndicator(
           onRefresh: () {
@@ -141,7 +142,7 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
             )));
   }
 
-  Widget calendarSummaryModelToListViewWidget(
+  Widget calendarSummaryModelToListViewWidget(CalendarListModel calendarListModel,
       CalendarSummaryModel calendarSummaryModel, BuildContext context) {
     final Widget listTile = ListTile(
       leading: Container(
@@ -205,8 +206,15 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
                               icon: Icon(Icons.delete, color: Colors.red),
                               label: Text('Ok'),
                               onPressed: () {
-                                deleteCalendar(calendarSummaryModel.id, context);
-                                Navigator.of(context).pop(true);
+                                calendarListModel.loading = true;
+                                final NavigatorState navigatorState = Navigator.of(context);
+                                deleteCalendar(calendarSummaryModel.id, context).then((_) {
+                                  navigatorState.pop(true);
+                                }).catchError((err) {
+                                  Scaffold.of(context).showSnackBar(
+                                      SnackBar(content: Text("Failed to delete calendar!!")));
+                                  calendarListModel.loading = false;
+                                });
                               },
                             )
                           ],

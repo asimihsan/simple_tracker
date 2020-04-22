@@ -51,7 +51,7 @@ Widget getCreateEditCalendar(BuildContext context,
 
 class CreateEditCalendarForm extends StatefulWidget {
   final bool isCreate;
-  CalendarSummaryModel existingCalendarSummaryModel;
+  final CalendarSummaryModel existingCalendarSummaryModel;
 
   CreateEditCalendarForm({@required this.isCreate, this.existingCalendarSummaryModel});
 
