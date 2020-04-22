@@ -110,3 +110,24 @@ class UpdateCalendarsErrorReason extends $pb.ProtobufEnum {
   const UpdateCalendarsErrorReason._($core.int v, $core.String n) : super(v, n);
 }
 
+class DeleteCalendarErrorReason extends $pb.ProtobufEnum {
+  static const DeleteCalendarErrorReason DELETE_CALENDARS_ERROR_REASON_NO_ERROR = DeleteCalendarErrorReason._(0, 'DELETE_CALENDARS_ERROR_REASON_NO_ERROR');
+  static const DeleteCalendarErrorReason DELETE_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR = DeleteCalendarErrorReason._(1, 'DELETE_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR');
+  static const DeleteCalendarErrorReason DELETE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR = DeleteCalendarErrorReason._(2, 'DELETE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR');
+  static const DeleteCalendarErrorReason DELETE_CALENDARS_ERROR_REASON_DO_NOT_OWN_CALENDAR_ERROR = DeleteCalendarErrorReason._(3, 'DELETE_CALENDARS_ERROR_REASON_DO_NOT_OWN_CALENDAR_ERROR');
+  static const DeleteCalendarErrorReason DELETE_CALENDARS_ERROR_REASON_CALENDAR_NOT_FOUND_ERROR = DeleteCalendarErrorReason._(4, 'DELETE_CALENDARS_ERROR_REASON_CALENDAR_NOT_FOUND_ERROR');
+
+  static const $core.List<DeleteCalendarErrorReason> values = <DeleteCalendarErrorReason> [
+    DELETE_CALENDARS_ERROR_REASON_NO_ERROR,
+    DELETE_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR,
+    DELETE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR,
+    DELETE_CALENDARS_ERROR_REASON_DO_NOT_OWN_CALENDAR_ERROR,
+    DELETE_CALENDARS_ERROR_REASON_CALENDAR_NOT_FOUND_ERROR,
+  ];
+
+  static final $core.Map<$core.int, DeleteCalendarErrorReason> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static DeleteCalendarErrorReason valueOf($core.int value) => _byValue[value];
+
+  const DeleteCalendarErrorReason._($core.int v, $core.String n) : super(v, n);
+}
+

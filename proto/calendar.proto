@@ -157,3 +157,22 @@ enum UpdateCalendarsErrorReason {
     UPDATE_CALENDARS_ERROR_REASON_CALENDAR_NOT_FOUND_ERROR = 4;
     UPDATE_CALENDARS_ERROR_REASON_TOO_MANY_CALENDARS_ERROR = 5;
 }
+
+message DeleteCalendarRequest {
+    string user_id = 1;
+    string session_id = 2;
+    string calendar_id = 3;
+}
+
+message DeleteCalendarResponse {
+    bool success = 1;
+    DeleteCalendarErrorReason error_reason = 2;
+}
+
+enum DeleteCalendarErrorReason {
+    DELETE_CALENDARS_ERROR_REASON_NO_ERROR = 0;
+    DELETE_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR = 1;
+    DELETE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR = 2;
+    DELETE_CALENDARS_ERROR_REASON_DO_NOT_OWN_CALENDAR_ERROR = 3;
+    DELETE_CALENDARS_ERROR_REASON_CALENDAR_NOT_FOUND_ERROR = 4;
+}

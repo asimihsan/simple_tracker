@@ -736,6 +736,66 @@ func getCalendarInternal(
 	return calendarDetail, nil
 }
 
+func handleDeleteCalendarRequestInner(
+	request *simpletracker.DeleteCalendarRequest,
+	dynamoDbClient *dynamodb.DynamoDB,
+	sessionTableName string,
+	calendarTableName string,
+	ctx context.Context,
+) (*simpletracker.DeleteCalendarResponse, error) {
+
+	resp := &simpletracker.DeleteCalendarResponse{}
+
+	if _, err := VerifySession(request.UserId, request.SessionId, dynamoDbClient, sessionTableName, ctx); err != nil {
+		fmt.Println("Could not verify session.")
+		resp.Success = false
+		resp.ErrorReason = simpletracker.DeleteCalendarErrorReason_DELETE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR
+		return resp, nil
+	}
+
+	err := DeleteCalendar(request.UserId, request.CalendarId, dynamoDbClient, calendarTableName, ctx)
+	if err != nil {
+		return resp, err
+	}
+
+	resp.Success = true
+	resp.ErrorReason = simpletracker.DeleteCalendarErrorReason_DELETE_CALENDARS_ERROR_REASON_NO_ERROR
+	return resp, nil
+}
+
+func DeleteCalendar(
+	userId string,
+	calendarId string,
+	dynamoDbClient *dynamodb.DynamoDB,
+	calendarTableName string,
+	ctx context.Context,
+) (error) {
+	var deleteResp *dynamodb.DeleteItemOutput
+	if err := xray.Capture(ctx, "DeleteCalendar_DeleteItem", func(ctx1 context.Context) (err error) {
+		input := &dynamodb.DeleteItemInput{
+			Key: map[string]*dynamodb.AttributeValue{
+				"OwnerUserId": {
+					S: aws.String(userId),
+				},
+				"Id": {
+					S: aws.String(calendarId),
+				},
+			},
+			TableName:      aws.String(calendarTableName),
+		}
+		deleteResp, err = dynamoDbClient.DeleteItemWithContext(ctx1, input)
+		if err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		fmt.Println("DeleteCalendar failed to DeleteItem from DynamoDB")
+		fmt.Println(err.Error())
+		return err
+	}
+	return nil
+}
+
 func handleUpdateCalendarsRequestInner(
 	request *simpletracker.UpdateCalendarsRequest,
 	dynamoDbClient *dynamodb.DynamoDB,

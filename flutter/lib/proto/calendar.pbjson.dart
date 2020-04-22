@@ -58,6 +58,17 @@ const UpdateCalendarsErrorReason$json = const {
   ],
 };
 
+const DeleteCalendarErrorReason$json = const {
+  '1': 'DeleteCalendarErrorReason',
+  '2': const [
+    const {'1': 'DELETE_CALENDARS_ERROR_REASON_NO_ERROR', '2': 0},
+    const {'1': 'DELETE_CALENDARS_ERROR_REASON_INTERNAL_SERVER_ERROR', '2': 1},
+    const {'1': 'DELETE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR', '2': 2},
+    const {'1': 'DELETE_CALENDARS_ERROR_REASON_DO_NOT_OWN_CALENDAR_ERROR', '2': 3},
+    const {'1': 'DELETE_CALENDARS_ERROR_REASON_CALENDAR_NOT_FOUND_ERROR', '2': 4},
+  ],
+};
+
 const ListCalendarsRequest$json = const {
   '1': 'ListCalendarsRequest',
   '2': const [
@@ -209,6 +220,23 @@ const UpdateCalendarsResponse$json = const {
     const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
     const {'1': 'error_reason', '3': 2, '4': 1, '5': 14, '6': '.simpletracker.UpdateCalendarsErrorReason', '10': 'errorReason'},
     const {'1': 'calendar_details', '3': 3, '4': 3, '5': 11, '6': '.simpletracker.CalendarDetail', '10': 'calendarDetails'},
+  ],
+};
+
+const DeleteCalendarRequest$json = const {
+  '1': 'DeleteCalendarRequest',
+  '2': const [
+    const {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    const {'1': 'session_id', '3': 2, '4': 1, '5': 9, '10': 'sessionId'},
+    const {'1': 'calendar_id', '3': 3, '4': 1, '5': 9, '10': 'calendarId'},
+  ],
+};
+
+const DeleteCalendarResponse$json = const {
+  '1': 'DeleteCalendarResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    const {'1': 'error_reason', '3': 2, '4': 1, '5': 14, '6': '.simpletracker.DeleteCalendarErrorReason', '10': 'errorReason'},
   ],
 };
 

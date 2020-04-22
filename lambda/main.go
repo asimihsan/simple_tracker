@@ -48,7 +48,6 @@ var (
 	userTableName                   string
 	sessionTableName                string
 	calendarTableName               string
-	paginationKeyArn                string
 	paginationEphemeralKeyTableName string
 	paginationKeyCache 				*cache.Cache
 	ErrFailedToBase64DecodeBody     = errors.New("failed to base-64 decode body")
@@ -71,6 +70,8 @@ func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 			apiGatewayResponse, err = handleGetCalendarsRequest(ctx1, request)
 		case "/update_calendars":
 			apiGatewayResponse, err = handleUpdateCalendarsRequest(ctx1, request)
+		case "/delete_calendar":
+			apiGatewayResponse, err = handleDeleteCalendarRequest(ctx1, request)
 		default:
 			apiGatewayResponse = events.APIGatewayProxyResponse{Body: "Unknown API endpoint", StatusCode: 400}
 		}
@@ -431,6 +432,57 @@ func handleUpdateCalendarsRequest(ctx context.Context, request events.APIGateway
 	}, nil
 }
 
+func handleDeleteCalendarRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	requestBody, err := getRequestBody(request)
+	if err != nil {
+		fmt.Println("handleDeleteCalendarRequest failed to get body")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "failed to get body", StatusCode: 400}, nil
+	}
+
+	deleteCalendarRequest := &simpletracker.DeleteCalendarRequest{}
+	if err := proto.Unmarshal([]byte(requestBody), deleteCalendarRequest); err != nil {
+		fmt.Println("handleDeleteCalendarRequest failed to parse request proto")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "failed to parse request proto", StatusCode: 400}, nil
+	}
+
+	_ = xray.AddAnnotation(ctx, "UserId", deleteCalendarRequest.UserId)
+	_ = xray.AddAnnotation(ctx, "CalendarId", deleteCalendarRequest.CalendarId)
+
+	responseHeaders := make(map[string]string)
+	responseHeaders["Content-Type"] = "application/protobuf"
+
+	updateCalendarsResp, err := handleDeleteCalendarRequestInner(
+		deleteCalendarRequest,
+		dynamoDbClient,
+		sessionTableName,
+		calendarTableName,
+		ctx,
+	)
+	if err != nil {
+		fmt.Println("DeleteCalendar handling failed.")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "DeleteCalendar handling failed.", StatusCode: 400}, nil
+	}
+	resp, err := proto.Marshal(updateCalendarsResp)
+	if err != nil {
+		fmt.Println("Failed to serialize delete calendar response")
+		_ = xray.AddError(ctx, err)
+		return events.APIGatewayProxyResponse{
+			Body: "Failed to serialize delete calendar response", StatusCode: 500}, nil
+	}
+	return events.APIGatewayProxyResponse{
+		Body:            base64.StdEncoding.EncodeToString(resp),
+		Headers:         responseHeaders,
+		StatusCode:      200,
+		IsBase64Encoded: true,
+	}, nil
+}
+
 func initialize() {
 	_ = xray.Configure(xray.Config{
 		LogLevel:               "trace",
@@ -445,7 +497,6 @@ func initialize() {
 	userTableName = os.Getenv("USER_TABLE_NAME")
 	sessionTableName = os.Getenv("SESSION_TABLE_NAME")
 	calendarTableName = os.Getenv("CALENDAR_TABLE_NAME")
-	paginationKeyArn = os.Getenv("PAGINATION_KEY_ARN")
 	paginationEphemeralKeyTableName = os.Getenv("PAGINATION_EPHEMERAL_KEY_TABLE_NAME")
 
 	paginationKeyCache = cache.New(1 * time.Hour, 10 * time.Minute)

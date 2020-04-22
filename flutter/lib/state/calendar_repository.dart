@@ -315,4 +315,40 @@ class CalendarRepository {
     calendarDetailModel.removeRefreshingDateTime(dateTime);
     return calendarDetailModel;
   }
+
+  Future<void> deleteCalendar(
+      {@required String userId, @required String sessionId, @required String calendarId}) async {
+    var requestProto = DeleteCalendarRequest();
+    requestProto.userId = userId;
+    requestProto.sessionId = sessionId;
+    requestProto.calendarId = calendarId;
+    var requestSerialized = requestProto.writeToBuffer();
+
+    var url = baseUrl + "delete_calendar";
+    Map<String, String> headers = {
+      "Accept": "application/protobuf",
+      "Content-Type": "application/protobuf",
+    };
+    var response = await http.post(url, headers: headers, body: requestSerialized);
+    if (response.headers.containsKey("x-amzn-trace-id")) {
+      developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
+    }
+    if (response.headers.containsKey("x-amzn-requestid")) {
+      developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
+    }
+
+    if (response.statusCode != 200) {
+      throw new InternalServerErrorException();
+    }
+
+    DeleteCalendarResponse responseProto;
+    try {
+      responseProto = DeleteCalendarResponse.fromBuffer(response.bodyBytes);
+    } catch (e) {
+      developer.log("could not deserialize response as proto", error: e);
+      throw new CouldNotDeserializeResponseException();
+    }
+    developer.log("DeleteCalendarResponse", error: responseProto);
+    return;
+  }
 }

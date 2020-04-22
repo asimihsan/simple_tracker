@@ -774,3 +774,95 @@ class UpdateCalendarsResponse extends $pb.GeneratedMessage {
   $core.List<CalendarDetail> get calendarDetails => $_getList(2);
 }
 
+class DeleteCalendarRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('DeleteCalendarRequest', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
+    ..aOS(1, 'userId')
+    ..aOS(2, 'sessionId')
+    ..aOS(3, 'calendarId')
+    ..hasRequiredFields = false
+  ;
+
+  DeleteCalendarRequest._() : super();
+  factory DeleteCalendarRequest() => create();
+  factory DeleteCalendarRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DeleteCalendarRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  DeleteCalendarRequest clone() => DeleteCalendarRequest()..mergeFromMessage(this);
+  DeleteCalendarRequest copyWith(void Function(DeleteCalendarRequest) updates) => super.copyWith((message) => updates(message as DeleteCalendarRequest));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static DeleteCalendarRequest create() => DeleteCalendarRequest._();
+  DeleteCalendarRequest createEmptyInstance() => create();
+  static $pb.PbList<DeleteCalendarRequest> createRepeated() => $pb.PbList<DeleteCalendarRequest>();
+  @$core.pragma('dart2js:noInline')
+  static DeleteCalendarRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteCalendarRequest>(create);
+  static DeleteCalendarRequest _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get sessionId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set sessionId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSessionId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSessionId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get calendarId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set calendarId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCalendarId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCalendarId() => clearField(3);
+}
+
+class DeleteCalendarResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('DeleteCalendarResponse', package: const $pb.PackageName('simpletracker'), createEmptyInstance: create)
+    ..aOB(1, 'success')
+    ..e<DeleteCalendarErrorReason>(2, 'errorReason', $pb.PbFieldType.OE, defaultOrMaker: DeleteCalendarErrorReason.DELETE_CALENDARS_ERROR_REASON_NO_ERROR, valueOf: DeleteCalendarErrorReason.valueOf, enumValues: DeleteCalendarErrorReason.values)
+    ..hasRequiredFields = false
+  ;
+
+  DeleteCalendarResponse._() : super();
+  factory DeleteCalendarResponse() => create();
+  factory DeleteCalendarResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DeleteCalendarResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  DeleteCalendarResponse clone() => DeleteCalendarResponse()..mergeFromMessage(this);
+  DeleteCalendarResponse copyWith(void Function(DeleteCalendarResponse) updates) => super.copyWith((message) => updates(message as DeleteCalendarResponse));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static DeleteCalendarResponse create() => DeleteCalendarResponse._();
+  DeleteCalendarResponse createEmptyInstance() => create();
+  static $pb.PbList<DeleteCalendarResponse> createRepeated() => $pb.PbList<DeleteCalendarResponse>();
+  @$core.pragma('dart2js:noInline')
+  static DeleteCalendarResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeleteCalendarResponse>(create);
+  static DeleteCalendarResponse _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  DeleteCalendarErrorReason get errorReason => $_getN(1);
+  @$pb.TagNumber(2)
+  set errorReason(DeleteCalendarErrorReason v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorReason() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorReason() => clearField(2);
+}
+
