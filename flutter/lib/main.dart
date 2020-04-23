@@ -141,5 +141,5 @@ switchToUserLogin(AppPreferencesModel appPreferencesModel, BuildContext context)
       MaterialPageRoute(
           builder: (context) => Provider(
               create: (_) => appPreferencesModel,
-              child: getUserLogin(context, isSignupForm: false))));
+              child: getUserLogin(context, appPreferencesModel, isSignupForm: false))));
 }

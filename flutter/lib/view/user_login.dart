@@ -27,12 +27,13 @@ import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/state/user_repository.dart';
 import 'package:simple_tracker/view/calendar_list.dart';
 
-Widget getUserLogin(BuildContext context, {bool isSignupForm}) {
+Widget getUserLogin(BuildContext context, AppPreferencesModel appPreferencesModel,
+    {bool isSignupForm}) {
   final AppLocalizations localizations =
       Localizations.of<AppLocalizations>(context, AppLocalizations);
   final String title =
       isSignupForm ? localizations.userLoginSignupTitle : localizations.userLoginLoginTitle;
-  Widget child = UserLoginForm(isSignupForm);
+  Widget child = Provider(create: (_) => appPreferencesModel, child: UserLoginForm(isSignupForm));
   return Scaffold(
     appBar: AppBar(
       title: Text(title),
@@ -80,14 +81,14 @@ class UserLoginFormState extends State<UserLoginForm> {
             style: new TextStyle(color: Colors.blue),
             recognizer: new TapGestureRecognizer()
               ..onTap = () {
-                switchToUserLoginHandler(context);
+                switchToUserLoginHandler(appPreferencesModel, context);
               })
         : new TextSpan(
             text: localizations.userLoginSignUpAsANewUser,
             style: new TextStyle(color: Colors.blue),
             recognizer: new TapGestureRecognizer()
               ..onTap = () {
-                switchToUserSignupHandler(context);
+                switchToUserSignupHandler(appPreferencesModel, context);
               });
 
     return Form(
@@ -187,16 +188,20 @@ class UserLoginFormState extends State<UserLoginForm> {
   }
 }
 
-void switchToUserSignupHandler(BuildContext context) {
+void switchToUserSignupHandler(AppPreferencesModel appPreferencesModel, BuildContext context) {
   developer.log("Sign up click");
   Navigator.pushReplacement(
-      context, MaterialPageRoute(builder: (context) => getUserLogin(context, isSignupForm: true)));
+      context,
+      MaterialPageRoute(
+          builder: (context) => getUserLogin(context, appPreferencesModel, isSignupForm: true)));
 }
 
-void switchToUserLoginHandler(BuildContext context) {
+void switchToUserLoginHandler(AppPreferencesModel appPreferencesModel, BuildContext context) {
   developer.log("Log in click");
   Navigator.pushReplacement(
-      context, MaterialPageRoute(builder: (context) => getUserLogin(context, isSignupForm: false)));
+      context,
+      MaterialPageRoute(
+          builder: (context) => getUserLogin(context, appPreferencesModel, isSignupForm: false)));
 }
 
 void switchToCalendarListView(BuildContext context) {
