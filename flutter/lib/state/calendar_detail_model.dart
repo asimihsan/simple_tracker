@@ -19,8 +19,26 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:simple_tracker/state/calendar_model.dart';
+import 'package:date_calendar/date_calendar.dart';
+
+class CalendarModelAndMonthSum {
+  final CalendarModel _calendarModel;
+  final int _monthSum;
+
+  CalendarModelAndMonthSum(this._calendarModel, this._monthSum);
+
+  CalendarModel get calendarModel => _calendarModel;
+
+  int get monthSum => _monthSum;
+
+  String get summaryText => '${_calendarModel.name}: ${monthSum}';
+
+  Color get color => _calendarModel.color;
+}
 
 class CalendarDetailModel extends ChangeNotifier {
+  static final List<CalendarModel> emptyCalendarModelList = List.unmodifiable(List());
+
   bool _loading;
 
   Map<String, CalendarModel> _calendarModels = new HashMap();
@@ -41,6 +59,23 @@ class CalendarDetailModel extends ChangeNotifier {
 
   CalendarDetailModel() {
     _loading = true;
+  }
+
+  List<CalendarModelAndMonthSum> calculateMonthSum(final int year, final int month) {
+    final Map<CalendarModel, int> monthSum = new HashMap();
+    calendarModels.forEach((calendarModel) => monthSum[calendarModel] = 0);
+
+    GregorianCalendar currentCalendar = new GregorianCalendar(year, month, 1);
+    while (currentCalendar.month == month) {
+      getHighlightedCalendarModelsForDateTime(currentCalendar.toDateTimeLocal())
+          .forEach((calendarModel) => monthSum[calendarModel] = monthSum[calendarModel] + 1);
+      currentCalendar = currentCalendar.addDays(1);
+    }
+
+    return List.unmodifiable(calendarModels
+        .map(
+            (calendarModel) => new CalendarModelAndMonthSum(calendarModel, monthSum[calendarModel]))
+        .toList());
   }
 
   setupUpdatedCalendarModels(List<CalendarModel> updatedCalendarModels) {
@@ -87,7 +122,7 @@ class CalendarDetailModel extends ChangeNotifier {
 
   List<CalendarModel> getHighlightedCalendarModelsForDateTime(DateTime dateTime) {
     if (!_highlightedDateTimes.containsKey(dateTime)) {
-      return List.unmodifiable(List());
+      return emptyCalendarModelList;
     }
     return List.unmodifiable(_highlightedDateTimes[dateTime]);
   }

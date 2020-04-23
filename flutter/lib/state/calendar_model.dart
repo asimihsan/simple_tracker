@@ -38,6 +38,8 @@ class CalendarModel {
 
   int get version => calendarSummaryModel.version;
 
+  String get name => calendarSummaryModel.name;
+
   Set<DateTime> get highlightedDaysAsDateTimes => this._highlightedDaysAsDateTimes;
 
   @override

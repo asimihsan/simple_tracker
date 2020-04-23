@@ -62,6 +62,7 @@ class CalenderMonth extends StatelessWidget {
       final CalendarRepository calendarRepository =
           Provider.of<CalendarRepository>(context, listen: false);
       final UserModel userModel = Provider.of<UserModel>(context, listen: false);
+      final ThemeData themeData = Theme.of(context);
 
       final String title = "${MONTH_LABELS_EN[this.month - 1]} ${this.year}";
       developer.log('CalenderMonth build entry for title $title');
@@ -104,14 +105,21 @@ class CalenderMonth extends StatelessWidget {
         currentRow.add(Spacer());
       }
       rows.add(Row(children: currentRow));
+
+      List<Widget> children = new List();
+      children.add(Text(title, style: themeData.textTheme.display1));
+
+      final List<CalendarModelAndMonthSum> calendarModelAndMonthSum =
+          calendarDetailModel.calculateMonthSum(this.year, this.month);
+      calendarModelAndMonthSum.forEach(
+          (elem) => children.add(Text(elem.summaryText, style: TextStyle(color: elem.color))));
+      children.add(Column(children: rows));
+
       return Container(
         margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(title, style: Theme.of(context).textTheme.display1),
-            Column(children: rows),
-          ],
+          children: children,
         ),
       );
     });

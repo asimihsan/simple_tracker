@@ -352,9 +352,8 @@ class CalendarRepository {
       throw new InternalServerErrorException();
     }
 
-    UpdateCalendarsResponse responseProto;
     try {
-      responseProto = UpdateCalendarsResponse.fromBuffer(response.bodyBytes);
+      UpdateCalendarsResponse.fromBuffer(response.bodyBytes);
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
       throw new CouldNotDeserializeResponseException();

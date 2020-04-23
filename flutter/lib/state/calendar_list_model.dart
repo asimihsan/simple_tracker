@@ -40,7 +40,7 @@ class CalendarListModel extends ChangeNotifier {
 
   List<CalendarSummaryModel> getCalendarSummariesInNameOrder() {
     var result = _calendarSummaries.values.toList();
-    result.sort((a, b) => a.name.compareTo(b.name));
+    result.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     return result;
   }
 }

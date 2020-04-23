@@ -14,9 +14,10 @@
 //  limitations under the License.
 // ============================================================================
 
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:local_storage/local_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_tracker/localizations.dart';
 import 'package:simple_tracker/state/app_preferences_model.dart';
@@ -25,7 +26,6 @@ import 'package:simple_tracker/state/calendar_repository.dart';
 import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/state/user_repository.dart';
 import 'package:simple_tracker/view/user_login.dart';
-import 'dart:developer' as developer;
 
 void main() {
   runApp(MyApp());
