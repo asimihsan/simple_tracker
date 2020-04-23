@@ -1,11 +1,11 @@
 import * as cdk from '@aws-cdk/core';
 
 import * as apigateway from '@aws-cdk/aws-apigateway';
+import * as apigatewayv2 from '@aws-cdk/aws-apigatewayv2';
 import * as certificatemanager from '@aws-cdk/aws-certificatemanager';
-import * as cfn from '@aws-cdk/aws-cloudformation';
-import * as cr from '@aws-cdk/custom-resources';
 import * as eventstargets from '@aws-cdk/aws-events-targets';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
+import * as iam from '@aws-cdk/aws-iam';
 import * as kms from '@aws-cdk/aws-kms';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as r53targets from '@aws-cdk/aws-route53-targets';
@@ -56,7 +56,8 @@ export class CdkStack extends cdk.Stack {
     //  KMS key for encrypting pagination tokens.
     // ------------------------------------------------------------------------
     const paginationKey = new kms.Key(this, 'PaginationKey', {
-      enableKeyRotation: true
+      enableKeyRotation: true,
+      removalPolicy: RemovalPolicy.DESTROY,
     });
 
     const paginationEphemeralKeyTable = new dynamodb.Table(this, 'PaginationEphemeralKeyTable', {
@@ -182,6 +183,67 @@ export class CdkStack extends cdk.Stack {
       recordName: apiDomainName + ".",
       target: route53.RecordTarget.fromAlias(new r53targets.ApiGatewayDomain(apiGatewayDomain))
     });
-    // ------------------------------------------------------------------------    
+    // ------------------------------------------------------------------------
+
+    // ------------------------------------------------------------------------
+    //  TODO experimenting with API Gateway v2.
+    // ------------------------------------------------------------------------
+    // const apiV2 = new apigatewayv2.CfnApi(this, 'ApiV2', {
+    //   name: "ApiV2",
+    //   protocolType: 'HTTP',
+    //   target: lambdaFunction.functionArn,
+    // });
+    // const apiV2Stage = new apigatewayv2.CfnStage(this, 'ApiV2Stage', {
+    //   apiId: apiV2.ref,
+    //   stageName: 'v1',
+    //   autoDeploy: true,
+    // });
+    // const apiV2Integration = new apigatewayv2.CfnIntegration(this, 'ApiV2Integration', {
+    //   apiId: apiV2.ref,
+    //   integrationType: 'AWS_PROXY',
+    //   connectionType: 'INTERNET',
+    //   integrationUri: `arn:${this.partition}:apigateway:${this.region}:lambda:path/2015-03-31/functions/${lambdaFunction.functionArn}/invocations`,
+    //   integrationMethod: 'POST',
+    //   payloadFormatVersion: '1.0',
+    // });
+    // const apiV2Route = new apigatewayv2.CfnRoute(this, 'ApiV2Route', {
+    //   apiId: apiV2.ref,
+    //   routeKey: 'POST /',
+    //   authorizationType: 'NONE',
+    //   target: `integrations/${apiV2Integration.ref}`,
+    // });
+    // const apiV2DomainName = new apigatewayv2.CfnDomainName(this, 'ApiV2DomainName', {
+    //   domainName: apiDomainName,
+    //   domainNameConfigurations: [{
+    //     certificateArn: certificate.certificateArn,
+    //     certificateName: 'ApiV2Certificate',
+    //     endpointType: 'REGIONAL',
+    //   }]
+    // });
+    // new route53.ARecord(this, "ApiV2DnsAlias", {
+    //   zone: hostedZone,
+    //   recordName: apiDomainName + ".",
+    //   target: route53.RecordTarget.fromAlias(new ApiGatewayV2Domain(apiV2DomainName))
+    // });
+
+    // lambdaFunction.addPermission('grant-invoke-for-apiv2', {
+    //   action: 'lambda:InvokeFunction',
+    //   principal: new iam.ServicePrincipal('apigateway.amazonaws.com'),
+    //   sourceArn: `arn:${this.partition}:execute-api:${this.region}:${this.account}:${apiV2.ref}/${apiV2Stage.stageName}${apiV2Route.routeKey}`,
+    // });
+    // ------------------------------------------------------------------------
   }
 }
+
+// export class ApiGatewayV2Domain implements route53.IAliasRecordTarget {
+//   constructor(private readonly domainName: apigatewayv2.CfnDomainName) {
+
+//   }
+
+//   public bind(_record: route53.IRecordSet): route53.AliasRecordTargetConfig {
+//     return {
+//       hostedZoneId: this.domainName.attrRegionalHostedZoneId,
+//       dnsName: this.domainName.attrRegionalDomainName
+//     }
+//   }
+// }

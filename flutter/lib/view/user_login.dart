@@ -22,6 +22,7 @@ import 'package:provider/provider.dart';
 import 'package:simple_tracker/exception/InternalServerErrorException.dart';
 import 'package:simple_tracker/exception/UserMissingOrPasswordIncorrectException.dart';
 import 'package:simple_tracker/localizations.dart';
+import 'package:simple_tracker/state/app_preferences_model.dart';
 import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/state/user_repository.dart';
 import 'package:simple_tracker/view/calendar_list.dart';
@@ -31,16 +32,7 @@ Widget getUserLogin(BuildContext context, {bool isSignupForm}) {
       Localizations.of<AppLocalizations>(context, AppLocalizations);
   final String title =
       isSignupForm ? localizations.userLoginSignupTitle : localizations.userLoginLoginTitle;
-
-  Widget child = MultiProvider(
-    providers: [
-      Provider(
-        create: (_) => new UserRepository("https://preprod-simple-tracker.ihsan.io/"),
-      )
-    ],
-    child: UserLoginForm(isSignupForm),
-  );
-
+  Widget child = UserLoginForm(isSignupForm);
   return Scaffold(
     appBar: AppBar(
       title: Text(title),
@@ -79,6 +71,8 @@ class UserLoginFormState extends State<UserLoginForm> {
     final AppLocalizations localizations =
         Localizations.of<AppLocalizations>(context, AppLocalizations);
     final UserRepository userRepository = Provider.of<UserRepository>(context, listen: false);
+    final AppPreferencesModel appPreferencesModel =
+        Provider.of<AppPreferencesModel>(context, listen: false);
 
     final TextSpan switchLink = isSignupForm
         ? new TextSpan(
@@ -136,8 +130,10 @@ class UserLoginFormState extends State<UserLoginForm> {
                             username: _username.text,
                             password: _password.text,
                             providedUserModel: providedUserModel)
-                        .then((_) {
+                        .then((_) async {
                       developer.log("UserLoginFormState user repository create finished success");
+                      await appPreferencesModel.setUsernameAndPassword(
+                          _username.text, _password.text);
                       Scaffold.of(context).removeCurrentSnackBar();
                       switchToCalendarListView(context);
                     }).catchError((err) {
@@ -150,8 +146,10 @@ class UserLoginFormState extends State<UserLoginForm> {
                             username: _username.text,
                             password: _password.text,
                             providedUserModel: providedUserModel)
-                        .then((_) {
+                        .then((_) async {
                       developer.log("UserLoginFormState user repository login finished success");
+                      await appPreferencesModel.setUsernameAndPassword(
+                          _username.text, _password.text);
                       Scaffold.of(context).removeCurrentSnackBar();
                       switchToCalendarListView(context);
                     }).catchError((err) {
