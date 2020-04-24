@@ -31,7 +31,7 @@ class CalendarModelAndMonthSum {
 
   int get monthSum => _monthSum;
 
-  String get summaryText => '${_calendarModel.name}: ${monthSum}';
+  String get summaryText => '${_calendarModel.name}: $monthSum';
 
   Color get color => _calendarModel.color;
 }

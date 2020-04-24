@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
           ),
           Provider(
             create: (_) => new UserRepository("https://preprod-simple-tracker.ihsan.io/"),
-          )
+          ),
         ],
         child: MaterialApp(
           localizationsDelegates: [

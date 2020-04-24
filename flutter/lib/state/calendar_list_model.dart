@@ -20,10 +20,16 @@ import 'package:flutter/foundation.dart';
 import 'package:simple_tracker/state/calendar_summary_model.dart';
 
 class CalendarListModel extends ChangeNotifier {
+  static const maximumCombinedViewCalendars = 4;
+
   bool _loading = true;
   Map<String, CalendarSummaryModel> _calendarSummaries = new HashMap();
+  bool _isCombinedView = false;
+  Set<CalendarSummaryModel> _combinedViewCalendars = new Set();
 
   bool get loading => _loading;
+
+  bool get isCombinedView => _isCombinedView;
 
   set loading(bool value) {
     _loading = value;
@@ -31,6 +37,34 @@ class CalendarListModel extends ChangeNotifier {
       _calendarSummaries.clear();
     }
     notifyListeners();
+  }
+
+  void toggleIsCombinedView() {
+    _isCombinedView = !_isCombinedView;
+    _combinedViewCalendars.clear();
+    notifyListeners();
+  }
+
+  void selectCalendarForCombinedView(final CalendarSummaryModel calendarSummaryModel) {
+    if (_combinedViewCalendars.length < maximumCombinedViewCalendars) {
+      _combinedViewCalendars.add(calendarSummaryModel);
+      notifyListeners();
+    }
+  }
+
+  void deselectCalendarForCombinedView(final CalendarSummaryModel calendarSummaryModel) {
+    _combinedViewCalendars.remove(calendarSummaryModel);
+    notifyListeners();
+  }
+
+  bool isCalendarSelectedInCombinedView(final CalendarSummaryModel calendarSummaryModel) {
+    return _combinedViewCalendars.contains(calendarSummaryModel);
+  }
+
+  List<CalendarSummaryModel> getCombinedViewCalendarsAsList() {
+    var returnValue = _combinedViewCalendars.toList();
+    returnValue.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return List.unmodifiable(returnValue);
   }
 
   void setCalendarSummaries(List<CalendarSummaryModel> newCalendarSummaries) {

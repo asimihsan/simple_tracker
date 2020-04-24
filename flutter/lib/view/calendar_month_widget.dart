@@ -107,7 +107,7 @@ class CalenderMonth extends StatelessWidget {
       rows.add(Row(children: currentRow));
 
       List<Widget> children = new List();
-      children.add(Text(title, style: themeData.textTheme.display1));
+      children.add(Text(title, style: themeData.textTheme.headline4));
 
       final List<CalendarModelAndMonthSum> calendarModelAndMonthSum =
           calendarDetailModel.calculateMonthSum(this.year, this.month);
@@ -139,7 +139,7 @@ class CalenderMonth extends StatelessWidget {
     if (isBlank) {
       child = Text(
         isBlank ? "" : "$index",
-        style: Theme.of(context).textTheme.body1,
+        style: Theme.of(context).textTheme.bodyText2,
         textAlign: TextAlign.center,
       );
       backgroundColor = Colors.white;
@@ -157,7 +157,7 @@ class CalenderMonth extends StatelessWidget {
           ? new CircularProgressIndicator()
           : Text(
               isBlank ? "" : "$index",
-              style: Theme.of(context).textTheme.body1,
+              style: Theme.of(context).textTheme.bodyText2,
               textAlign: TextAlign.center,
             );
       onTapHandler = () {
@@ -198,7 +198,7 @@ class CalenderMonth extends StatelessWidget {
         padding: const EdgeInsets.all(10.0),
         child: Text(
           "$day",
-          style: Theme.of(context).textTheme.body1,
+          style: Theme.of(context).textTheme.bodyText2,
           textAlign: TextAlign.center,
         ));
   }

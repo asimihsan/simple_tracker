@@ -39,4 +39,19 @@ class CalendarSummaryModel {
   String get id => _id;
 
   int get formatVersion => _formatVersion;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CalendarSummaryModel &&
+          runtimeType == other.runtimeType &&
+          _formatVersion == other._formatVersion &&
+          _id == other._id &&
+          _name == other._name &&
+          _color == other._color &&
+          _version == other._version;
+
+  @override
+  int get hashCode =>
+      _formatVersion.hashCode ^ _id.hashCode ^ _name.hashCode ^ _color.hashCode ^ _version.hashCode;
 }
