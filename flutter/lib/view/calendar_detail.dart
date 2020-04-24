@@ -22,25 +22,27 @@ import 'package:simple_tracker/state/calendar_summary_model.dart';
 import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/view/detail_view.dart';
 
-Widget getCalendarDetail(List<CalendarSummaryModel> calendarSummaryModels) {
-  return CalendarDetailWidget(calendarSummaryModels: calendarSummaryModels);
+Widget getCalendarDetail(List<CalendarSummaryModel> calendarSummaryModels, {bool readOnly}) {
+  return CalendarDetailWidget(calendarSummaryModels: calendarSummaryModels, readOnly: readOnly);
 }
 
 class CalendarDetailWidget extends StatefulWidget {
   final List<CalendarSummaryModel> calendarSummaryModels;
+  final bool readOnly;
 
-  const CalendarDetailWidget({this.calendarSummaryModels});
+  const CalendarDetailWidget({this.calendarSummaryModels, this.readOnly});
 
   @override
   State<StatefulWidget> createState() {
-    return _CalendarDetailWidgetState(calendarSummaryModels);
+    return _CalendarDetailWidgetState(calendarSummaryModels, readOnly);
   }
 }
 
 class _CalendarDetailWidgetState extends State<CalendarDetailWidget> {
   final List<CalendarSummaryModel> calendarSummaryModels;
+  final bool readOnly;
 
-  _CalendarDetailWidgetState(this.calendarSummaryModels);
+  _CalendarDetailWidgetState(this.calendarSummaryModels, this.readOnly);
 
   Widget _buildHomePage(Widget child) {
     String title;
@@ -70,6 +72,7 @@ class _CalendarDetailWidgetState extends State<CalendarDetailWidget> {
           if (snapshot.hasError) {
             return Text("Error loading calendars!!");
           }
+          calendarDetailModel.isReadOnly = this.readOnly;
           return MultiProvider(
             providers: [ListenableProvider(create: (_) => calendarDetailModel)],
             child: _buildHomePage(DetailView()),

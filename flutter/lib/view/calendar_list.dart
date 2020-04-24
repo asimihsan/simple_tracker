@@ -159,7 +159,8 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => getCalendarDetail(calendarSummaryModels)));
+                          builder: (context) =>
+                              getCalendarDetail(calendarSummaryModels, readOnly: true)));
                 },
                 child: Text('Show in combined view'))));
       }
@@ -207,8 +208,10 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
           slidableController.activeState?.close();
           final List<CalendarSummaryModel> calendarSummaryModels = new List();
           calendarSummaryModels.add(calendarSummaryModel);
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => getCalendarDetail(calendarSummaryModels)));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => getCalendarDetail(calendarSummaryModels, readOnly: false)));
           return;
         }
 

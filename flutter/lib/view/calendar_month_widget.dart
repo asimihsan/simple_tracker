@@ -160,7 +160,11 @@ class CalenderMonth extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyText2,
               textAlign: TextAlign.center,
             );
+
       onTapHandler = () {
+        if (calendarDetailModel.isReadOnly) {
+          return;
+        }
         developer.log("Pressed index $index");
         if (highlighted) {
           calendarRepository.removeHighlightedDay(

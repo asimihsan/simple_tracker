@@ -40,6 +40,7 @@ class CalendarDetailModel extends ChangeNotifier {
   static final List<CalendarModel> emptyCalendarModelList = List.unmodifiable(List());
 
   bool _loading;
+  bool _isReadOnly;
 
   Map<String, CalendarModel> _calendarModels = new HashMap();
 
@@ -50,6 +51,12 @@ class CalendarDetailModel extends ChangeNotifier {
   Set<DateTime> _refreshingDateTimes = new Set();
 
   bool get loading => _loading;
+
+  bool get isReadOnly => _isReadOnly;
+
+  set isReadOnly(bool value) {
+    _isReadOnly = value;
+  }
 
   List<CalendarModel> get calendarModels {
     List<CalendarModel> result = _calendarModels.values.toList();
