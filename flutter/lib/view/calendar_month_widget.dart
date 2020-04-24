@@ -133,6 +133,12 @@ class CalenderMonth extends StatelessWidget {
       final DateTime currentDateTime,
       final CalendarRepository calendarRepository,
       final UserModel userModel) {
+    final List<CalendarModel> calendarModels =
+        calendarDetailModel != null ? calendarDetailModel.calendarModels : new List();
+    final List<Color> colors = calendarDetailModel != null
+        ? calendarDetailModel.getColorsForDateTime(currentDateTime)
+        : new List();
+
     Widget child;
     Color backgroundColor;
     Function onTapHandler;
@@ -145,14 +151,11 @@ class CalenderMonth extends StatelessWidget {
       backgroundColor = Colors.white;
       onTapHandler = () {};
     } else {
-      final List<CalendarModel> calendarModels = calendarDetailModel.calendarModels;
-      final List<Color> colors = calendarDetailModel.getColorsForDateTime(currentDateTime);
       final bool highlighted = colors.length > 0;
       final bool refreshing = calendarDetailModel.isRefreshingDateTime(currentDateTime);
 
       // TODO let us see more than one background color.
       backgroundColor = highlighted ? colors[0] : Colors.white;
-
       child = refreshing
           ? new CircularProgressIndicator()
           : Text(
@@ -182,17 +185,106 @@ class CalenderMonth extends StatelessWidget {
       };
     }
 
-    return SizedBox(
-        height: 50,
-        width: 50,
-        child: InkWell(
-          onTap: onTapHandler,
-          child: Ink(
-              width: 50,
-              padding: const EdgeInsets.all(15.0),
-              decoration: new BoxDecoration(border: Border.all(), color: backgroundColor),
-              child: child),
-        ));
+    List<Color> bgColors = calendarDetailModel != null && currentDateTime != null
+        ? calendarDetailModel.getColorsForDateTimeWithDefaultColor(currentDateTime, Colors.white)
+        : new List();
+    final Color bgColor1 = bgColors.length >= 1 ? bgColors[0] : Colors.white;
+    final Color bgColor2 = bgColors.length >= 2 ? bgColors[1] : Colors.white;
+    final Color bgColor3 = bgColors.length >= 3 ? bgColors[2] : Colors.white;
+    final Color bgColor4 = bgColors.length >= 4 ? bgColors[3] : Colors.white;
+
+    const double squareSize = 50;
+    const double width = squareSize / 2 - 1;
+    const double height = squareSize / 2 - 1;
+    if (calendarDetailModel != null && calendarDetailModel.isReadOnly) {
+      return Stack(
+        children: <Widget>[
+          // Top-left
+          if (!isBlank)
+            Positioned(
+              top: 1,
+              left: 1,
+              height: height,
+              width: width,
+              child: SizedBox(
+                  height: height,
+                  width: width,
+                  child: Container(
+                    decoration: new BoxDecoration(color: bgColor1),
+                  )),
+            ),
+
+          // Top-right
+          if (!isBlank)
+            Positioned(
+              top: 1,
+              right: 1,
+              height: height,
+              width: width,
+              child: SizedBox(
+                  height: height,
+                  width: width,
+                  child: Container(
+                    decoration: new BoxDecoration(color: bgColor2),
+                  )),
+            ),
+
+          // Bottom-left
+          if (!isBlank)
+            Positioned(
+              bottom: 1,
+              left: 1,
+              height: height,
+              width: width,
+              child: SizedBox(
+                  height: height,
+                  width: width,
+                  child: Container(
+                    decoration: new BoxDecoration(color: bgColor3),
+                  )),
+            ),
+
+          // Bottom-right
+          if (!isBlank)
+            Positioned(
+              bottom: 1,
+              right: 1,
+              height: height,
+              width: width,
+              child: SizedBox(
+                  height: height,
+                  width: width,
+                  child: Container(
+                    decoration: new BoxDecoration(color: bgColor4),
+                  )),
+            ),
+
+          // This is the date number with a transparent background (no decoration).
+          SizedBox(
+              height: squareSize,
+              width: squareSize,
+              child: InkWell(
+                child: Ink(
+                    width: squareSize,
+                    padding: const EdgeInsets.all(15.0),
+                    decoration: new BoxDecoration(border: Border.all()),
+                    child: child),
+              )),
+        ],
+      );
+    } else {
+      return SizedBox(
+          height: 50,
+          width: 50,
+          child: InkWell(
+            onTap: onTapHandler,
+            child: Ink(
+                width: 50,
+                padding: const EdgeInsets.all(15.0),
+                decoration: new BoxDecoration(border: Border.all(), color: backgroundColor),
+                child: child),
+          ));
+    }
   }
 
   Widget headerWidget(final BuildContext context, String day) {

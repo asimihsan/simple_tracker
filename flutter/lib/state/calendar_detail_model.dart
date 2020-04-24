@@ -60,7 +60,7 @@ class CalendarDetailModel extends ChangeNotifier {
 
   List<CalendarModel> get calendarModels {
     List<CalendarModel> result = _calendarModels.values.toList();
-    result.sort((a, b) => a.id.compareTo(b.id));
+    result.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     return result;
   }
 
@@ -121,7 +121,8 @@ class CalendarDetailModel extends ChangeNotifier {
         }
         if (!_highlightedDateTimes[dateTime].contains(calendarModel)) {
           _highlightedDateTimes[dateTime].add(calendarModel);
-          _highlightedDateTimes[dateTime].sort((a, b) => a.id.compareTo(b.id));
+          _highlightedDateTimes[dateTime]
+              .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
         }
       });
     });
@@ -138,6 +139,16 @@ class CalendarDetailModel extends ChangeNotifier {
     return getHighlightedCalendarModelsForDateTime(dateTime)
         .map((calendarModel) => calendarModel.color)
         .toList();
+  }
+
+  List<Color> getColorsForDateTimeWithDefaultColor(DateTime dateTime, Color defaultColor) {
+    var highlightedCalendarModels = getHighlightedCalendarModelsForDateTime(dateTime).toSet();
+    return calendarModels.map((calendarModel) {
+      if (highlightedCalendarModels.contains(calendarModel)) {
+        return calendarModel.color;
+      }
+      return defaultColor;
+    }).toList();
   }
 
   bool isRefreshingDateTime(DateTime dateTime) {

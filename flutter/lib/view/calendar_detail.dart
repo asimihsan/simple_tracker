@@ -84,7 +84,7 @@ class _CalendarDetailWidgetState extends State<CalendarDetailWidget> {
     final CalendarRepository calendarRepository =
         Provider.of<CalendarRepository>(context, listen: false);
     final UserModel userModel = Provider.of<UserModel>(context, listen: false);
-    return calendarRepository.getCalendars(
+    return await calendarRepository.getCalendars(
       userId: userModel.userId,
       sessionId: userModel.sessionId,
       calendarIds: this
