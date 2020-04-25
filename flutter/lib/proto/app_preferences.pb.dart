@@ -14,6 +14,8 @@ class AppPreferences extends $pb.GeneratedMessage {
     ..aOS(1, 'username')
     ..aOS(2, 'password')
     ..aOB(3, 'isNotFirstLaunch', protoName: 'isNotFirstLaunch')
+    ..aOS(4, 'sessionId', protoName: 'sessionId')
+    ..aOS(5, 'userId', protoName: 'userId')
     ..hasRequiredFields = false
   ;
 
@@ -58,5 +60,23 @@ class AppPreferences extends $pb.GeneratedMessage {
   $core.bool hasIsNotFirstLaunch() => $_has(2);
   @$pb.TagNumber(3)
   void clearIsNotFirstLaunch() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get sessionId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set sessionId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasSessionId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSessionId() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get userId => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set userId($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasUserId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearUserId() => clearField(5);
 }
 

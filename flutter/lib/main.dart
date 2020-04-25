@@ -19,12 +19,14 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:simple_tracker/exception/NoExistingSessionToReuseException.dart';
 import 'package:simple_tracker/localizations.dart';
 import 'package:simple_tracker/state/app_preferences_model.dart';
 import 'package:simple_tracker/state/calendar_list_model.dart';
 import 'package:simple_tracker/state/calendar_repository.dart';
 import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/state/user_repository.dart';
+import 'package:simple_tracker/view/calendar_list.dart';
 import 'package:simple_tracker/view/user_login.dart';
 
 void main() {
@@ -99,22 +101,50 @@ class MyAppWithLocalizationsState extends State<MyAppWithLocalizations> {
             return;
           }
 
-          final UserRepository userRepository = Provider.of<UserRepository>(context, listen: false);
+          // We might have a valid session ID to re-use, so try that first before logging in from
+          // scratch. Logging in is slow because the server hashes the password using Argon2id.
+          final CalendarRepository calendarRepository =
+              Provider.of<CalendarRepository>(context, listen: false);
+          final CalendarListModel calendarListModel =
+              Provider.of<CalendarListModel>(context, listen: false);
           final UserModel userModel = Provider.of<UserModel>(context, listen: false);
-          userRepository
-              .loginUser(
-                  username: appPreferencesModel.username,
-                  password: appPreferencesModel.password,
-                  providedUserModel: userModel)
-              .then((_) async {
-            developer.log("MyAppWithLocalizationsState user repository login finished success");
-            switchToCalendarListView(context);
-          }).catchError((err) async {
-            developer.log("MyAppWithLocalizationsState user repository login finished error",
-                error: err);
-            await appPreferencesModel.clearUsernameAndPassword();
-            switchToUserLogin(appPreferencesModel, context);
-            return;
+
+          Future future;
+          if (appPreferencesModel.sessionId != "") {
+            future = calendarRepository.listCalendars(
+                userId: appPreferencesModel.userId,
+                sessionId: appPreferencesModel.sessionId,
+                calendarListModel: calendarListModel);
+          } else {
+            future = Future.error(new NoExistingSessionToReuseException());
+          }
+          future.then((_) async {
+            developer.log("MyAppWithLocalizationsState user repository list calendars success");
+            userModel.login(appPreferencesModel.userId, appPreferencesModel.sessionId);
+            await switchToCalendarListView(context);
+          }).catchError((listCalendarErr) async {
+            await appPreferencesModel.clearUserIdAndSessionId();
+            developer.log("MyAppWithLocalizationsState user repository list calendars failed",
+                error: listCalendarErr);
+            final UserRepository userRepository =
+                Provider.of<UserRepository>(context, listen: false);
+            userRepository
+                .loginUser(
+                    username: appPreferencesModel.username,
+                    password: appPreferencesModel.password,
+                    providedUserModel: userModel)
+                .then((_) async {
+              developer.log("MyAppWithLocalizationsState user repository login finished success");
+              await appPreferencesModel.setUserIdAndSessionId(
+                  userModel.userId, userModel.sessionId);
+              await switchToCalendarListView(context);
+            }).catchError((userLoginErr) async {
+              developer.log("MyAppWithLocalizationsState user repository login finished error",
+                  error: userLoginErr);
+              await appPreferencesModel.clearCredentials();
+              await switchToUserLogin(appPreferencesModel, context);
+              return;
+            });
           });
         });
       }

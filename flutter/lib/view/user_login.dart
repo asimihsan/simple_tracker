@@ -133,13 +133,17 @@ class UserLoginFormState extends State<UserLoginForm> {
                             providedUserModel: providedUserModel)
                         .then((_) async {
                       developer.log("UserLoginFormState user repository create finished success");
-                      await appPreferencesModel.setUsernameAndPassword(
-                          _username.text, _password.text);
+                      await appPreferencesModel.setCredentials(
+                          username: _username.text,
+                          password: _password.text,
+                          userId: providedUserModel.userId,
+                          sessionId: providedUserModel.sessionId);
                       Scaffold.of(context).removeCurrentSnackBar();
                       switchToCalendarListView(context);
-                    }).catchError((err) {
+                    }).catchError((err) async {
                       developer.log("UserLoginFormState user repository create finished error",
                           error: err);
+                      await appPreferencesModel.clearCredentials();
                     });
                   } else {
                     userRepository
@@ -149,14 +153,18 @@ class UserLoginFormState extends State<UserLoginForm> {
                             providedUserModel: providedUserModel)
                         .then((_) async {
                       developer.log("UserLoginFormState user repository login finished success");
-                      await appPreferencesModel.setUsernameAndPassword(
-                          _username.text, _password.text);
+                      await appPreferencesModel.setCredentials(
+                          username: _username.text,
+                          password: _password.text,
+                          userId: providedUserModel.userId,
+                          sessionId: providedUserModel.sessionId);
                       Scaffold.of(context).removeCurrentSnackBar();
                       switchToCalendarListView(context);
-                    }).catchError((err) {
+                    }).catchError((err) async {
                       developer.log("UserLoginFormState user repository login finished error",
                           error: err);
                       Scaffold.of(context).removeCurrentSnackBar();
+                      await appPreferencesModel.clearCredentials();
                       if (err is UserMissingOrPasswordIncorrectException) {
                         Scaffold.of(context).showSnackBar(SnackBar(
                             backgroundColor: Colors.deepOrange,
@@ -204,9 +212,9 @@ void switchToUserLoginHandler(AppPreferencesModel appPreferencesModel, BuildCont
           builder: (context) => getUserLogin(context, appPreferencesModel, isSignupForm: false)));
 }
 
-void switchToCalendarListView(BuildContext context) {
+void switchToCalendarListView(BuildContext context) async {
   developer.log("switching to calendar list view");
-  Navigator.pushReplacement(
+  await Navigator.pushReplacement(
       context, MaterialPageRoute(builder: (context) => getCalendarList(context)));
 }
 

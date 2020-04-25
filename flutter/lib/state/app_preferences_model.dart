@@ -18,6 +18,7 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:local_storage/local_storage.dart';
 import 'package:simple_tracker/proto/app_preferences.pb.dart';
@@ -29,6 +30,32 @@ class AppPreferencesModel {
   AppPreferences _appPreferencesProto;
 
   bool get isPreferencesInitialized => _appPreferencesProto != null;
+
+  Future<void> setCredentials(
+      {@required String username,
+      @required String password,
+      @required String userId,
+      @required String sessionId}) async {
+    if (_appPreferencesProto == null) {
+      await reload();
+    }
+    _appPreferencesProto.username = username;
+    _appPreferencesProto.password = password;
+    _appPreferencesProto.userId = userId;
+    _appPreferencesProto.sessionId = sessionId;
+    await persist();
+    return;
+  }
+
+  Future<void> clearCredentials() async {
+    if (_appPreferencesProto == null) {
+      await reload();
+    }
+    _appPreferencesProto.username = "";
+    _appPreferencesProto.password = "";
+    await persist();
+    return;
+  }
 
   String get username => _appPreferencesProto?.username;
   String get password => _appPreferencesProto?.password;
@@ -48,6 +75,30 @@ class AppPreferencesModel {
     }
     _appPreferencesProto.username = "";
     _appPreferencesProto.password = "";
+    _appPreferencesProto.userId = "";
+    _appPreferencesProto.sessionId = "";
+    await persist();
+    return;
+  }
+
+  String get userId => _appPreferencesProto?.userId;
+  String get sessionId => _appPreferencesProto?.sessionId;
+  Future<void> setUserIdAndSessionId(String userId, String sessionId) async {
+    if (_appPreferencesProto == null) {
+      await reload();
+    }
+    _appPreferencesProto.userId = userId;
+    _appPreferencesProto.sessionId = sessionId;
+    await persist();
+    return;
+  }
+
+  Future<void> clearUserIdAndSessionId() async {
+    if (_appPreferencesProto == null) {
+      await reload();
+    }
+    _appPreferencesProto.userId = "";
+    _appPreferencesProto.sessionId = "";
     await persist();
     return;
   }
