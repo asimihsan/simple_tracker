@@ -60,7 +60,7 @@ func CreateSession(userId string,
 	}
 	canonical_id := fmt.Sprintf("sessionid_%s", string(id))
 
-	expiryTime := time.Now().Add(time.Hour * 24)
+	expiryTime := time.Now().Add(time.Hour * 24 * 7)
 	expiryEpochSecs := expiryTime.Unix()
 
 	session := Session{Id: canonical_id, UserId: userId, ExpiryEpochSeconds: expiryEpochSecs}
