@@ -222,12 +222,13 @@ class CalenderMonth extends StatelessWidget {
     }
 
     final List<Color> bgColors = calendarDetailModel != null && currentDateTime != null
-        ? calendarDetailModel.getColorsForDateTimeWithDefaultColor(currentDateTime, Colors.white)
+        ? calendarDetailModel.getColorsForDateTimeWithDefaultColor(
+            currentDateTime, Colors.transparent)
         : new List();
-    final Color bgColor1 = bgColors.length >= 1 ? bgColors[0] : Colors.white;
-    final Color bgColor2 = bgColors.length >= 2 ? bgColors[1] : Colors.white;
-    final Color bgColor3 = bgColors.length >= 3 ? bgColors[2] : Colors.white;
-    final Color bgColor4 = bgColors.length >= 4 ? bgColors[3] : Colors.white;
+    final Color bgColor1 = bgColors.length >= 1 ? bgColors[0] : Colors.transparent;
+    final Color bgColor2 = bgColors.length >= 2 ? bgColors[1] : Colors.transparent;
+    final Color bgColor3 = bgColors.length >= 3 ? bgColors[2] : Colors.transparent;
+    final Color bgColor4 = bgColors.length >= 4 ? bgColors[3] : Colors.transparent;
 
     final Border border = isToday ? Border.all(width: 3.0) : Border.all();
 
