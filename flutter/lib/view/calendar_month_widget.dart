@@ -15,6 +15,7 @@
 // ============================================================================
 
 import 'dart:developer' as developer;
+import 'dart:math';
 
 import 'package:date_calendar/date_calendar.dart';
 import 'package:flutter/cupertino.dart';
@@ -40,7 +41,6 @@ const MONTH_LABELS_EN = [
   "December"
 ];
 const DAY_LABELS_EN = [
-  null,
   "Mon",
   "Tue",
   "Wed",
@@ -49,12 +49,26 @@ const DAY_LABELS_EN = [
   "Sat",
   "Sun",
 ];
+const DAY_LABELS_SHORTEST_EN = [
+  "Mo",
+  "Tu",
+  "We",
+  "Th",
+  "Fr",
+  "Sa",
+  "Su",
+];
 
 class CalenderMonth extends StatelessWidget {
   const CalenderMonth({Key key, this.year, this.month}) : super(key: key);
 
   final int year;
   final int month;
+
+  final int daysInWeek = 7;
+  final double minWidthPixels = 50.0;
+  final double maxWidthPixels = 75.0;
+  final int maximumCellsInMonth = 40;
 
   @override
   Widget build(BuildContext context) {
@@ -67,44 +81,51 @@ class CalenderMonth extends StatelessWidget {
       final String title = "${MONTH_LABELS_EN[this.month - 1]} ${this.year}";
       developer.log('CalenderMonth build entry for title $title');
 
+      final GregorianCalendar today = GregorianCalendar.now();
       GregorianCalendar currentCalendar = new GregorianCalendar(this.year, this.month, 1);
       final int startingWeekday = currentCalendar.weekday;
+      final List<TableRow> tableRows = new List();
 
-      final List<Row> rows = new List<Row>();
-      List<Widget> currentRow = new List<Widget>();
-
-      for (var i = 1; i < DAY_LABELS_EN.length; i++) {
-        currentRow.add(headerWidget(context, DAY_LABELS_EN[i]));
-        currentRow.add(Spacer());
+      final List<Widget> headerRow = new List();
+      for (var i = 0; i < daysInWeek; i++) {
+        headerRow.add(headerWidget(context, DAY_LABELS_SHORTEST_EN[i]));
       }
-      rows.add(Row(children: currentRow));
-      currentRow = new List<Widget>();
+      tableRows.add(TableRow(children: headerRow));
 
-      for (var i = 0; i <= 40; i++) {
+      var currentRow = new List<Widget>();
+      for (var i = 0; i <= maximumCellsInMonth; i++) {
         final DateTime currentDateTime = currentCalendar.toDateTimeLocal();
         if (i + 1 < startingWeekday) {
-          currentRow.add(dayWidget(context, currentCalendar.day, true /*blank*/,
+          currentRow.add(dayWidget(context, currentCalendar.day, false /*isToday*/, true /*blank*/,
               calendarDetailModel, currentDateTime, calendarRepository, userModel));
         } else {
-          currentRow.add(dayWidget(context, currentCalendar.day, false /*blank*/,
-              calendarDetailModel, currentDateTime, calendarRepository, userModel));
+          currentRow.add(dayWidget(
+              context,
+              currentCalendar.day,
+              today == currentCalendar /*isToday*/,
+              false /*blank*/,
+              calendarDetailModel,
+              currentDateTime,
+              calendarRepository,
+              userModel));
           currentCalendar = currentCalendar.addDays(1);
         }
-        currentRow.add(Spacer());
-        if (currentRow.length >= 14) {
-          rows.add(Row(children: currentRow));
+        if (currentRow.length >= 7) {
+          tableRows.add(TableRow(children: currentRow));
           currentRow = new List<Widget>();
         }
         if (currentCalendar.month != this.month) {
           break;
         }
       }
-      while (currentRow.length < 14) {
-        currentRow.add(dayWidget(context, currentCalendar.day, true /*blank*/, null, null,
-            calendarRepository, userModel));
-        currentRow.add(Spacer());
+
+      if (currentRow.length > 0) {
+        while (currentRow.length < 7) {
+          currentRow.add(dayWidget(context, currentCalendar.day, false /*isToday*/, true /*blank*/,
+              null, null, calendarRepository, userModel));
+        }
+        tableRows.add(TableRow(children: currentRow));
       }
-      rows.add(Row(children: currentRow));
 
       List<Widget> children = new List();
       children.add(Text(title, style: themeData.textTheme.headline4));
@@ -113,10 +134,20 @@ class CalenderMonth extends StatelessWidget {
           calendarDetailModel.calculateMonthSum(this.year, this.month);
       calendarModelAndMonthSum.forEach(
           (elem) => children.add(Text(elem.summaryText, style: TextStyle(color: elem.color))));
-      children.add(Column(children: rows));
+      children.add(Table(
+        defaultColumnWidth: FractionColumnWidth(1.0 / daysInWeek),
+        children: tableRows,
+      ));
+
+      final double mediaWidth = MediaQuery.of(context).size.width;
+      final Orientation orientation = MediaQuery.of(context).orientation;
+      final double targetWidth = orientation == Orientation.portrait
+          ? minWidthPixels * daysInWeek
+          : maxWidthPixels * daysInWeek;
+      final double desiredMarginWidth = (mediaWidth - targetWidth) / 2;
 
       return Container(
-        margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+        margin: EdgeInsets.fromLTRB(desiredMarginWidth, 5.0, desiredMarginWidth, 5.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: children,
@@ -128,6 +159,7 @@ class CalenderMonth extends StatelessWidget {
   Widget dayWidget(
       final BuildContext context,
       final int index,
+      final bool isToday,
       final bool isBlank,
       final CalendarDetailModel calendarDetailModel,
       final DateTime currentDateTime,
@@ -156,11 +188,15 @@ class CalenderMonth extends StatelessWidget {
 
       // TODO let us see more than one background color.
       backgroundColor = highlighted ? colors[0] : Colors.white;
+      TextStyle textStyle = Theme.of(context).textTheme.bodyText2;
+      if (isToday) {
+        textStyle = textStyle.copyWith(fontWeight: FontWeight.bold);
+      }
       child = refreshing
           ? new CircularProgressIndicator()
           : Text(
               isBlank ? "" : "$index",
-              style: Theme.of(context).textTheme.bodyText2,
+              style: textStyle,
               textAlign: TextAlign.center,
             );
 
@@ -185,7 +221,7 @@ class CalenderMonth extends StatelessWidget {
       };
     }
 
-    List<Color> bgColors = calendarDetailModel != null && currentDateTime != null
+    final List<Color> bgColors = calendarDetailModel != null && currentDateTime != null
         ? calendarDetailModel.getColorsForDateTimeWithDefaultColor(currentDateTime, Colors.white)
         : new List();
     final Color bgColor1 = bgColors.length >= 1 ? bgColors[0] : Colors.white;
@@ -193,9 +229,12 @@ class CalenderMonth extends StatelessWidget {
     final Color bgColor3 = bgColors.length >= 3 ? bgColors[2] : Colors.white;
     final Color bgColor4 = bgColors.length >= 4 ? bgColors[3] : Colors.white;
 
-    const double squareSize = 50;
-    const double width = squareSize / 2 - 1;
-    const double height = squareSize / 2 - 1;
+    final Border border = isToday ? Border.all(width: 3.0) : Border.all();
+
+    final Orientation orientation = MediaQuery.of(context).orientation;
+    final double squareSize = orientation == Orientation.portrait ? minWidthPixels : maxWidthPixels;
+    final double width = squareSize / 2 - 1;
+    final double height = squareSize / 2 - 1;
     if (calendarDetailModel != null && calendarDetailModel.isReadOnly) {
       return Stack(
         children: <Widget>[
@@ -206,9 +245,13 @@ class CalenderMonth extends StatelessWidget {
               left: 1,
               height: height,
               width: width,
-              child: SizedBox(
-                  height: height,
-                  width: width,
+              child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: minWidthPixels,
+                    minHeight: minWidthPixels,
+                    maxWidth: maxWidthPixels,
+                    maxHeight: maxWidthPixels,
+                  ),
                   child: Container(
                     decoration: new BoxDecoration(color: bgColor1),
                   )),
@@ -221,9 +264,13 @@ class CalenderMonth extends StatelessWidget {
               right: 1,
               height: height,
               width: width,
-              child: SizedBox(
-                  height: height,
-                  width: width,
+              child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: minWidthPixels,
+                    minHeight: minWidthPixels,
+                    maxWidth: maxWidthPixels,
+                    maxHeight: maxWidthPixels,
+                  ),
                   child: Container(
                     decoration: new BoxDecoration(color: bgColor2),
                   )),
@@ -236,9 +283,13 @@ class CalenderMonth extends StatelessWidget {
               left: 1,
               height: height,
               width: width,
-              child: SizedBox(
-                  height: height,
-                  width: width,
+              child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: minWidthPixels,
+                    minHeight: minWidthPixels,
+                    maxWidth: maxWidthPixels,
+                    maxHeight: maxWidthPixels,
+                  ),
                   child: Container(
                     decoration: new BoxDecoration(color: bgColor3),
                   )),
@@ -251,51 +302,71 @@ class CalenderMonth extends StatelessWidget {
               right: 1,
               height: height,
               width: width,
-              child: SizedBox(
-                  height: height,
-                  width: width,
+              child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: minWidthPixels,
+                    minHeight: minWidthPixels,
+                    maxWidth: maxWidthPixels,
+                    maxHeight: maxWidthPixels,
+                  ),
                   child: Container(
                     decoration: new BoxDecoration(color: bgColor4),
                   )),
             ),
 
           // This is the date number with a transparent background (no decoration).
-          SizedBox(
-              height: squareSize,
-              width: squareSize,
-              child: InkWell(
-                child: Ink(
-                    width: squareSize,
-                    padding: const EdgeInsets.all(15.0),
-                    decoration: new BoxDecoration(border: Border.all()),
-                    child: child),
-              )),
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: minWidthPixels,
+              minHeight: minWidthPixels,
+              maxWidth: maxWidthPixels,
+              maxHeight: maxWidthPixels,
+            ),
+            child: InkWell(
+              onTap: onTapHandler,
+              child: Ink(
+                  padding: EdgeInsets.all(5.0),
+                  decoration: new BoxDecoration(border: border),
+                  child: child),
+            ),
+          ),
         ],
       );
     } else {
-      return SizedBox(
-          height: 50,
-          width: 50,
-          child: InkWell(
-            onTap: onTapHandler,
-            child: Ink(
-                width: 50,
-                padding: const EdgeInsets.all(15.0),
-                decoration: new BoxDecoration(border: Border.all(), color: backgroundColor),
-                child: child),
-          ));
+      return ConstrainedBox(
+        constraints: BoxConstraints(
+          minWidth: minWidthPixels,
+          minHeight: minWidthPixels,
+          maxWidth: minWidthPixels,
+          maxHeight: minWidthPixels,
+        ),
+        child: InkWell(
+          onTap: onTapHandler,
+          child: Ink(
+              padding: EdgeInsets.all(5.0),
+              decoration: new BoxDecoration(border: border, color: backgroundColor),
+              child: child),
+        ),
+      );
     }
   }
 
   Widget headerWidget(final BuildContext context, String day) {
-    return Container(
-        width: 50,
-        margin: const EdgeInsets.all(2.0),
-        padding: const EdgeInsets.all(10.0),
-        child: Text(
-          "$day",
-          style: Theme.of(context).textTheme.bodyText2,
-          textAlign: TextAlign.center,
-        ));
+    return LayoutBuilder(
+      builder: (context, constraints) => ConstrainedBox(
+        constraints: BoxConstraints(
+          minWidth: minWidthPixels,
+          maxWidth: maxWidthPixels,
+        ),
+        child: Container(
+            margin: EdgeInsets.all(min(2.0, minWidthPixels / 25.0)),
+            padding: EdgeInsets.all(min(10.0, minWidthPixels / 5.0)),
+            child: Text(
+              "$day",
+              style: Theme.of(context).textTheme.bodyText2,
+              textAlign: TextAlign.center,
+            )),
+      ),
+    );
   }
 }
