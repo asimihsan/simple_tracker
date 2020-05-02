@@ -140,6 +140,7 @@ class CalenderMonth extends StatelessWidget {
       ));
 
       final double mediaWidth = MediaQuery.of(context).size.width;
+      developer.log("mediaWidth: ", error: mediaWidth);
       final Orientation orientation = MediaQuery.of(context).orientation;
       final double targetWidth = orientation == Orientation.portrait
           ? minWidthPixels * daysInWeek
@@ -194,10 +195,16 @@ class CalenderMonth extends StatelessWidget {
       }
       child = refreshing
           ? new CircularProgressIndicator()
-          : Text(
-              isBlank ? "" : "$index",
-              style: textStyle,
-              textAlign: TextAlign.center,
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  isBlank ? "" : "$index",
+                  style: textStyle,
+                  textAlign: TextAlign.center,
+                )
+              ],
             );
 
       onTapHandler = () {
