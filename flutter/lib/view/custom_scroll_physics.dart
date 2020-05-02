@@ -14,16 +14,22 @@
 //  limitations under the License.
 // ============================================================================
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
-class CustomScrollPhysics extends ScrollPhysics {
+class CustomScrollPhysics extends AlwaysScrollableScrollPhysics {
   const CustomScrollPhysics({ScrollPhysics parent}) : super(parent: parent);
 
   @override
-  double get maxFlingVelocity => 50.0;
+  double get minFlingVelocity => 50.0;
 
   @override
-  ScrollPhysics applyTo(ScrollPhysics ancestor) {
-    return CustomScrollPhysics();
+  double get maxFlingVelocity => 1000.0;
+
+  @override
+  double get minFlingDistance => 18.0;
+
+  @override
+  CustomScrollPhysics applyTo(ScrollPhysics ancestor) {
+    return CustomScrollPhysics(parent: buildParent(ancestor));
   }
 }
