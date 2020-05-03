@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
+import 'package:simple_tracker/main.dart';
 import 'package:simple_tracker/state/app_preferences_model.dart';
 import 'package:simple_tracker/view/privacy_policy_widget.dart';
 
@@ -61,12 +62,12 @@ class SettingsListView extends StatelessWidget {
         children: <Widget>[
           Card(
             child: ListTile(
-              title: Text('Reset settings'),
+              title: Text('Log out'),
               trailing: Icon(Icons.keyboard_arrow_right),
               onTap: () async {
+                final BuildContext contextCopy = context;
                 await appPreferencesModel.clear();
-                Scaffold.of(context)
-                    .showSnackBar(SnackBar(content: Text("Successfully reset settings.")));
+                await switchToUserLogin(appPreferencesModel, contextCopy);
               },
             ),
           ),

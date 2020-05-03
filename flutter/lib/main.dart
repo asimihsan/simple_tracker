@@ -171,8 +171,9 @@ class MyAppWithLocalizationsState extends State<MyAppWithLocalizations> {
   }
 }
 
-switchToUserLogin(AppPreferencesModel appPreferencesModel, BuildContext context) {
-  Navigator.pushReplacement(
+Future<void> switchToUserLogin(
+    AppPreferencesModel appPreferencesModel, BuildContext context) async {
+  await Navigator.pushReplacement(
       context,
       MaterialPageRoute(
           builder: (context) => Provider(
