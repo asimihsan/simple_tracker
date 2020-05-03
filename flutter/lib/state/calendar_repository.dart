@@ -22,6 +22,7 @@ import 'package:fixnum/fixnum.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 import 'package:simple_tracker/exception/CouldNotDeserializeResponseException.dart';
+import 'package:simple_tracker/exception/CouldNotVerifySessionException.dart';
 import 'package:simple_tracker/exception/InternalServerErrorException.dart';
 import 'package:simple_tracker/proto/calendar.pb.dart';
 import 'package:simple_tracker/state/calendar_detail_model.dart';
@@ -137,10 +138,6 @@ class CalendarRepository {
       developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
     }
 
-    if (response.statusCode != 200) {
-      throw new InternalServerErrorException();
-    }
-
     CreateCalendarResponse responseProto;
     try {
       responseProto = CreateCalendarResponse.fromBuffer(response.bodyBytes);
@@ -149,18 +146,32 @@ class CalendarRepository {
       throw new CouldNotDeserializeResponseException();
     }
     developer.log("CreateCalendarResponse", error: responseProto);
+
+    if (responseProto.success == false) {
+      if (responseProto.errorReason ==
+          CreateCalendarErrorReason.CREATE_CALENDAR_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR) {
+        throw new CouldNotVerifySessionException();
+      } else {
+        throw new InternalServerErrorException();
+      }
+    } else if (response.statusCode != 200) {
+      throw new InternalServerErrorException();
+    }
+
     return;
   }
 
   Future<List<CalendarSummaryModel>> listCalendars(
       {@required String userId,
       @required String sessionId,
-      @required CalendarListModel calendarListModel}) async {
+      @required CalendarListModel calendarListModel,
+      int maxResults = 100}) async {
     calendarListModel.loading = true;
 
     var requestProto = ListCalendarsRequest();
     requestProto.userId = userId;
     requestProto.sessionId = sessionId;
+    requestProto.maxResults = Int64(maxResults);
     var listCalendarsRequestSerialized = requestProto.writeToBuffer();
 
     var url = baseUrl + "list_calendars";
@@ -177,11 +188,6 @@ class CalendarRepository {
       developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
     }
 
-    if (response.statusCode != 200) {
-      calendarListModel.loading = false;
-      throw new InternalServerErrorException();
-    }
-
     ListCalendarsResponse responseProto;
     try {
       responseProto = ListCalendarsResponse.fromBuffer(response.bodyBytes);
@@ -191,6 +197,18 @@ class CalendarRepository {
       throw new CouldNotDeserializeResponseException();
     }
     developer.log("ListCalendarsResponse", error: responseProto);
+    calendarListModel.loading = false;
+
+    if (responseProto.success == false) {
+      if (responseProto.errorReason ==
+          ListCalendarsErrorReason.LIST_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR) {
+        throw new CouldNotVerifySessionException();
+      } else {
+        throw new InternalServerErrorException();
+      }
+    } else if (response.statusCode != 200) {
+      throw new InternalServerErrorException();
+    }
 
     List<CalendarSummaryModel> result =
         responseProto.calendarSummaries.map((externalCalendarSummary) {
@@ -202,7 +220,6 @@ class CalendarRepository {
           externalCalendarSummary.version.toInt());
     }).toList(growable: false);
     calendarListModel.setCalendarSummaries(result);
-    calendarListModel.loading = false;
     return result;
   }
 
@@ -239,11 +256,6 @@ class CalendarRepository {
       developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
     }
 
-    if (response.statusCode != 200) {
-      calendarDetailModel.removeRefreshingDateTime(dateTime);
-      throw new InternalServerErrorException();
-    }
-
     UpdateCalendarsResponse responseProto;
     try {
       responseProto = UpdateCalendarsResponse.fromBuffer(response.bodyBytes);
@@ -251,6 +263,19 @@ class CalendarRepository {
       developer.log("could not deserialize response as proto", error: e);
       calendarDetailModel.removeRefreshingDateTime(dateTime);
       throw new CouldNotDeserializeResponseException();
+    }
+
+    if (responseProto.success == false) {
+      calendarDetailModel.removeRefreshingDateTime(dateTime);
+      if (responseProto.errorReason ==
+          UpdateCalendarsErrorReason.UPDATE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR) {
+        throw new CouldNotVerifySessionException();
+      } else {
+        throw new InternalServerErrorException();
+      }
+    } else if (response.statusCode != 200) {
+      calendarDetailModel.removeRefreshingDateTime(dateTime);
+      throw new InternalServerErrorException();
     }
 
     final List<CalendarModel> calendarModels = responseProto.calendarDetails
@@ -294,11 +319,6 @@ class CalendarRepository {
       developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
     }
 
-    if (response.statusCode != 200) {
-      calendarDetailModel.removeRefreshingDateTime(dateTime);
-      throw new InternalServerErrorException();
-    }
-
     UpdateCalendarsResponse responseProto;
     try {
       responseProto = UpdateCalendarsResponse.fromBuffer(response.bodyBytes);
@@ -306,6 +326,19 @@ class CalendarRepository {
       developer.log("could not deserialize response as proto", error: e);
       calendarDetailModel.removeRefreshingDateTime(dateTime);
       throw new CouldNotDeserializeResponseException();
+    }
+
+    if (responseProto.success == false) {
+      calendarDetailModel.removeRefreshingDateTime(dateTime);
+      if (responseProto.errorReason ==
+          UpdateCalendarsErrorReason.UPDATE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR) {
+        throw new CouldNotVerifySessionException();
+      } else {
+        throw new InternalServerErrorException();
+      }
+    } else if (response.statusCode != 200) {
+      calendarDetailModel.removeRefreshingDateTime(dateTime);
+      throw new InternalServerErrorException();
     }
 
     final List<CalendarModel> calendarModels = responseProto.calendarDetails
@@ -348,15 +381,23 @@ class CalendarRepository {
       developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
     }
 
-    if (response.statusCode != 200) {
-      throw new InternalServerErrorException();
-    }
-
+    UpdateCalendarsResponse responseProto;
     try {
-      UpdateCalendarsResponse.fromBuffer(response.bodyBytes);
+      responseProto = UpdateCalendarsResponse.fromBuffer(response.bodyBytes);
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
       throw new CouldNotDeserializeResponseException();
+    }
+
+    if (responseProto.success == false) {
+      if (responseProto.errorReason ==
+          UpdateCalendarsErrorReason.UPDATE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR) {
+        throw new CouldNotVerifySessionException();
+      } else {
+        throw new InternalServerErrorException();
+      }
+    } else if (response.statusCode != 200) {
+      throw new InternalServerErrorException();
     }
 
     return;
@@ -383,10 +424,6 @@ class CalendarRepository {
       developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
     }
 
-    if (response.statusCode != 200) {
-      throw new InternalServerErrorException();
-    }
-
     DeleteCalendarResponse responseProto;
     try {
       responseProto = DeleteCalendarResponse.fromBuffer(response.bodyBytes);
@@ -395,6 +432,18 @@ class CalendarRepository {
       throw new CouldNotDeserializeResponseException();
     }
     developer.log("DeleteCalendarResponse", error: responseProto);
+
+    if (responseProto.success == false) {
+      if (responseProto.errorReason ==
+          DeleteCalendarErrorReason.DELETE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR) {
+        throw new CouldNotVerifySessionException();
+      } else {
+        throw new InternalServerErrorException();
+      }
+    } else if (response.statusCode != 200) {
+      throw new InternalServerErrorException();
+    }
+
     return;
   }
 }

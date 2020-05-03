@@ -45,6 +45,7 @@ class AppLocalizations {
       'user_login_confirm_password_does_not_match':
           'Confirmation password does not match original password',
       'calendar_list_title': 'Calendar List',
+      'calendar_list_combined_view_title': 'View Combined Calendars',
       'create_calendar_name': 'Calendar name',
       'create_calendar_error_name_empty': 'Calendar name cannot be empty',
       'create_calendar_error_name_too_long': 'Calendar name must be at most 40 characters long.',
@@ -132,6 +133,10 @@ class AppLocalizations {
 
   String get calendarListTitle {
     return _localizedValues[locale.languageCode]['calendar_list_title'];
+  }
+
+  String get calendarListCombinedViewTitle {
+    return _localizedValues[locale.languageCode]['calendar_list_combined_view_title'];
   }
 
   String get createCalendarName {

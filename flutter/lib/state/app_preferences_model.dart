@@ -137,8 +137,8 @@ class AppPreferencesModel {
   }
 
   Future<void> persist() async {
-    Uint8List preferencesSerializedBytes = _appPreferencesProto.writeToBuffer();
-    String preferencesSerialized = String.fromCharCodes(preferencesSerializedBytes);
+    final Uint8List preferencesSerializedBytes = _appPreferencesProto.writeToBuffer();
+    final String preferencesSerialized = String.fromCharCodes(preferencesSerializedBytes);
     await LocalStorage.storeKeyValue(appId, preferencesKey, preferencesSerialized);
     return;
   }

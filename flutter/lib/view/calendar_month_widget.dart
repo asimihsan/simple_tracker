@@ -195,16 +195,10 @@ class CalenderMonth extends StatelessWidget {
       }
       child = refreshing
           ? new CircularProgressIndicator()
-          : Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  isBlank ? "" : "$index",
-                  style: textStyle,
-                  textAlign: TextAlign.center,
-                )
-              ],
+          : Text(
+              isBlank ? "" : "$index",
+              style: textStyle,
+              textAlign: TextAlign.center,
             );
 
       onTapHandler = () {
@@ -237,20 +231,20 @@ class CalenderMonth extends StatelessWidget {
     final Color bgColor3 = bgColors.length >= 3 ? bgColors[2] : Colors.transparent;
     final Color bgColor4 = bgColors.length >= 4 ? bgColors[3] : Colors.transparent;
 
-    final Border border = isToday ? Border.all(width: 3.0) : Border.all();
-
     final Orientation orientation = MediaQuery.of(context).orientation;
     final double squareSize = orientation == Orientation.portrait ? minWidthPixels : maxWidthPixels;
-    final double width = squareSize / 2 - 1;
-    final double height = squareSize / 2 - 1;
+    final double borderWidth = isToday ? 3.0 : 1.0;
+    final Border border = Border.all(width: borderWidth);
+    final double width = squareSize / 2 - borderWidth;
+    final double height = squareSize / 2 - borderWidth;
     if (calendarDetailModel != null && calendarDetailModel.isReadOnly) {
       return Stack(
         children: <Widget>[
           // Top-left
           if (!isBlank)
             Positioned(
-              top: 1,
-              left: 1,
+              top: borderWidth,
+              left: borderWidth,
               height: height,
               width: width,
               child: ConstrainedBox(
@@ -268,8 +262,8 @@ class CalenderMonth extends StatelessWidget {
           // Top-right
           if (!isBlank)
             Positioned(
-              top: 1,
-              right: 1,
+              top: borderWidth,
+              right: borderWidth,
               height: height,
               width: width,
               child: ConstrainedBox(
@@ -287,8 +281,8 @@ class CalenderMonth extends StatelessWidget {
           // Bottom-left
           if (!isBlank)
             Positioned(
-              bottom: 1,
-              left: 1,
+              bottom: borderWidth,
+              left: borderWidth,
               height: height,
               width: width,
               child: ConstrainedBox(
@@ -306,8 +300,8 @@ class CalenderMonth extends StatelessWidget {
           // Bottom-right
           if (!isBlank)
             Positioned(
-              bottom: 1,
-              right: 1,
+              bottom: borderWidth,
+              right: borderWidth,
               height: height,
               width: width,
               child: ConstrainedBox(
@@ -333,7 +327,7 @@ class CalenderMonth extends StatelessWidget {
             child: InkWell(
               onTap: onTapHandler,
               child: Ink(
-                  padding: EdgeInsets.all(5.0),
+                  padding: const EdgeInsets.all(5.0),
                   decoration: new BoxDecoration(border: border),
                   child: child),
             ),
@@ -351,7 +345,7 @@ class CalenderMonth extends StatelessWidget {
         child: InkWell(
           onTap: onTapHandler,
           child: Ink(
-              padding: EdgeInsets.all(5.0),
+              padding: const EdgeInsets.all(5.0),
               decoration: new BoxDecoration(border: border, color: backgroundColor),
               child: child),
         ),

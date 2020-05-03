@@ -212,7 +212,7 @@ void switchToUserLoginHandler(AppPreferencesModel appPreferencesModel, BuildCont
           builder: (context) => getUserLogin(context, appPreferencesModel, isSignupForm: false)));
 }
 
-void switchToCalendarListView(BuildContext context) async {
+Future<void> switchToCalendarListView(BuildContext context) async {
   developer.log("switching to calendar list view");
   await Navigator.pushReplacement(
       context, MaterialPageRoute(builder: (context) => getCalendarList(context)));

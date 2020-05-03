@@ -18,6 +18,7 @@ import 'dart:async';
 
 import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_tracker/localizations.dart';
 import 'package:simple_tracker/state/calendar_list_model.dart';
@@ -33,22 +34,36 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 Widget getCalendarList(BuildContext context) {
   final AppLocalizations localizations =
       Localizations.of<AppLocalizations>(context, AppLocalizations);
-  final CalendarListModel calendarListModel =
-      Provider.of<CalendarListModel>(context, listen: false);
+  final CalendarListModel calendarListModel = Provider.of<CalendarListModel>(context, listen: true);
+
+  final Color addButtonColor = calendarListModel.isCombinedView ? Colors.grey : Colors.blue;
+  final VoidCallback onAddCallback = calendarListModel.isCombinedView
+      ? null
+      : () async {
+          developer.log("Create new calendar click");
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => getCreateEditCalendar(context, isCreate: true)),
+          );
+        };
+
   return Scaffold(
     appBar: AppBar(
-      title: Text(localizations.calendarListTitle),
+      title: Text(calendarListModel.isCombinedView
+          ? localizations.calendarListCombinedViewTitle
+          : localizations.calendarListTitle),
     ),
     body: SafeArea(
       child: new CalendarList(),
-      minimum: const EdgeInsets.symmetric(horizontal: 16.0),
+//      minimum: const EdgeInsets.symmetric(horizontal: 16.0),
     ),
     floatingActionButton: Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        Padding(padding: EdgeInsets.fromLTRB(16.0, 0, 0, 0)),
+        Padding(padding: const EdgeInsets.fromLTRB(16.0, 0, 0, 0)),
         FloatingActionButton(
-          child: Icon(Icons.calendar_today),
+          child: SvgPicture.asset("assets/icons/MultipleCalendars.svg",
+              semanticsLabel: localizations.calendarListCombinedViewTitle),
           backgroundColor: Colors.lightGreen,
           onPressed: () {
             developer.log("Combined view");
@@ -56,19 +71,13 @@ Widget getCalendarList(BuildContext context) {
           },
           heroTag: null,
         ),
-        Padding(padding: EdgeInsets.fromLTRB(0, 0, 16.0, 0)),
+        Padding(padding: const EdgeInsets.fromLTRB(0, 0, 16.0, 0)),
         FloatingActionButton(
           child: Icon(Icons.add),
-          backgroundColor: Colors.blue,
-          onPressed: () {
-            developer.log("Create new calendar click");
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => getCreateEditCalendar(context, isCreate: true)),
-            );
-          },
+          backgroundColor: addButtonColor,
+          onPressed: onAddCallback,
           heroTag: null,
+          disabledElevation: 0.0,
         ),
       ],
     ),
@@ -135,32 +144,30 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
       List<Widget> children = new List();
       if (calendarList.isCombinedView) {
         children.add(Container(
-          padding: EdgeInsets.fromLTRB(0, 0, 0, 16.0),
+          padding: const EdgeInsets.fromLTRB(0, 0, 0, 16.0),
           child: Text(
-            "Select up to 4 calendars for a combined view!",
+            "Select up to 4 calendars to view at the same time.",
             style: Theme.of(context).textTheme.headline6,
           ),
         ));
         children.add(Container(
-            padding: EdgeInsets.fromLTRB(0, 0, 0, 16.0),
+            padding: const EdgeInsets.fromLTRB(0, 0, 0, 16.0),
             child: RaisedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (calendarList.getCombinedViewCalendarsAsList().length == 0) {
                     Scaffold.of(context).showSnackBar(SnackBar(
                         content: Text("No calendars selected!"),
                         backgroundColor: Colors.deepOrange));
                     return;
                   }
-                  Future.microtask(() {
-                    calendarList.toggleIsCombinedView();
-                  });
                   final List<CalendarSummaryModel> calendarSummaryModels =
                       calendarList.getCombinedViewCalendarsAsList();
-                  Navigator.push(
+                  await Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) =>
                               getCalendarDetail(calendarSummaryModels, readOnly: true)));
+                  calendarList.toggleIsCombinedView();
                 },
                 child: Text('Show in combined view'))));
       }
@@ -169,10 +176,13 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
       return new RefreshIndicator(
           onRefresh: () {
             developer.log("refresh for non-empty!");
+            if (calendarList.isCombinedView) {
+              calendarList.isCombinedView = false;
+            }
             return refreshListCalendars(context);
           },
           child: Container(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: children,
@@ -187,7 +197,7 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
           return refreshListCalendars(context);
         },
         child: Container(
-            padding: EdgeInsets.all(32.0),
+            padding: const EdgeInsets.all(32.0),
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
               children: <Widget>[new Text(text)],
@@ -203,6 +213,10 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
         decoration: BoxDecoration(color: calendarSummaryModel.color),
       ),
       title: Text(calendarSummaryModel.name),
+      onLongPress: () {
+        calendarListModel.toggleIsCombinedView();
+        calendarListModel.selectCalendarForCombinedView(calendarSummaryModel);
+      },
       onTap: () {
         if (!calendarListModel.isCombinedView) {
           slidableController.activeState?.close();

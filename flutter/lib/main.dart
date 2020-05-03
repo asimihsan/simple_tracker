@@ -58,6 +58,7 @@ class MyApp extends StatelessWidget {
           ),
         ],
         child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           localizationsDelegates: [
             const AppLocalizationsDelegate(),
             GlobalMaterialLocalizations.delegate,
@@ -118,6 +119,7 @@ class MyAppWithLocalizationsState extends State<MyAppWithLocalizations> {
             future = calendarRepository.listCalendars(
                 userId: appPreferencesModel.userId,
                 sessionId: appPreferencesModel.sessionId,
+                maxResults: 1,
                 calendarListModel: calendarListModel);
           } else {
             future = Future.error(new NoExistingSessionToReuseException());
