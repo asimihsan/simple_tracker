@@ -21,6 +21,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:local_storage/local_storage.dart';
+import 'package:package_info/package_info.dart';
 import 'package:simple_tracker/proto/app_preferences.pb.dart';
 
 class AppPreferencesModel {
@@ -28,8 +29,13 @@ class AppPreferencesModel {
   static String preferencesKey = "_preferences";
 
   AppPreferences _appPreferencesProto;
+  PackageInfo _packageInfo;
 
   bool get isPreferencesInitialized => _appPreferencesProto != null;
+
+  Future<void> clear() async {
+    await clearUsernameAndPassword();
+  }
 
   Future<void> setCredentials(
       {@required String username,
@@ -113,6 +119,10 @@ class AppPreferencesModel {
     return;
   }
 
+  String get appVersion => _packageInfo?.version;
+
+  String get appBuildNumber => _packageInfo?.buildNumber;
+
   Future<void> reload() async {
     try {
       final String preferencesSerialized = await LocalStorage.getKeyValue(appId, preferencesKey);
@@ -133,6 +143,7 @@ class AppPreferencesModel {
           break;
       }
     }
+    _packageInfo = await PackageInfo.fromPlatform();
     return;
   }
 

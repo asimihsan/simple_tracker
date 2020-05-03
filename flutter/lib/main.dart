@@ -44,6 +44,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
         providers: [
+          FutureProvider<AppPreferencesModel>(
+            create: (_) async {
+              final AppPreferencesModel appPreferencesModel = new AppPreferencesModel();
+              await appPreferencesModel.reload();
+              return appPreferencesModel;
+            },
+          ),
           Provider(
             create: (_) => new UserModel.notLoggedIn(),
           ),
@@ -71,14 +78,7 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(
             primarySwatch: Colors.blue,
           ),
-          home: FutureProvider<AppPreferencesModel>(
-            create: (_) async {
-              final AppPreferencesModel appPreferencesModel = new AppPreferencesModel();
-              await appPreferencesModel.reload();
-              return appPreferencesModel;
-            },
-            child: MyAppWithLocalizations(),
-          ),
+          home: MyAppWithLocalizations(),
         ));
   }
 }

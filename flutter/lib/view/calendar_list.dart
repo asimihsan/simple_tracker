@@ -30,6 +30,7 @@ import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/view/calendar_detail.dart';
 import 'package:simple_tracker/view/create_edit_calendar_view.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:simple_tracker/view/settings_widget.dart';
 
 Widget getCalendarList(BuildContext context) {
   final AppLocalizations localizations =
@@ -52,10 +53,19 @@ Widget getCalendarList(BuildContext context) {
       title: Text(calendarListModel.isCombinedView
           ? localizations.calendarListCombinedViewTitle
           : localizations.calendarListTitle),
+      actions: <Widget>[
+        IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsWidget()),
+              );
+            }),
+      ],
     ),
     body: SafeArea(
       child: new CalendarList(),
-//      minimum: const EdgeInsets.symmetric(horizontal: 16.0),
     ),
     floatingActionButton: Row(
       mainAxisAlignment: MainAxisAlignment.center,

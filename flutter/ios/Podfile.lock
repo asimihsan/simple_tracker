@@ -2,20 +2,26 @@ PODS:
   - Flutter (1.0.0)
   - local_storage (0.0.1):
     - Flutter
+  - package_info (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - local_storage (from `.symlinks/plugins/local_storage/ios`)
+  - package_info (from `.symlinks/plugins/package_info/ios`)
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
   local_storage:
     :path: ".symlinks/plugins/local_storage/ios"
+  package_info:
+    :path: ".symlinks/plugins/package_info/ios"
 
 SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   local_storage: 707da43d25af86c55ab2eec5cc46970bb2c9b63a
+  package_info: 873975fc26034f0b863a300ad47e7f1ac6c7ec62
 
 PODFILE CHECKSUM: c34e2287a9ccaa606aeceab922830efb9a6ff69a
 
