@@ -20,6 +20,7 @@ import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+import 'package:simple_tracker/exception/ServerTimeoutException.dart';
 import 'package:simple_tracker/localizations.dart';
 import 'package:simple_tracker/state/calendar_list_model.dart';
 import 'package:simple_tracker/state/calendar_repository.dart';
@@ -32,7 +33,7 @@ import 'package:simple_tracker/view/create_edit_calendar_view.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:simple_tracker/view/settings_widget.dart';
 
-Widget getCalendarList(BuildContext context) {
+Widget getCalendarList(BuildContext context, {Exception error}) {
   final AppLocalizations localizations =
       Localizations.of<AppLocalizations>(context, AppLocalizations);
   final CalendarListModel calendarListModel = Provider.of<CalendarListModel>(context, listen: true);
@@ -65,7 +66,7 @@ Widget getCalendarList(BuildContext context) {
       ],
     ),
     body: SafeArea(
-      child: new CalendarList(),
+      child: new CalendarList(error: error),
     ),
     floatingActionButton: Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -99,9 +100,13 @@ class CalendarList extends StatefulWidget {
   static CalendarListState of(BuildContext context) =>
       context.findAncestorStateOfType<CalendarListState>();
 
+  final Exception error;
+
+  CalendarList({this.error});
+
   @override
   State<StatefulWidget> createState() {
-    return new CalendarListState();
+    return new CalendarListState(error: error);
   }
 }
 
@@ -133,11 +138,19 @@ Future<void> deleteCalendar(String calendarId, BuildContext context) {
 
 class CalendarListState extends State<CalendarList> with AfterLayoutMixin<CalendarList> {
   final SlidableController slidableController = SlidableController();
+  final Exception error;
+
+  CalendarListState({this.error});
 
   @override
   void afterFirstLayout(BuildContext context) {
     developer.log("CalendarList afterFirstLayout");
     refreshListCalendars(context);
+
+//    if (error != null) {
+//      Scaffold.of(context)
+//          .showSnackBar(SnackBar(content: Text("Failed to list calendars: " + error.toString())));
+//    }
   }
 
   @override

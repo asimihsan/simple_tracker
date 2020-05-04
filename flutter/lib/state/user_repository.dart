@@ -27,6 +27,13 @@ import 'dart:developer' as developer;
 class UserRepository {
   final String baseUrl;
 
+  http.Client client = http.Client();
+
+  void reopenClient() {
+    client.close();
+    client = http.Client();
+  }
+
   UserRepository(this.baseUrl);
 
   Future<UserModel> createUser(
@@ -44,7 +51,7 @@ class UserRepository {
       "Content-Type": "application/protobuf",
     };
 
-    var response = await http.post(url, headers: headers, body: createUserRequestSerialized);
+    var response = await client.post(url, headers: headers, body: createUserRequestSerialized);
     developer.log("CreateUser response " + response.statusCode.toString());
     if (response.headers.containsKey("x-amzn-trace-id")) {
       developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
@@ -80,7 +87,7 @@ class UserRepository {
       "Content-Type": "application/protobuf",
     };
 
-    var response = await http.post(url, headers: headers, body: requestSerialized);
+    var response = await client.post(url, headers: headers, body: requestSerialized);
     developer.log("LoginUser response " + response.statusCode.toString());
     if (response.headers.containsKey("x-amzn-trace-id")) {
       developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);

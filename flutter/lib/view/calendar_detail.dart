@@ -16,11 +16,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:simple_tracker/exception/ServerTimeoutException.dart';
 import 'package:simple_tracker/state/calendar_detail_model.dart';
 import 'package:simple_tracker/state/calendar_repository.dart';
 import 'package:simple_tracker/state/calendar_summary_model.dart';
 import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/view/detail_view.dart';
+import 'package:simple_tracker/view/user_login.dart';
 
 Widget getCalendarDetail(List<CalendarSummaryModel> calendarSummaryModels, {bool readOnly}) {
   return CalendarDetailWidget(calendarSummaryModels: calendarSummaryModels, readOnly: readOnly);
@@ -65,12 +67,13 @@ class _CalendarDetailWidgetState extends State<CalendarDetailWidget> {
     return FutureBuilder<CalendarDetailModel>(
         future: _downloadCalendars(context),
         builder: (BuildContext context, AsyncSnapshot<CalendarDetailModel> snapshot) {
+          if (snapshot != null && snapshot.hasError) {
+            final Exception error = snapshot.error;
+            return _buildHomePage(Text("Error loading calendars! " + error.toString()));
+          }
           final CalendarDetailModel calendarDetailModel = snapshot?.data;
           if (calendarDetailModel == null) {
             return _buildHomePage(new CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Text("Error loading calendars!!");
           }
           calendarDetailModel.isReadOnly = this.readOnly;
           return MultiProvider(

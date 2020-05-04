@@ -45,7 +45,7 @@ class CalendarListModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void set isCombinedView(final bool isCombinedView) {
+  set isCombinedView(final bool isCombinedView) {
     _isCombinedView = isCombinedView;
     _combinedViewCalendars.clear();
     notifyListeners();

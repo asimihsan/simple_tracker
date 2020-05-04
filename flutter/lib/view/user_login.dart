@@ -20,6 +20,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_tracker/exception/InternalServerErrorException.dart';
+import 'package:simple_tracker/exception/ServerTimeoutException.dart';
 import 'package:simple_tracker/exception/UserMissingOrPasswordIncorrectException.dart';
 import 'package:simple_tracker/localizations.dart';
 import 'package:simple_tracker/state/app_preferences_model.dart';
@@ -212,10 +213,10 @@ void switchToUserLoginHandler(AppPreferencesModel appPreferencesModel, BuildCont
           builder: (context) => getUserLogin(context, appPreferencesModel, isSignupForm: false)));
 }
 
-Future<void> switchToCalendarListView(BuildContext context) async {
+Future<void> switchToCalendarListView(BuildContext context, {Exception error}) async {
   developer.log("switching to calendar list view");
   await Navigator.pushReplacement(
-      context, MaterialPageRoute(builder: (context) => getCalendarList(context)));
+      context, MaterialPageRoute(builder: (context) => getCalendarList(context, error: error)));
 }
 
 String validateUsername(String input, AppLocalizations appLocalizations) {

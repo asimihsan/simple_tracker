@@ -14,6 +14,7 @@
 //  limitations under the License.
 // ============================================================================
 
+import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:io';
 import 'dart:typed_data';
@@ -21,9 +22,11 @@ import 'dart:typed_data';
 import 'package:fixnum/fixnum.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
+import 'package:simple_tracker/exception/ClientServiceException.dart';
 import 'package:simple_tracker/exception/CouldNotDeserializeResponseException.dart';
 import 'package:simple_tracker/exception/CouldNotVerifySessionException.dart';
 import 'package:simple_tracker/exception/InternalServerErrorException.dart';
+import 'package:simple_tracker/exception/ServerTimeoutException.dart';
 import 'package:simple_tracker/proto/calendar.pb.dart';
 import 'package:simple_tracker/state/calendar_detail_model.dart';
 import 'package:simple_tracker/state/calendar_list_model.dart';
@@ -36,8 +39,14 @@ class CalendarRepository {
   static final _formatter = new DateFormat('yyyy-MM-dd');
 
   final String baseUrl;
+  http.Client client = http.Client();
 
   CalendarRepository(this.baseUrl);
+
+  void reopenClient() {
+    client.close();
+    client = http.Client();
+  }
 
   Future<CalendarDetailModel> getCalendars(
       {@required String userId,
@@ -54,7 +63,12 @@ class CalendarRepository {
       "Accept": "application/protobuf",
       "Content-Type": "application/protobuf",
     };
-    var response = await http.post(url, headers: headers, body: getCalendarsRequestSerialized);
+    final http.Response response = await client
+        .post(url, headers: headers, body: getCalendarsRequestSerialized)
+        .timeout(const Duration(seconds: 5), onTimeout: () {
+      reopenClient();
+      throw new ServerTimeoutException();
+    });
     if (response.headers.containsKey("x-amzn-trace-id")) {
       developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
     }
@@ -130,7 +144,7 @@ class CalendarRepository {
       "Accept": "application/protobuf",
       "Content-Type": "application/protobuf",
     };
-    var response = await http.post(url, headers: headers, body: createCalendarRequestSerialized);
+    var response = await client.post(url, headers: headers, body: createCalendarRequestSerialized);
     if (response.headers.containsKey("x-amzn-trace-id")) {
       developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
     }
@@ -179,7 +193,7 @@ class CalendarRepository {
       "Accept": "application/protobuf",
       "Content-Type": "application/protobuf",
     };
-    var response = await http.post(url, headers: headers, body: listCalendarsRequestSerialized);
+    var response = await client.post(url, headers: headers, body: listCalendarsRequestSerialized);
 
     if (response.headers.containsKey("x-amzn-trace-id")) {
       developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
@@ -311,7 +325,7 @@ class CalendarRepository {
       "Accept": "application/protobuf",
       "Content-Type": "application/protobuf",
     };
-    var response = await http.post(url, headers: headers, body: requestSerialized);
+    var response = await client.post(url, headers: headers, body: requestSerialized);
     if (response.headers.containsKey("x-amzn-trace-id")) {
       developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
     }
@@ -373,7 +387,7 @@ class CalendarRepository {
       "Accept": "application/protobuf",
       "Content-Type": "application/protobuf",
     };
-    var response = await http.post(url, headers: headers, body: requestSerialized);
+    var response = await client.post(url, headers: headers, body: requestSerialized);
     if (response.headers.containsKey("x-amzn-trace-id")) {
       developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
     }
@@ -416,7 +430,7 @@ class CalendarRepository {
       "Accept": "application/protobuf",
       "Content-Type": "application/protobuf",
     };
-    var response = await http.post(url, headers: headers, body: requestSerialized);
+    var response = await client.post(url, headers: headers, body: requestSerialized);
     if (response.headers.containsKey("x-amzn-trace-id")) {
       developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
     }
