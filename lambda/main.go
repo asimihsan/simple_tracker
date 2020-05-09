@@ -58,6 +58,8 @@ func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 		recordRequestIds(ctx1, request)
 
 		switch request.Path {
+		case "/ping":
+			apiGatewayResponse, err = handlePing(ctx1, request)
 		case "/create_user":
 			apiGatewayResponse, err = handleCreateUserRequest(ctx1, request)
 		case "/login_user":
@@ -105,6 +107,10 @@ func getRequestBody(request events.APIGatewayProxyRequest) (string, error) {
 		return "", ErrFailedToBase64DecodeBody
 	}
 	return string(requestBodyBytes), nil
+}
+
+func handlePing(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	return events.APIGatewayProxyResponse{Body: "healthy", StatusCode: 200}, nil
 }
 
 func handleLoginUserRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
