@@ -175,10 +175,11 @@ class MyAppWithLocalizationsState extends State<MyAppWithLocalizations> {
 
 Future<void> switchToUserLogin(
     AppPreferencesModel appPreferencesModel, BuildContext context) async {
-  await Navigator.pushReplacement(
+  await Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
           builder: (context) => Provider(
               create: (_) => appPreferencesModel,
-              child: getUserLogin(context, appPreferencesModel, isSignupForm: false))));
+              child: getUserLogin(context, appPreferencesModel, isSignupForm: false))),
+      (Route<dynamic> route) => false);
 }

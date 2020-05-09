@@ -15,22 +15,20 @@
 // ============================================================================
 
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
-import 'package:simple_tracker/exception/ServerTimeoutException.dart';
 import 'package:simple_tracker/localizations.dart';
 import 'package:simple_tracker/state/calendar_list_model.dart';
 import 'package:simple_tracker/state/calendar_repository.dart';
 import 'package:simple_tracker/state/calendar_summary_model.dart';
-import 'dart:developer' as developer;
-
 import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/view/calendar_detail.dart';
 import 'package:simple_tracker/view/create_edit_calendar_view.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:simple_tracker/view/settings_widget.dart';
 
 Widget getCalendarList(BuildContext context, {Exception error}) {
