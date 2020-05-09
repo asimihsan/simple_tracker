@@ -189,6 +189,10 @@ func CreateUser(username string,
 		_, err = client.PutItemWithContext(ctx1, input)
 		if err != nil {
 			if awsErr, ok := err.(awserr.Error); ok {
+				if awsErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
+					fmt.Printf("User already exists\n")
+					return ErrUserAlreadyExists
+				}
 				if reqErr, ok := err.(awserr.RequestFailure); ok {
 					// A service error occurred
 					fmt.Printf("AWS service error. Code %s, Message: %s, OrigErr %s, StatusCode %s, RequestID %s\n",

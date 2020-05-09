@@ -14,29 +14,30 @@
 //  limitations under the License.
 // ============================================================================
 
+import 'dart:convert';
+import 'dart:developer' as developer;
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
+import 'package:simple_tracker/client/CustomHttpClient.dart';
 import 'package:simple_tracker/exception/CouldNotDeserializeResponseException.dart';
 import 'package:simple_tracker/exception/InternalServerErrorException.dart';
+import 'package:simple_tracker/exception/UserAlreadyExistsException.dart';
 import 'package:simple_tracker/exception/UserMissingOrPasswordIncorrectException.dart';
 import 'package:simple_tracker/proto/user.pb.dart';
 import 'package:simple_tracker/state/user_model.dart';
-import 'package:http/http.dart' as http;
-import 'dart:developer' as developer;
 
 class UserRepository {
   final String baseUrl;
 
-  http.Client client = http.Client();
+  BackendClient _backendClient;
 
-  void reopenClient() {
-    client.close();
-    client = http.Client();
+  UserRepository(this.baseUrl) {
+    _backendClient = BackendClient.defaultClient(baseUrl);
   }
 
-  UserRepository(this.baseUrl);
-
-  Future<UserModel> createUser(
+  Future<void> createUser(
       {@required String username,
       @required String password,
       @required UserModel providedUserModel}) async {
@@ -45,31 +46,27 @@ class UserRepository {
     requestProto.password = password;
     var createUserRequestSerialized = requestProto.writeToBuffer();
 
-    var url = baseUrl + "create_user";
-    Map<String, String> headers = {
-      "Accept": "application/protobuf",
-      "Content-Type": "application/protobuf",
-    };
+    final Uint8List responseBytes =
+        await _backendClient.send("create_user", createUserRequestSerialized);
 
-    var response = await client.post(url, headers: headers, body: createUserRequestSerialized);
-    developer.log("CreateUser response " + response.statusCode.toString());
-    if (response.headers.containsKey("x-amzn-trace-id")) {
-      developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
-    }
-    if (response.headers.containsKey("x-amzn-requestid")) {
-      developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
-    }
-
-    if (response.statusCode == 200) {
-      developer.log("CreateUser response success");
-      var responseProto = CreateUserResponse.fromBuffer(response.bodyBytes);
+    CreateUserResponse responseProto;
+    try {
+      responseProto = CreateUserResponse.fromBuffer(responseBytes);
       developer.log("response proto", error: responseProto.toDebugString());
-      providedUserModel.login(responseProto.userId, responseProto.sessionId);
-    } else {
-      developer.log("CreateUser response failure", error: response.body);
-      return null;
+    } catch (e) {
+      developer.log("could not deserialize response as proto", error: e);
+      developer.log(Utf8Codec().decode(responseBytes));
+      throw new CouldNotDeserializeResponseException();
     }
-    return providedUserModel;
+
+    if (!responseProto.success) {
+      if (responseProto.errorReason == CreateUserErrorReason.USER_ALREADY_EXISTS) {
+        throw UserAlreadyExistsException();
+      } else {
+        throw InternalServerErrorException();
+      }
+    }
+    providedUserModel.login(responseProto.userId, responseProto.sessionId);
   }
 
   Future<UserModel> loginUser(
@@ -81,45 +78,28 @@ class UserRepository {
     requestProto.password = password;
     var requestSerialized = requestProto.writeToBuffer();
 
-    var url = baseUrl + "login_user";
-    Map<String, String> headers = {
-      "Accept": "application/protobuf",
-      "Content-Type": "application/protobuf",
-    };
-
-    var response = await client.post(url, headers: headers, body: requestSerialized);
-    developer.log("LoginUser response " + response.statusCode.toString());
-    if (response.headers.containsKey("x-amzn-trace-id")) {
-      developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
-    }
-    if (response.headers.containsKey("x-amzn-requestid")) {
-      developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
-    }
+    final Uint8List responseBytes = await _backendClient.send("login_user", requestSerialized);
 
     LoginUserResponse responseProto;
     try {
-      responseProto = LoginUserResponse.fromBuffer(response.bodyBytes);
+      responseProto = LoginUserResponse.fromBuffer(responseBytes);
       developer.log("response proto", error: responseProto.toDebugString());
+      providedUserModel.login(responseProto.userId, responseProto.sessionId);
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
       throw new CouldNotDeserializeResponseException();
     }
 
-    if (response.statusCode == 200) {
-      developer.log("CreateUser response success");
-      providedUserModel.login(responseProto.userId, responseProto.sessionId);
-    } else {
-      developer.log("LoginUser response failure", error: response.body);
-      if (responseProto != null) {
-        switch (responseProto.errorReason) {
-          case LoginUserErrorReason.USER_MISSING_OR_PASSWORD_INCORRECT:
-            throw new UserMissingOrPasswordIncorrectException();
-          case LoginUserErrorReason.LOGIN_USER_ERROR_REASON_INTERNAL_SERVER_ERROR:
-          default:
-            throw new InternalServerErrorException();
-        }
+    if (!responseProto.success) {
+      switch (responseProto.errorReason) {
+        case LoginUserErrorReason.USER_MISSING_OR_PASSWORD_INCORRECT:
+          throw new UserMissingOrPasswordIncorrectException();
+        case LoginUserErrorReason.LOGIN_USER_ERROR_REASON_INTERNAL_SERVER_ERROR:
+        default:
+          throw new InternalServerErrorException();
       }
     }
+
     return providedUserModel;
   }
 }

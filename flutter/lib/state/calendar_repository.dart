@@ -21,20 +21,18 @@ import 'dart:typed_data';
 
 import 'package:fixnum/fixnum.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:meta/meta.dart';
 import 'package:simple_tracker/client/CustomHttpClient.dart';
-import 'package:simple_tracker/exception/ClientServiceException.dart';
 import 'package:simple_tracker/exception/CouldNotDeserializeResponseException.dart';
 import 'package:simple_tracker/exception/CouldNotVerifySessionException.dart';
 import 'package:simple_tracker/exception/InternalServerErrorException.dart';
-import 'package:simple_tracker/exception/ServerTimeoutException.dart';
 import 'package:simple_tracker/proto/calendar.pb.dart';
 import 'package:simple_tracker/state/calendar_detail_model.dart';
 import 'package:simple_tracker/state/calendar_list_model.dart';
 import 'package:simple_tracker/state/calendar_model.dart';
 import 'package:simple_tracker/state/calendar_summary_model.dart';
 import 'package:simple_tracker/state/user_model.dart';
-import 'package:intl/intl.dart';
 
 class CalendarRepository {
   static final _formatter = new DateFormat('yyyy-MM-dd');
@@ -56,10 +54,8 @@ class CalendarRepository {
     calendarIds.forEach((calendarId) => requestProto.calendarIds.add(calendarId));
     var getCalendarsRequestSerialized = requestProto.writeToBuffer();
 
-    var url = baseUrl + "get_calendars";
     final Uint8List responseBytes =
         await _backendClient.send("get_calendars", getCalendarsRequestSerialized);
-
     GetCalendarsResponse responseProto;
     try {
       responseProto = GetCalendarsResponse.fromBuffer(responseBytes);
@@ -153,10 +149,8 @@ class CalendarRepository {
     requestProto.maxResults = Int64(maxResults);
     var listCalendarsRequestSerialized = requestProto.writeToBuffer();
 
-    var url = baseUrl + "list_calendars";
     final Uint8List responseBytes =
         await _backendClient.send("list_calendars", listCalendarsRequestSerialized);
-
     ListCalendarsResponse responseProto;
     try {
       responseProto = ListCalendarsResponse.fromBuffer(responseBytes);

@@ -16,14 +16,24 @@
 
 import 'dart:developer' as developer;
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:simple_tracker/exception/BackendClientSendFailedException.dart';
 import 'package:simple_tracker/exception/InternalServerErrorException.dart';
 
 class BackendClient {
+  final int maxRetryCount = 3;
+
+  final int retryTimeMaximumMillis = 1000;
+  final int retryTimeBaseMillis = 100;
+
   final Duration connectionTimeout = Duration(seconds: 3);
   final Duration connectionClientTimeout = Duration(seconds: 5);
-  final Duration operationTimeout = Duration(seconds: 5);
+  final List<Duration> operationTimeoutSchedule = [
+    Duration(seconds: 3),
+    Duration(seconds: 5),
+  ];
   final Duration idleTimeout = Duration(seconds: 120);
   final Map<String, String> defaultHeaders = {
     "Accept-Encoding": "gzip",
@@ -33,16 +43,59 @@ class BackendClient {
 
   HttpClient client;
   final String baseUrl;
+  Random random;
 
-  BackendClient(this.client, this.baseUrl);
+  BackendClient(this.client, this.baseUrl, this.random);
 
   BackendClient.defaultClient(this.baseUrl) {
+    _initializeHttpClient();
+    random = new Random();
+  }
+
+  // Retry using exponential backoff with full jitter.
+  //
+  // References
+  // [1] https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
+  Duration calculateRetryDuration(final int attempt) {
+    final int maximumRetryMillis =
+        min(retryTimeMaximumMillis, retryTimeBaseMillis * (2 << attempt));
+    final int retryMillis = random.nextInt(maximumRetryMillis);
+    return Duration(milliseconds: retryMillis);
+  }
+
+  void _initializeHttpClient() {
+    if (client != null) {
+      client.close(force: true);
+    }
     client = HttpClient();
     client.connectionTimeout = connectionClientTimeout;
     client.idleTimeout = idleTimeout;
   }
 
   Future<Uint8List> send(final String endpoint, final Uint8List payload) async {
+    Uint8List response;
+    for (int i = 0; i < maxRetryCount; i++) {
+      try {
+        final Duration operationTimeout = i < operationTimeoutSchedule.length
+            ? operationTimeoutSchedule[i]
+            : operationTimeoutSchedule[operationTimeoutSchedule.length - 1];
+        response = await sendInternal(endpoint, payload, operationTimeout);
+        return response;
+      } catch (e) {
+        developer.log("URL: ${endpoint}. failed attempt $i.");
+        _initializeHttpClient();
+        if (i < maxRetryCount - 1) {
+          final Duration retryTime = calculateRetryDuration(i);
+          developer.log("retry time: $retryTime");
+          await Future.delayed(retryTime);
+        }
+      }
+    }
+    throw BackendClientSendFailedException();
+  }
+
+  Future<Uint8List> sendInternal(
+      final String endpoint, final Uint8List payload, final Duration operationTimeout) async {
     final Stopwatch stopwatch = new Stopwatch()..start();
     final String fullPath = baseUrl + endpoint;
     final HttpClientRequest request =
@@ -63,7 +116,7 @@ class BackendClient {
       developer
           .log("URL: " + endpoint + ", Request ID: " + response.headers.value("x-amzn-requestid"));
     }
-    if (response.statusCode != 200) {
+    if (response.statusCode >= 500 && response.statusCode <= 599) {
       response.drain();
       throw new InternalServerErrorException();
     }

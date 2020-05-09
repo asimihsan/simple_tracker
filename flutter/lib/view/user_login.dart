@@ -21,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_tracker/exception/InternalServerErrorException.dart';
 import 'package:simple_tracker/exception/ServerTimeoutException.dart';
+import 'package:simple_tracker/exception/UserAlreadyExistsException.dart';
 import 'package:simple_tracker/exception/UserMissingOrPasswordIncorrectException.dart';
 import 'package:simple_tracker/localizations.dart';
 import 'package:simple_tracker/state/app_preferences_model.dart';
@@ -145,6 +146,19 @@ class UserLoginFormState extends State<UserLoginForm> {
                       developer.log("UserLoginFormState user repository create finished error",
                           error: err);
                       await appPreferencesModel.clearCredentials();
+                      if (err is UserAlreadyExistsException) {
+                        Scaffold.of(context).showSnackBar(SnackBar(
+                            backgroundColor: Colors.deepOrange,
+                            content: Text("User already exists!")));
+                      } else if (err is InternalServerErrorException) {
+                        Scaffold.of(context).showSnackBar(SnackBar(
+                            backgroundColor: Colors.deepOrange,
+                            content: Text(localizations.internalServerErrorException)));
+                      } else {
+                        Scaffold.of(context).showSnackBar(SnackBar(
+                            backgroundColor: Colors.deepOrange,
+                            content: Text("Unknown error occurred!!")));
+                      }
                     });
                   } else {
                     userRepository
