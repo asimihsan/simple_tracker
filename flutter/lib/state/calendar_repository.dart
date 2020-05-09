@@ -40,17 +40,10 @@ class CalendarRepository {
   static final _formatter = new DateFormat('yyyy-MM-dd');
 
   final String baseUrl;
-  http.Client client = http.Client();
+  BackendClient _backendClient;
 
-  CustomHttpClient _customHttpClient = new CustomHttpClient();
-
-  CalendarRepository(this.baseUrl);
-
-  void reopenClient() {
-    client.close();
-    client = http.Client();
-    _customHttpClient.close();
-    _customHttpClient = new CustomHttpClient();
+  CalendarRepository(this.baseUrl) {
+    _backendClient = BackendClient.defaultClient(baseUrl);
   }
 
   Future<CalendarDetailModel> getCalendars(
@@ -64,12 +57,12 @@ class CalendarRepository {
     var getCalendarsRequestSerialized = requestProto.writeToBuffer();
 
     var url = baseUrl + "get_calendars";
-    final http.Response response =
-        await _customHttpClient.post(url, body: getCalendarsRequestSerialized);
+    final Uint8List responseBytes =
+        await _backendClient.send("get_calendars", getCalendarsRequestSerialized);
 
     GetCalendarsResponse responseProto;
     try {
-      responseProto = GetCalendarsResponse.fromBuffer(response.bodyBytes);
+      responseProto = GetCalendarsResponse.fromBuffer(responseBytes);
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
       throw new CouldNotDeserializeResponseException();
@@ -126,22 +119,11 @@ class CalendarRepository {
     requestProto.color = color;
     var createCalendarRequestSerialized = requestProto.writeToBuffer();
 
-    var url = baseUrl + "create_calendar";
-    Map<String, String> headers = {
-      "Accept": "application/protobuf",
-      "Content-Type": "application/protobuf",
-    };
-    var response = await client.post(url, headers: headers, body: createCalendarRequestSerialized);
-    if (response.headers.containsKey("x-amzn-trace-id")) {
-      developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
-    }
-    if (response.headers.containsKey("x-amzn-requestid")) {
-      developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
-    }
-
+    final Uint8List responseBytes =
+        await _backendClient.send("create_calendar", createCalendarRequestSerialized);
     CreateCalendarResponse responseProto;
     try {
-      responseProto = CreateCalendarResponse.fromBuffer(response.bodyBytes);
+      responseProto = CreateCalendarResponse.fromBuffer(responseBytes);
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
       throw new CouldNotDeserializeResponseException();
@@ -155,11 +137,7 @@ class CalendarRepository {
       } else {
         throw new InternalServerErrorException();
       }
-    } else if (response.statusCode != 200) {
-      throw new InternalServerErrorException();
     }
-
-    return;
   }
 
   Future<List<CalendarSummaryModel>> listCalendars(
@@ -176,22 +154,12 @@ class CalendarRepository {
     var listCalendarsRequestSerialized = requestProto.writeToBuffer();
 
     var url = baseUrl + "list_calendars";
-    Map<String, String> headers = {
-      "Accept": "application/protobuf",
-      "Content-Type": "application/protobuf",
-    };
-    var response = await client.post(url, headers: headers, body: listCalendarsRequestSerialized);
-
-    if (response.headers.containsKey("x-amzn-trace-id")) {
-      developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
-    }
-    if (response.headers.containsKey("x-amzn-requestid")) {
-      developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
-    }
+    final Uint8List responseBytes =
+        await _backendClient.send("list_calendars", listCalendarsRequestSerialized);
 
     ListCalendarsResponse responseProto;
     try {
-      responseProto = ListCalendarsResponse.fromBuffer(response.bodyBytes);
+      responseProto = ListCalendarsResponse.fromBuffer(responseBytes);
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
       calendarListModel.loading = false;
@@ -207,8 +175,6 @@ class CalendarRepository {
       } else {
         throw new InternalServerErrorException();
       }
-    } else if (response.statusCode != 200) {
-      throw new InternalServerErrorException();
     }
 
     List<CalendarSummaryModel> result =
@@ -307,22 +273,11 @@ class CalendarRepository {
     requestProto.actions[calendarModel.id] = updateCalendarAction;
     var requestSerialized = requestProto.writeToBuffer();
 
-    var url = baseUrl + "update_calendars";
-    Map<String, String> headers = {
-      "Accept": "application/protobuf",
-      "Content-Type": "application/protobuf",
-    };
-    var response = await client.post(url, headers: headers, body: requestSerialized);
-    if (response.headers.containsKey("x-amzn-trace-id")) {
-      developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
-    }
-    if (response.headers.containsKey("x-amzn-requestid")) {
-      developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
-    }
-
+    final Uint8List responseBytes =
+        await _backendClient.send("update_calendars", requestSerialized);
     UpdateCalendarsResponse responseProto;
     try {
-      responseProto = UpdateCalendarsResponse.fromBuffer(response.bodyBytes);
+      responseProto = UpdateCalendarsResponse.fromBuffer(responseBytes);
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
       calendarDetailModel.removeRefreshingDateTime(dateTime);
@@ -337,9 +292,6 @@ class CalendarRepository {
       } else {
         throw new InternalServerErrorException();
       }
-    } else if (response.statusCode != 200) {
-      calendarDetailModel.removeRefreshingDateTime(dateTime);
-      throw new InternalServerErrorException();
     }
 
     final List<CalendarModel> calendarModels = responseProto.calendarDetails
@@ -369,22 +321,12 @@ class CalendarRepository {
     requestProto.actions[calendarSummaryModel.id] = updateCalendarAction;
     var requestSerialized = requestProto.writeToBuffer();
 
-    var url = baseUrl + "update_calendars";
-    Map<String, String> headers = {
-      "Accept": "application/protobuf",
-      "Content-Type": "application/protobuf",
-    };
-    var response = await client.post(url, headers: headers, body: requestSerialized);
-    if (response.headers.containsKey("x-amzn-trace-id")) {
-      developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
-    }
-    if (response.headers.containsKey("x-amzn-requestid")) {
-      developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
-    }
+    final Uint8List responseBytes =
+        await _backendClient.send("update_calendars", requestSerialized);
 
     UpdateCalendarsResponse responseProto;
     try {
-      responseProto = UpdateCalendarsResponse.fromBuffer(response.bodyBytes);
+      responseProto = UpdateCalendarsResponse.fromBuffer(responseBytes);
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
       throw new CouldNotDeserializeResponseException();
@@ -397,8 +339,6 @@ class CalendarRepository {
       } else {
         throw new InternalServerErrorException();
       }
-    } else if (response.statusCode != 200) {
-      throw new InternalServerErrorException();
     }
 
     return;
@@ -412,22 +352,11 @@ class CalendarRepository {
     requestProto.calendarId = calendarId;
     var requestSerialized = requestProto.writeToBuffer();
 
-    var url = baseUrl + "delete_calendar";
-    Map<String, String> headers = {
-      "Accept": "application/protobuf",
-      "Content-Type": "application/protobuf",
-    };
-    var response = await client.post(url, headers: headers, body: requestSerialized);
-    if (response.headers.containsKey("x-amzn-trace-id")) {
-      developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
-    }
-    if (response.headers.containsKey("x-amzn-requestid")) {
-      developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
-    }
+    final Uint8List responseBytes = await _backendClient.send("delete_calendar", requestSerialized);
 
     DeleteCalendarResponse responseProto;
     try {
-      responseProto = DeleteCalendarResponse.fromBuffer(response.bodyBytes);
+      responseProto = DeleteCalendarResponse.fromBuffer(responseBytes);
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
       throw new CouldNotDeserializeResponseException();
@@ -441,8 +370,6 @@ class CalendarRepository {
       } else {
         throw new InternalServerErrorException();
       }
-    } else if (response.statusCode != 200) {
-      throw new InternalServerErrorException();
     }
 
     return;

@@ -37,6 +37,8 @@ void main() {
   ]).then((_) => runApp(MyApp()));
 }
 
+const apiBaseUrl = "https://preprod-simple-tracker.ihsan.io/";
+
 class MyApp extends StatelessWidget {
   MyApp({Key key}) : super(key: key);
 
@@ -58,10 +60,10 @@ class MyApp extends StatelessWidget {
             create: (_) => new CalendarListModel(),
           ),
           Provider(
-            create: (_) => new CalendarRepository("https://preprod-simple-tracker.ihsan.io/"),
+            create: (_) => new CalendarRepository(apiBaseUrl),
           ),
           Provider(
-            create: (_) => new UserRepository("https://preprod-simple-tracker.ihsan.io/"),
+            create: (_) => new UserRepository(apiBaseUrl),
           ),
         ],
         child: MaterialApp(

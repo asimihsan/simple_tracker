@@ -14,66 +14,61 @@
 //  limitations under the License.
 // ============================================================================
 
-import 'package:http/http.dart' as http;
-import 'package:protobuf/protobuf.dart' as pb;
-import 'package:simple_tracker/exception/CouldNotDeserializeResponseException.dart';
 import 'dart:developer' as developer;
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:simple_tracker/exception/InternalServerErrorException.dart';
-import 'package:simple_tracker/proto/calendar.pb.dart';
 
-class RpcClient {
-  final String _baseUrl;
-  final CustomHttpClient _client = new CustomHttpClient();
-
-  RpcClient(this._baseUrl);
-
-  Future<GetCalendarsResponse> getCalendars(final GetCalendarsRequest request) {
-    _client.post(_baseUrl + "get_calendars", body: request.writeToBuffer()).then((response) {
-      GetCalendarsResponse responseProto;
-      try {
-        responseProto = GetCalendarsResponse.fromBuffer(response.bodyBytes);
-      } catch (e) {
-        throw new CouldNotDeserializeResponseException();
-      }
-      return responseProto;
-    });
-  }
-}
-
-class CustomHttpClient extends http.BaseClient {
-  static final Map<String, String> defaultHeaders = {
+class BackendClient {
+  final Duration connectionTimeout = Duration(seconds: 3);
+  final Duration connectionClientTimeout = Duration(seconds: 5);
+  final Duration operationTimeout = Duration(seconds: 5);
+  final Duration idleTimeout = Duration(seconds: 120);
+  final Map<String, String> defaultHeaders = {
+    "Accept-Encoding": "gzip",
     "Accept": "application/protobuf",
     "Content-Type": "application/protobuf",
   };
-  static final Duration defaultTimeout = Duration(seconds: 5);
 
-  http.Client _client;
+  HttpClient client;
+  final String baseUrl;
 
-  CustomHttpClient() {
-    _client = new http.Client();
+  BackendClient(this.client, this.baseUrl);
+
+  BackendClient.defaultClient(this.baseUrl) {
+    client = HttpClient();
+    client.connectionTimeout = connectionClientTimeout;
+    client.idleTimeout = idleTimeout;
   }
 
-  @override
-  Future<http.StreamedResponse> send(final http.BaseRequest request) {
-    request.headers.addAll(defaultHeaders);
-    return _client.send(request).timeout(defaultTimeout).then((response) {
-      if (response.headers.containsKey("x-amzn-trace-id")) {
-        developer.log("URL: " +
-            request.url.toString() +
-            ", X-Ray trace ID: " +
-            response.headers["x-amzn-trace-id"]);
-      }
-      if (response.headers.containsKey("x-amzn-requestid")) {
-        developer.log("URL: " +
-            request.url.toString() +
-            ", Request ID: " +
-            response.headers["x-amzn-requestid"]);
-      }
-      if (response.statusCode != 200) {
-        throw new InternalServerErrorException();
-      }
-      return response;
+  Future<Uint8List> send(final String endpoint, final Uint8List payload) async {
+    final Stopwatch stopwatch = new Stopwatch()..start();
+    final String fullPath = baseUrl + endpoint;
+    final HttpClientRequest request =
+        await client.postUrl(Uri.parse(fullPath)).timeout(connectionTimeout);
+    defaultHeaders.forEach((key, value) {
+      request.headers.add(key, value);
     });
+    request.persistentConnection = true;
+    request.add(payload);
+    final HttpClientResponse response = await request.close().timeout(operationTimeout);
+    if (response.headers.value("x-amzn-trace-id") != null) {
+      developer.log("URL: " +
+          endpoint +
+          ", X-Ray trace ID: " +
+          response.headers.value("x-amzn-trace-id").replaceAll("Root=", ""));
+    }
+    if (response.headers.value("x-amzn-requestid") != null) {
+      developer
+          .log("URL: " + endpoint + ", Request ID: " + response.headers.value("x-amzn-requestid"));
+    }
+    if (response.statusCode != 200) {
+      response.drain();
+      throw new InternalServerErrorException();
+    }
+    final Uint8List responseBytes = await response.single;
+    developer.log("elapsed duration: ", error: stopwatch.elapsed);
+    return responseBytes;
   }
 }
