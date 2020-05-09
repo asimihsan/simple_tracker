@@ -37,6 +37,7 @@ Widget getCalendarList(BuildContext context, {Exception error}) {
   final AppLocalizations localizations =
       Localizations.of<AppLocalizations>(context, AppLocalizations);
   final CalendarListModel calendarListModel = Provider.of<CalendarListModel>(context, listen: true);
+  final bool noCalendars = calendarListModel.getCalendarSummariesInNameOrder().isEmpty;
 
   final Color addButtonColor = calendarListModel.isCombinedView ? Colors.grey : Colors.blue;
   final VoidCallback onAddCallback = calendarListModel.isCombinedView
@@ -47,6 +48,14 @@ Widget getCalendarList(BuildContext context, {Exception error}) {
             context,
             MaterialPageRoute(builder: (context) => getCreateEditCalendar(context, isCreate: true)),
           );
+        };
+
+  final Color combinedViewButtonColor = noCalendars ? Colors.grey : Colors.lightGreen;
+  final VoidCallback onCombinedViewCallback = noCalendars
+      ? null
+      : () async {
+          developer.log("Combined view");
+          calendarListModel.toggleIsCombinedView();
         };
 
   return Scaffold(
@@ -75,11 +84,8 @@ Widget getCalendarList(BuildContext context, {Exception error}) {
         FloatingActionButton(
           child: SvgPicture.asset("assets/icons/MultipleCalendars.svg",
               semanticsLabel: localizations.calendarListCombinedViewTitle),
-          backgroundColor: Colors.lightGreen,
-          onPressed: () {
-            developer.log("Combined view");
-            calendarListModel.toggleIsCombinedView();
-          },
+          backgroundColor: combinedViewButtonColor,
+          onPressed: onCombinedViewCallback,
           heroTag: null,
         ),
         Padding(padding: const EdgeInsets.fromLTRB(0, 0, 16.0, 0)),
