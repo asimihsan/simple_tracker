@@ -14,6 +14,7 @@
 //  limitations under the License.
 // ============================================================================
 
+import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:io';
 import 'dart:math';
@@ -83,11 +84,15 @@ class BackendClient {
         return response;
       } catch (e) {
         developer.log("URL: ${endpoint}. failed attempt $i.");
-        _initializeHttpClient();
         if (i < maxRetryCount - 1) {
+          if (e.runtimeType == InternalServerErrorException || e.runtimeType == TimeoutException) {
+            _initializeHttpClient();
+          }
           final Duration retryTime = calculateRetryDuration(i);
           developer.log("retry time: $retryTime");
           await Future.delayed(retryTime);
+        } else {
+          _initializeHttpClient();
         }
       }
     }

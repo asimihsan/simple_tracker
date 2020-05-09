@@ -20,7 +20,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:fixnum/fixnum.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:meta/meta.dart';
 import 'package:simple_tracker/client/CustomHttpClient.dart';
@@ -204,22 +203,11 @@ class CalendarRepository {
     requestProto.actions[calendarModel.id] = updateCalendarAction;
     var requestSerialized = requestProto.writeToBuffer();
 
-    var url = baseUrl + "update_calendars";
-    Map<String, String> headers = {
-      "Accept": "application/protobuf",
-      "Content-Type": "application/protobuf",
-    };
-    var response = await http.post(url, headers: headers, body: requestSerialized);
-    if (response.headers.containsKey("x-amzn-trace-id")) {
-      developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
-    }
-    if (response.headers.containsKey("x-amzn-requestid")) {
-      developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
-    }
-
+    final Uint8List responseBytes =
+        await _backendClient.send("update_calendars", requestSerialized);
     UpdateCalendarsResponse responseProto;
     try {
-      responseProto = UpdateCalendarsResponse.fromBuffer(response.bodyBytes);
+      responseProto = UpdateCalendarsResponse.fromBuffer(responseBytes);
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
       calendarDetailModel.removeRefreshingDateTime(dateTime);
@@ -234,9 +222,6 @@ class CalendarRepository {
       } else {
         throw new InternalServerErrorException();
       }
-    } else if (response.statusCode != 200) {
-      calendarDetailModel.removeRefreshingDateTime(dateTime);
-      throw new InternalServerErrorException();
     }
 
     final List<CalendarModel> calendarModels = responseProto.calendarDetails
