@@ -22,6 +22,7 @@ import 'dart:typed_data';
 import 'package:fixnum/fixnum.dart';
 import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
+import 'package:simple_tracker/client/CustomHttpClient.dart';
 import 'package:simple_tracker/exception/ClientServiceException.dart';
 import 'package:simple_tracker/exception/CouldNotDeserializeResponseException.dart';
 import 'package:simple_tracker/exception/CouldNotVerifySessionException.dart';
@@ -41,11 +42,15 @@ class CalendarRepository {
   final String baseUrl;
   http.Client client = http.Client();
 
+  CustomHttpClient _customHttpClient = new CustomHttpClient();
+
   CalendarRepository(this.baseUrl);
 
   void reopenClient() {
     client.close();
     client = http.Client();
+    _customHttpClient.close();
+    _customHttpClient = new CustomHttpClient();
   }
 
   Future<CalendarDetailModel> getCalendars(
@@ -59,26 +64,8 @@ class CalendarRepository {
     var getCalendarsRequestSerialized = requestProto.writeToBuffer();
 
     var url = baseUrl + "get_calendars";
-    Map<String, String> headers = {
-      "Accept": "application/protobuf",
-      "Content-Type": "application/protobuf",
-    };
-    final http.Response response = await client
-        .post(url, headers: headers, body: getCalendarsRequestSerialized)
-        .timeout(const Duration(seconds: 5), onTimeout: () {
-      reopenClient();
-      throw new ServerTimeoutException();
-    });
-    if (response.headers.containsKey("x-amzn-trace-id")) {
-      developer.log("X-Ray trace ID: " + response.headers["x-amzn-trace-id"]);
-    }
-    if (response.headers.containsKey("x-amzn-requestid")) {
-      developer.log("Request ID: " + response.headers["x-amzn-requestid"]);
-    }
-
-    if (response.statusCode != 200) {
-      throw new InternalServerErrorException();
-    }
+    final http.Response response =
+        await _customHttpClient.post(url, body: getCalendarsRequestSerialized);
 
     GetCalendarsResponse responseProto;
     try {
