@@ -16,9 +16,10 @@ import { Rule, Schedule } from '@aws-cdk/aws-events';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 
 import path = require('path');
+import { HttpProxyIntegration } from '@aws-cdk/aws-apigatewayv2';
 
 export class CdkStack extends cdk.Stack {
-  constructor(scope: cdk.App, id: string, apiDomainName: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.App, id: string, apiDomainName: string, apiV2DomainName: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     // ------------------------------------------------------------------------
@@ -188,6 +189,14 @@ export class CdkStack extends cdk.Stack {
     // ------------------------------------------------------------------------
     //  TODO experimenting with API Gateway v2.
     // ------------------------------------------------------------------------
+    const apiV2Integration = new apigatewayv2.LambdaProxyIntegration({
+      handler: lambdaFunction,
+      payloadFormatVersion: apigatewayv2.PayloadFormatVersion.VERSION_1_0,
+    });
+    const apiV2 = new apigatewayv2.HttpApi(this, 'ApiV2', {
+      defaultIntegration: apiV2Integration
+    });
+
     // const apiV2 = new apigatewayv2.CfnApi(this, 'ApiV2', {
     //   name: "ApiV2",
     //   protocolType: 'HTTP',

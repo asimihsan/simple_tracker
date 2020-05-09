@@ -6,8 +6,10 @@ const app = new cdk.App();
 
 const preprodEnvironment = { account: '519160639284', region: 'us-west-2' }
 const preprodDomainName = 'preprod-simple-tracker.ihsan.io'
+const preprodDomainNameV2 = 'preprod-simple-tracker-v2.ihsan.io'
 
 const prodEnvironment = { account: '519160639284', region: 'us-west-2' }
 const prodDomainName = 'prod-simple-tracker.ihsan.io'
+const prodDomainNameV2 = 'prod-simple-tracker-v2.ihsan.io'
 
-new CdkStack(app, 'preprod-SimpleTrackerCdkStack', preprodDomainName, { env: preprodEnvironment });
+new CdkStack(app, 'preprod-SimpleTrackerCdkStack', preprodDomainName, preprodDomainNameV2, { env: preprodEnvironment });
