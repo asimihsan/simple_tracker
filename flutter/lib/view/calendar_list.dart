@@ -19,6 +19,7 @@ import 'dart:developer' as developer;
 
 import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_color_analyzer/big_color.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
@@ -44,7 +45,9 @@ Widget getCalendarList(BuildContext context, {Exception error}) {
           developer.log("Create new calendar click");
           await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => getCreateEditCalendar(context, isCreate: true)),
+            MaterialPageRoute(
+                builder: (context) =>
+                    getCreateEditCalendar(context, calendarListModel, isCreate: true)),
           );
         };
 
@@ -269,6 +272,7 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
         ? Card(child: listTile, color: Colors.black12)
         : Card(child: listTile);
 
+    final List<BigColor> existingCalendarColors = calendarListModel.getCalendarColors();
     final Widget slidable = Slidable(
       key: Key(calendarSummaryModel.id),
       controller: slidableController,
@@ -285,7 +289,7 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => getCreateEditCalendar(context,
+                    builder: (context) => getCreateEditCalendar(context, calendarListModel,
                         isCreate: false, existingCalendarSummaryModel: calendarSummaryModel)),
               );
             }),

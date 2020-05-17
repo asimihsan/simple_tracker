@@ -17,6 +17,7 @@
 import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_color_analyzer/big_color.dart';
 import 'package:simple_tracker/state/calendar_summary_model.dart';
 
 class CalendarListModel extends ChangeNotifier {
@@ -71,6 +72,11 @@ class CalendarListModel extends ChangeNotifier {
     var returnValue = _combinedViewCalendars.toList();
     returnValue.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     return List.unmodifiable(returnValue);
+  }
+
+  List<BigColor> getCalendarColors() {
+    return List.unmodifiable(
+        _calendarSummaries.values.map((calendarSummaryModel) => calendarSummaryModel.color));
   }
 
   void setCalendarSummaries(List<CalendarSummaryModel> newCalendarSummaries) {

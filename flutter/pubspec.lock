@@ -146,6 +146,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_color_analyzer:
+    dependency: "direct main"
+    description:
+      path: "../../flutter_color_analyzer"
+      relative: true
+    source: path
+    version: "0.1.0"
   flutter_colorpicker:
     dependency: "direct main"
     description:

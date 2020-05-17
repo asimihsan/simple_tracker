@@ -17,6 +17,7 @@
 import 'package:color/color.dart' as color3p;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_color_analyzer/big_color.dart';
 
 class CalendarSummaryModel {
   final int _formatVersion;
@@ -29,9 +30,9 @@ class CalendarSummaryModel {
 
   int get version => _version;
 
-  Color get color {
+  BigColor get color {
     color3p.RgbColor rgbColor = color3p.Color.hex(_color).toRgbColor();
-    return Color.fromARGB(255, rgbColor.r, rgbColor.g, rgbColor.b);
+    return BigColor.fromColor(Color.fromARGB(255, rgbColor.r, rgbColor.g, rgbColor.b));
   }
 
   String get name => _name;

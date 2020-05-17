@@ -15,19 +15,22 @@
 // ============================================================================
 
 import 'package:color/color.dart' as color3p;
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_color_analyzer/big_color.dart';
+import 'package:flutter_color_analyzer/flutter_color_analyzer.dart';
+import 'package:flutter_color_analyzer/palettes.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_tracker/exception/InternalServerErrorException.dart';
 import 'package:simple_tracker/localizations.dart';
+import 'package:simple_tracker/state/calendar_list_model.dart';
 import 'package:simple_tracker/state/calendar_repository.dart';
 import 'package:simple_tracker/state/calendar_summary_model.dart';
 import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/view/calendar_list.dart';
 
-Widget getCreateEditCalendar(BuildContext context,
+Widget getCreateEditCalendar(BuildContext context, CalendarListModel calendarListModel,
     {@required bool isCreate, CalendarSummaryModel existingCalendarSummaryModel}) {
   final AppLocalizations localizations =
       Localizations.of<AppLocalizations>(context, AppLocalizations);
@@ -44,31 +47,84 @@ Widget getCreateEditCalendar(BuildContext context,
           appBar: AppBar(title: Text(title)),
           body: SafeArea(
             child: new CreateEditCalendarForm(
-                isCreate: isCreate, existingCalendarSummaryModel: existingCalendarSummaryModel),
+                isCreate: isCreate,
+                calendarListModel: calendarListModel,
+                existingCalendarSummaryModel: existingCalendarSummaryModel),
             minimum: const EdgeInsets.symmetric(horizontal: 16.0),
           )));
 }
 
+List<BigColor> getColors() {}
+
 class CreateEditCalendarForm extends StatefulWidget {
   final bool isCreate;
+  final CalendarListModel calendarListModel;
   final CalendarSummaryModel existingCalendarSummaryModel;
 
-  CreateEditCalendarForm({@required this.isCreate, this.existingCalendarSummaryModel});
+  CreateEditCalendarForm(
+      {@required this.isCreate, this.calendarListModel, this.existingCalendarSummaryModel});
 
   @override
   State<StatefulWidget> createState() {
-    return CreateEditCalendarFormState(isCreate, existingCalendarSummaryModel);
+    return CreateEditCalendarFormState(calendarListModel, isCreate, existingCalendarSummaryModel);
   }
+}
+
+Widget createSimilarColorsWarning(
+    final BigColor proposedColor, final CalendarListModel calendarListModel) {
+  if (proposedColor == null) {
+    return null;
+  }
+  final List<CalendarSummaryModel> existingCalendars =
+      calendarListModel.getCalendarSummariesInNameOrder();
+  final List<CalendarSummaryModel> conflictingCalendars = existingCalendars
+      .where((calendar) => !ColorAnalyzer.noticeablyDifferent(calendar.color, proposedColor))
+      .toList();
+  if (conflictingCalendars.isEmpty) {
+    return null;
+  }
+  final List<Widget> listTiles = conflictingCalendars
+      .map((calendar) => ListTile(
+          leading: Container(
+            width: 50.0,
+            height: 50.0,
+            decoration: BoxDecoration(color: calendar.color),
+          ),
+          title: Text(calendar.name)))
+      .toList();
+  return Container(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: <Widget>[
+          Padding(padding: const EdgeInsets.fromLTRB(0, 32.0, 0, 0)),
+          Text(
+              "Warning: The color you've selected is similar to these existing calendar colors. This will make it hard to distinguish between calendars."),
+          Padding(padding: const EdgeInsets.fromLTRB(0, 0, 0, 16.0)),
+          ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            shrinkWrap: true,
+            children: listTiles,
+          ),
+        ],
+      ));
 }
 
 class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
   final bool isCreate;
+  List<BigColor> recommendedColors;
+  final CalendarListModel calendarListModel;
+  final List<BigColor> existingCalendarColors;
+  List<BigColor> colorsToOffer;
   final CalendarSummaryModel existingCalendarSummaryModel;
   final TextEditingController _name;
-  Color currentColor = Colors.lightGreen;
+  BigColor currentColor;
+  BigColor currentRecommendedColor;
 
-  CreateEditCalendarFormState(bool isCreate, CalendarSummaryModel existingCalendarSummaryModel)
+  CreateEditCalendarFormState(final CalendarListModel calendarListModel, bool isCreate,
+      CalendarSummaryModel existingCalendarSummaryModel)
       : this.isCreate = isCreate,
+        this.calendarListModel = calendarListModel,
+        this.existingCalendarColors = calendarListModel.getCalendarColors(),
         this.existingCalendarSummaryModel = existingCalendarSummaryModel,
         this._name = isCreate
             ? new TextEditingController()
@@ -76,6 +132,7 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
     if (existingCalendarSummaryModel != null) {
       currentColor = existingCalendarSummaryModel.color;
     }
+    colorsToOffer = Palettes.getMaterialColorsInHueOrder([500, 800, 200]);
   }
 
   // Global key that uniquely identifies Form widget allows validation.
@@ -95,7 +152,40 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
     final CalendarRepository calendarRepository =
         Provider.of<CalendarRepository>(context, listen: false);
 
-    return Form(
+    recommendedColors = Palettes.tableau10.where((paletteColor) {
+      for (final BigColor existingCalendarColor in existingCalendarColors) {
+        if (!ColorAnalyzer.noticeablyDifferent(existingCalendarColor, paletteColor)) {
+          return false;
+        }
+      }
+      if (currentColor != null && paletteColor == currentColor) {
+        currentRecommendedColor = paletteColor;
+        return true;
+      }
+      if (currentColor != null) {
+        return ColorAnalyzer.noticeablyDifferent(currentColor, paletteColor);
+      }
+      return true;
+    }).toList();
+    if (currentRecommendedColor == null) {
+      currentRecommendedColor = recommendedColors[0];
+    }
+
+    if (currentColor == null && existingCalendarSummaryModel == null) {
+      Color proposedCurrentColor;
+      if (recommendedColors.isNotEmpty) {
+        proposedCurrentColor = recommendedColors[0];
+      } else {
+        proposedCurrentColor = colorsToOffer[0];
+      }
+      setState(() {
+        currentColor = proposedCurrentColor;
+      });
+    }
+
+    final Widget similarColorsWarning = createSimilarColorsWarning(currentColor, calendarListModel);
+
+    final Widget form = Form(
         key: _formKey,
         child: Column(children: <Widget>[
           TextFormField(
@@ -118,14 +208,28 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
                       builder: (BuildContext context) {
                         return AlertDialog(
                           titlePadding: const EdgeInsets.all(0.0),
-                          contentPadding: const EdgeInsets.all(0.0),
+                          contentPadding: const EdgeInsets.all(32.0),
                           content: SingleChildScrollView(
-                            child: MaterialPicker(
-                              pickerColor: currentColor,
-                              onColorChanged: (color) {
-                                changeColor(color, context);
-                              },
-                              enableLabel: false,
+                            child: Column(
+                              children: <Widget>[
+                                Text("Recommended colors"),
+                                BlockPicker(
+                                  availableColors: recommendedColors,
+                                  pickerColor: currentRecommendedColor,
+                                  onColorChanged: (color) {
+                                    changeColor(color, context);
+                                  },
+                                ),
+                                Text("More colors"),
+                                BlockPicker(
+                                  availableColors: colorsToOffer,
+                                  pickerColor:
+                                      currentColor != null ? currentColor : colorsToOffer[0],
+                                  onColorChanged: (color) {
+                                    changeColor(color, context);
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -186,6 +290,13 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
                 }),
           )
         ]));
+
+    return Column(
+      children: <Widget>[
+        form,
+        if (similarColorsWarning != null) similarColorsWarning,
+      ],
+    );
   }
 
   String validateName(String input, AppLocalizations appLocalizations) {

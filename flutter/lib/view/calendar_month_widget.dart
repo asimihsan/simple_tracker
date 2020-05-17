@@ -132,8 +132,8 @@ class CalenderMonth extends StatelessWidget {
 
       final List<CalendarModelAndMonthSum> calendarModelAndMonthSum =
           calendarDetailModel.calculateMonthSum(this.year, this.month);
-      calendarModelAndMonthSum.forEach(
-          (elem) => children.add(Text(elem.summaryText, style: TextStyle(color: elem.color))));
+      calendarModelAndMonthSum.forEach((elem) => children.add(Text(elem.summaryText,
+          style: TextStyle(color: elem.color, fontWeight: FontWeight.bold))));
       children.add(Table(
         defaultColumnWidth: FractionColumnWidth(1.0 / daysInWeek),
         children: tableRows,
