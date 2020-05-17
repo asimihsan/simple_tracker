@@ -84,29 +84,30 @@ Widget createSimilarColorsWarning(
     return null;
   }
   final List<Widget> listTiles = conflictingCalendars
-      .map((calendar) => ListTile(
-          leading: Container(
-            width: 50.0,
-            height: 50.0,
-            decoration: BoxDecoration(color: calendar.color),
-          ),
-          title: Text(calendar.name)))
+      .map((calendar) => Card(
+            child: ListTile(
+                leading: Container(
+                  width: 50.0,
+                  height: 50.0,
+                  decoration: BoxDecoration(color: calendar.color),
+                ),
+                title: Text(calendar.name)),
+          ))
       .toList();
   return Container(
-      padding: const EdgeInsets.all(16.0),
       child: Column(
-        children: <Widget>[
-          Padding(padding: const EdgeInsets.fromLTRB(0, 32.0, 0, 0)),
-          Text(
-              "Warning: The color you've selected is similar to these existing calendar colors. This will make it hard to distinguish between calendars."),
-          Padding(padding: const EdgeInsets.fromLTRB(0, 0, 0, 16.0)),
-          ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            shrinkWrap: true,
-            children: listTiles,
-          ),
-        ],
-      ));
+    children: <Widget>[
+      Padding(padding: const EdgeInsets.fromLTRB(0, 32.0, 0, 0)),
+      Text(
+          "Warning: The color you've selected is similar to these existing calendar colors. This will make it hard to distinguish between calendars."),
+      Padding(padding: const EdgeInsets.fromLTRB(0, 0, 0, 16.0)),
+      ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        shrinkWrap: true,
+        children: listTiles,
+      ),
+    ],
+  ));
 }
 
 class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
