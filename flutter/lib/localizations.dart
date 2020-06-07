@@ -55,6 +55,8 @@ class AppLocalizations {
       'create_calendar_color': 'Calendar color (click icon)',
       'edit_calendar_title': 'Edit calendar',
       'edit_calendar_submit_button': 'Save calendar',
+      'create_edit_calendar_similar_colors_warning':
+          'Warning: The color you have selected is similar to these existing calendar colors. This will make it hard to distinguish between calendars.',
     },
   };
 
@@ -173,6 +175,10 @@ class AppLocalizations {
 
   String get editCalendarSubmitButton {
     return _localizedValues[locale.languageCode]['edit_calendar_submit_button'];
+  }
+
+  String get createEditCalendarSimilarColorsWarning {
+    return _localizedValues[locale.languageCode]['create_edit_calendar_similar_colors_warning'];
   }
 }
 

@@ -54,8 +54,6 @@ Widget getCreateEditCalendar(BuildContext context, CalendarListModel calendarLis
           )));
 }
 
-List<BigColor> getColors() {}
-
 class CreateEditCalendarForm extends StatefulWidget {
   final bool isCreate;
   final CalendarListModel calendarListModel;
@@ -71,13 +69,17 @@ class CreateEditCalendarForm extends StatefulWidget {
 }
 
 Widget createSimilarColorsWarning(
-    final BigColor proposedColor, final CalendarListModel calendarListModel) {
+    final BigColor proposedColor,
+    final CalendarListModel calendarListModel,
+    CalendarSummaryModel existingCalendarSummaryModel,
+    AppLocalizations localizations) {
   if (proposedColor == null) {
     return null;
   }
   final List<CalendarSummaryModel> existingCalendars =
       calendarListModel.getCalendarSummariesInNameOrder();
   final List<CalendarSummaryModel> conflictingCalendars = existingCalendars
+      .where((calendar) => calendar != existingCalendarSummaryModel)
       .where((calendar) => !ColorAnalyzer.noticeablyDifferent(calendar.color, proposedColor))
       .toList();
   if (conflictingCalendars.isEmpty) {
@@ -98,8 +100,7 @@ Widget createSimilarColorsWarning(
       child: Column(
     children: <Widget>[
       Padding(padding: const EdgeInsets.fromLTRB(0, 32.0, 0, 0)),
-      Text(
-          "Warning: The color you've selected is similar to these existing calendar colors. This will make it hard to distinguish between calendars."),
+      Text(localizations.createEditCalendarSimilarColorsWarning),
       Padding(padding: const EdgeInsets.fromLTRB(0, 0, 0, 16.0)),
       ListView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -184,7 +185,8 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
       });
     }
 
-    final Widget similarColorsWarning = createSimilarColorsWarning(currentColor, calendarListModel);
+    final Widget similarColorsWarning = createSimilarColorsWarning(
+        currentColor, calendarListModel, existingCalendarSummaryModel, localizations);
 
     final Widget form = Form(
         key: _formKey,
