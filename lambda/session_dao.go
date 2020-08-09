@@ -32,6 +32,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-xray-sdk-go/xray"
 	"github.com/google/uuid"
+
+	"lambda/lambdalog"
 )
 
 var (
@@ -54,7 +56,7 @@ func CreateSession(userId string,
 	uuid_object := uuid.Must(uuid.NewRandom())
 	id, err := uuid_object.MarshalText()
 	if err != nil {
-		fmt.Printf("CreateSession failed to generate UUID: %s", err.Error())
+		lambdalog.LambdaLog.Printf("CreateSession failed to generate UUID: %s", err.Error())
 		_ = xray.AddError(ctx, err)
 		return nil, err
 	}
@@ -66,8 +68,8 @@ func CreateSession(userId string,
 	session := Session{Id: canonical_id, UserId: userId, ExpiryEpochSeconds: expiryEpochSecs}
 	av, err := dynamodbattribute.MarshalMap(session)
 	if err != nil {
-		fmt.Println("CreateSession failed to marshal session")
-		fmt.Println(err.Error())
+		lambdalog.LambdaLog.Println("CreateSession failed to marshal session")
+		lambdalog.LambdaLog.Println(err.Error())
 		_ = xray.AddError(ctx, err)
 		return nil, err
 	}
@@ -83,22 +85,22 @@ func CreateSession(userId string,
 			if awsErr, ok := err.(awserr.Error); ok {
 				if reqErr, ok := err.(awserr.RequestFailure); ok {
 					// A service error occurred
-					fmt.Printf("AWS service error. Code %s, Message: %s, OrigErr %s, StatusCode %s, RequestID %s\n",
+					lambdalog.LambdaLog.Printf("AWS service error. Code %s, Message: %s, OrigErr %s, StatusCode %s, RequestID %s\n",
 						awsErr.Code(), awsErr.Message(), awsErr.OrigErr(), reqErr.StatusCode(), reqErr.RequestID())
 				} else {
 					// Generic AWS error with Code, Message, and original error (if any)
-					fmt.Printf("Generic AWS error. Code %s, Message %s, OrigErr %s\n",
+					lambdalog.LambdaLog.Printf("Generic AWS error. Code %s, Message %s, OrigErr %s\n",
 						awsErr.Code(), awsErr.Message(), awsErr.OrigErr())
 				}
 			} else {
-				fmt.Println(err.Error())
+				lambdalog.LambdaLog.Println(err.Error())
 			}
 			return err
 		}
 		return nil
 	}); err != nil {
-		fmt.Println("CreateSession failed to put item into DynamoDB")
-		fmt.Println(err.Error())
+		lambdalog.LambdaLog.Println("CreateSession failed to put item into DynamoDB")
+		lambdalog.LambdaLog.Println(err.Error())
 		return nil, err
 	}
 
@@ -129,28 +131,28 @@ func VerifySession(
 			if awsErr, ok := err.(awserr.Error); ok {
 				if reqErr, ok := err.(awserr.RequestFailure); ok {
 					// A service error occurred
-					fmt.Printf("AWS service error. Code %s, Message: %s, OrigErr %s, StatusCode %s, RequestID %s\n",
+					lambdalog.LambdaLog.Printf("AWS service error. Code %s, Message: %s, OrigErr %s, StatusCode %s, RequestID %s\n",
 						awsErr.Code(), awsErr.Message(), awsErr.OrigErr(), reqErr.StatusCode(), reqErr.RequestID())
 				} else {
 					// Generic AWS error with Code, Message, and original error (if any)
-					fmt.Printf("Generic AWS error. Code %s, Message %s, OrigErr %s\n",
+					lambdalog.LambdaLog.Printf("Generic AWS error. Code %s, Message %s, OrigErr %s\n",
 						awsErr.Code(), awsErr.Message(), awsErr.OrigErr())
 				}
 			} else {
-				fmt.Println(err.Error())
+				lambdalog.LambdaLog.Println(err.Error())
 			}
 			return err
 		}
 		return nil
 	}); err != nil {
-		fmt.Println("VerifyUser failed to get item from DynamoDB")
-		fmt.Println(err.Error())
+		lambdalog.LambdaLog.Println("VerifyUser failed to get item from DynamoDB")
+		lambdalog.LambdaLog.Println(err.Error())
 		return nil, err
 	}
 
 	if len(resp.Item) == 0 {
 		// No session found.
-		fmt.Println("Session not found")
+		lambdalog.LambdaLog.Println("Session not found")
 		_ = xray.AddError(ctx, ErrSessionNotFound)
 		return nil, ErrSessionNotFound
 	}
@@ -159,13 +161,13 @@ func VerifySession(
 	existingUserId := *resp.Item["UserId"].S
 	expiryEpochSeconds, err := strconv.ParseInt(*resp.Item["ExpiryEpochSeconds"].N, 10, 64)
 	if err != nil {
-		fmt.Println("Could not deserialize session EpochExpirySeconds")
+		lambdalog.LambdaLog.Println("Could not deserialize session EpochExpirySeconds")
 		_ = xray.AddError(ctx, ErrSessionCouldNotDeserializeEpoch)
 		return nil, ErrSessionCouldNotDeserializeEpoch
 	}
 
 	if subtle.ConstantTimeCompare([]byte(userId), []byte(existingUserId)) == 0 {
-		fmt.Println("Session found but does not match proposed user ID")
+		lambdalog.LambdaLog.Println("Session found but does not match proposed user ID")
 		_ = xray.AddError(ctx, ErrSessionDoesNotMatchProposedUserId)
 		return nil, ErrSessionDoesNotMatchProposedUserId
 	}

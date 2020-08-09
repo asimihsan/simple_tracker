@@ -22,7 +22,6 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"os"
 	"time"
 
@@ -38,6 +37,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/patrickmn/go-cache"
 
+	"lambda/lambdalog"
 	simpletracker "lambda/proto"
 )
 
@@ -55,7 +55,8 @@ var (
 
 func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (apiGatewayResponse events.APIGatewayProxyResponse, err error) {
 	_ = xray.Capture(ctx, "LambdaHandleRequest", func(ctx1 context.Context) (err error) {
-		recordRequestIds(ctx1, request)
+		lambdaRequestId := recordRequestIds(ctx1, request)
+		lambdalog.SetGlobalLogger(lambdaRequestId)
 
 		switch request.Path {
 		case "/ping":
@@ -82,13 +83,15 @@ func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	return
 }
 
-func recordRequestIds(ctx context.Context, request events.APIGatewayProxyRequest) {
+func recordRequestIds(ctx context.Context, request events.APIGatewayProxyRequest) string {
 	apiGatewayRequestId := request.RequestContext.RequestID
 	lc, _ := lambdacontext.FromContext(ctx)
 	lambdaRequestId := lc.AwsRequestID
 
 	_ = xray.AddAnnotation(ctx, "ApiGatewayRequestId", apiGatewayRequestId)
 	_ = xray.AddAnnotation(ctx, "LambdaRequestId", lambdaRequestId)
+
+	return lambdaRequestId
 }
 
 func recordUsername(ctx context.Context, username string) {
@@ -103,7 +106,7 @@ func getRequestBody(request events.APIGatewayProxyRequest) (string, error) {
 	}
 	requestBodyBytes, err := base64.StdEncoding.DecodeString(request.Body)
 	if err != nil {
-		fmt.Println("failed to base64-decode body")
+		lambdalog.LambdaLog.Println("failed to base64-decode body")
 		return "", ErrFailedToBase64DecodeBody
 	}
 	return string(requestBodyBytes), nil
@@ -116,7 +119,7 @@ func handlePing(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 func handleLoginUserRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	requestBody, err := getRequestBody(request)
 	if err != nil {
-		fmt.Println("handleLoginUserRequest failed to get body")
+		lambdalog.LambdaLog.Println("handleLoginUserRequest failed to get body")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "failed to get body", StatusCode: 400}, nil
@@ -124,7 +127,7 @@ func handleLoginUserRequest(ctx context.Context, request events.APIGatewayProxyR
 
 	loginUserRequest := &simpletracker.LoginUserRequest{}
 	if err := proto.Unmarshal([]byte(requestBody), loginUserRequest); err != nil {
-		fmt.Println("handleLoginUserRequest failed to parse login user request proto")
+		lambdalog.LambdaLog.Println("handleLoginUserRequest failed to parse login user request proto")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "Failed to parse login user request proto", StatusCode: 400}, nil
@@ -140,13 +143,13 @@ func handleLoginUserRequest(ctx context.Context, request events.APIGatewayProxyR
 	user, err := handleVerifyUserRequestInner(loginUserRequest, dynamoDbClient, userTableName, ctx)
 	if err != nil {
 		if err == ErrUserMissingOrPasswordIncorrect {
-			fmt.Println("LoginUser handling failed, user missing or password incorrect.")
+			lambdalog.LambdaLog.Println("LoginUser handling failed, user missing or password incorrect.")
 			loginUserResponse = simpletracker.LoginUserResponse{
 				Success:     false,
 				ErrorReason: simpletracker.LoginUserErrorReason_USER_MISSING_OR_PASSWORD_INCORRECT,
 			}
 		} else {
-			fmt.Println("LoginUser handling failed, could not verify user.")
+			lambdalog.LambdaLog.Println("LoginUser handling failed, could not verify user.")
 			loginUserResponse = simpletracker.LoginUserResponse{
 				Success:     false,
 				ErrorReason: simpletracker.LoginUserErrorReason_LOGIN_USER_ERROR_REASON_INTERNAL_SERVER_ERROR,
@@ -154,17 +157,17 @@ func handleLoginUserRequest(ctx context.Context, request events.APIGatewayProxyR
 		}
 	} else {
 		// 2. User/password combination is valid. Create a createdSession.
-		fmt.Println("LoginUser successfully validated username and password.")
+		lambdalog.LambdaLog.Println("LoginUser successfully validated username and password.")
 		createdSession, err := CreateSession(user.Id, dynamoDbClient, sessionTableName, ctx)
 		if err != nil {
-			fmt.Println("LoginUser failed to create createdSession.")
+			lambdalog.LambdaLog.Println("LoginUser failed to create createdSession.")
 			loginUserResponse = simpletracker.LoginUserResponse{
 				Success:     false,
 				ErrorReason: simpletracker.LoginUserErrorReason_LOGIN_USER_ERROR_REASON_INTERNAL_SERVER_ERROR,
 			}
 		} else {
 			// 3. Username/password valid, createdSession created, successful.
-			fmt.Println("LoginUser successfully created createdSession.")
+			lambdalog.LambdaLog.Println("LoginUser successfully created createdSession.")
 			loginUserResponse = simpletracker.LoginUserResponse{
 				Success:     true,
 				ErrorReason: simpletracker.LoginUserErrorReason_LOGIN_USER_ERROR_REASON_NO_ERROR,
@@ -175,7 +178,7 @@ func handleLoginUserRequest(ctx context.Context, request events.APIGatewayProxyR
 	}
 	resp, err := proto.Marshal(&loginUserResponse)
 	if err != nil {
-		fmt.Println("Failed to serialize login user response")
+		lambdalog.LambdaLog.Println("Failed to serialize login user response")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "Failed to serialize login user response", StatusCode: 500}, nil
@@ -203,7 +206,7 @@ func handleLoginUserRequest(ctx context.Context, request events.APIGatewayProxyR
 func handleCreateUserRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	requestBody, err := getRequestBody(request)
 	if err != nil {
-		fmt.Println("handleCreateUserRequest failed to get body")
+		lambdalog.LambdaLog.Println("handleCreateUserRequest failed to get body")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "failed to get body", StatusCode: 400}, nil
@@ -211,7 +214,7 @@ func handleCreateUserRequest(ctx context.Context, request events.APIGatewayProxy
 
 	createUserRequest := &simpletracker.CreateUserRequest{}
 	if err := proto.Unmarshal([]byte(requestBody), createUserRequest); err != nil {
-		fmt.Println("Failed to parse create user request proto")
+		lambdalog.LambdaLog.Println("Failed to parse create user request proto")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "Failed to parse create user request proto", StatusCode: 400}, nil
@@ -224,14 +227,14 @@ func handleCreateUserRequest(ctx context.Context, request events.APIGatewayProxy
 	createUserResp, err := handleCreateUserRequestInner(
 		createUserRequest, dynamoDbClient, userTableName, sessionTableName, ctx)
 	if err != nil {
-		fmt.Println("CreateUser handling failed.")
+		lambdalog.LambdaLog.Println("CreateUser handling failed.")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "CreateUser handling failed.", StatusCode: 400}, nil
 	}
 	resp, err := proto.Marshal(createUserResp)
 	if err != nil {
-		fmt.Println("Failed to serialize create user response")
+		lambdalog.LambdaLog.Println("Failed to serialize create user response")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "Failed to serialize create user response", StatusCode: 500}, nil
@@ -247,7 +250,7 @@ func handleCreateUserRequest(ctx context.Context, request events.APIGatewayProxy
 func handleListCalendarsRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	requestBody, err := getRequestBody(request)
 	if err != nil {
-		fmt.Println("handleListCalendarsRequest failed to get body")
+		lambdalog.LambdaLog.Println("handleListCalendarsRequest failed to get body")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "failed to get body", StatusCode: 400}, nil
@@ -255,7 +258,7 @@ func handleListCalendarsRequest(ctx context.Context, request events.APIGatewayPr
 
 	listCalendarsRequest := &simpletracker.ListCalendarsRequest{}
 	if err := proto.Unmarshal([]byte(requestBody), listCalendarsRequest); err != nil {
-		fmt.Println("handleListCalendarsRequest failed to parse list calendars request proto")
+		lambdalog.LambdaLog.Println("handleListCalendarsRequest failed to parse list calendars request proto")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "failed to parse list calendars request proto", StatusCode: 400}, nil
@@ -274,14 +277,14 @@ func handleListCalendarsRequest(ctx context.Context, request events.APIGatewayPr
 		paginationEphemeralKeyTableName,
 		ctx)
 	if err != nil {
-		fmt.Println("ListCalendars handling failed.")
+		lambdalog.LambdaLog.Println("ListCalendars handling failed.")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "ListCalendars handling failed.", StatusCode: 400}, nil
 	}
 	resp, err := proto.Marshal(listCalendarsResp)
 	if err != nil {
-		fmt.Println("Failed to serialize create user response")
+		lambdalog.LambdaLog.Println("Failed to serialize create user response")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "Failed to serialize create user response", StatusCode: 500}, nil
@@ -297,7 +300,7 @@ func handleListCalendarsRequest(ctx context.Context, request events.APIGatewayPr
 func handleCreateCalendarRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	requestBody, err := getRequestBody(request)
 	if err != nil {
-		fmt.Println("handleCreateCalendarRequest failed to get body")
+		lambdalog.LambdaLog.Println("handleCreateCalendarRequest failed to get body")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "failed to get body", StatusCode: 400}, nil
@@ -305,7 +308,7 @@ func handleCreateCalendarRequest(ctx context.Context, request events.APIGatewayP
 
 	createCalendarRequest := &simpletracker.CreateCalendarRequest{}
 	if err := proto.Unmarshal([]byte(requestBody), createCalendarRequest); err != nil {
-		fmt.Println("handleCreateCalendarRequest failed to parse create calendar request request proto")
+		lambdalog.LambdaLog.Println("handleCreateCalendarRequest failed to parse create calendar request request proto")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "failed to parse create calendar request proto", StatusCode: 400}, nil
@@ -321,14 +324,14 @@ func handleCreateCalendarRequest(ctx context.Context, request events.APIGatewayP
 		ctx,
 	)
 	if err != nil {
-		fmt.Println("CreateCalendar handling failed.")
+		lambdalog.LambdaLog.Println("CreateCalendar handling failed.")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "CreateCalendar handling failed.", StatusCode: 400}, nil
 	}
 	resp, err := proto.Marshal(createCalendarResp)
 	if err != nil {
-		fmt.Println("Failed to serialize create calendar response")
+		lambdalog.LambdaLog.Println("Failed to serialize create calendar response")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "Failed to serialize create calendar response", StatusCode: 500}, nil
@@ -344,7 +347,7 @@ func handleCreateCalendarRequest(ctx context.Context, request events.APIGatewayP
 func handleGetCalendarsRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	requestBody, err := getRequestBody(request)
 	if err != nil {
-		fmt.Println("handleGetCalendarsRequest failed to get body")
+		lambdalog.LambdaLog.Println("handleGetCalendarsRequest failed to get body")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "failed to get body", StatusCode: 400}, nil
@@ -352,7 +355,7 @@ func handleGetCalendarsRequest(ctx context.Context, request events.APIGatewayPro
 
 	getCalendarsRequest := &simpletracker.GetCalendarsRequest{}
 	if err := proto.Unmarshal([]byte(requestBody), getCalendarsRequest); err != nil {
-		fmt.Println("handleGetCalendarsRequest failed to parse request proto")
+		lambdalog.LambdaLog.Println("handleGetCalendarsRequest failed to parse request proto")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "failed to parse request proto", StatusCode: 400}, nil
@@ -368,14 +371,14 @@ func handleGetCalendarsRequest(ctx context.Context, request events.APIGatewayPro
 		ctx,
 	)
 	if err != nil {
-		fmt.Println("GetCalendars handling failed.")
+		lambdalog.LambdaLog.Println("GetCalendars handling failed.")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "GetCalendars handling failed.", StatusCode: 400}, nil
 	}
 	resp, err := proto.Marshal(getCalendarsResp)
 	if err != nil {
-		fmt.Println("Failed to serialize get calendars response")
+		lambdalog.LambdaLog.Println("Failed to serialize get calendars response")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "Failed to serialize get calendars response", StatusCode: 500}, nil
@@ -391,7 +394,7 @@ func handleGetCalendarsRequest(ctx context.Context, request events.APIGatewayPro
 func handleUpdateCalendarsRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	requestBody, err := getRequestBody(request)
 	if err != nil {
-		fmt.Println("handleUpdateCalendarsRequest failed to get body")
+		lambdalog.LambdaLog.Println("handleUpdateCalendarsRequest failed to get body")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "failed to get body", StatusCode: 400}, nil
@@ -399,7 +402,7 @@ func handleUpdateCalendarsRequest(ctx context.Context, request events.APIGateway
 
 	updateCalendarsRequest := &simpletracker.UpdateCalendarsRequest{}
 	if err := proto.Unmarshal([]byte(requestBody), updateCalendarsRequest); err != nil {
-		fmt.Println("handleUpdateCalendarsRequest failed to parse request proto")
+		lambdalog.LambdaLog.Println("handleUpdateCalendarsRequest failed to parse request proto")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "failed to parse request proto", StatusCode: 400}, nil
@@ -418,14 +421,14 @@ func handleUpdateCalendarsRequest(ctx context.Context, request events.APIGateway
 		ctx,
 	)
 	if err != nil {
-		fmt.Println("UpdateCalendars handling failed.")
+		lambdalog.LambdaLog.Println("UpdateCalendars handling failed.")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "UpdateCalendars handling failed.", StatusCode: 400}, nil
 	}
 	resp, err := proto.Marshal(updateCalendarsResp)
 	if err != nil {
-		fmt.Println("Failed to serialize update calendars response")
+		lambdalog.LambdaLog.Println("Failed to serialize update calendars response")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "Failed to serialize update calendars response", StatusCode: 500}, nil
@@ -441,7 +444,7 @@ func handleUpdateCalendarsRequest(ctx context.Context, request events.APIGateway
 func handleDeleteCalendarRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	requestBody, err := getRequestBody(request)
 	if err != nil {
-		fmt.Println("handleDeleteCalendarRequest failed to get body")
+		lambdalog.LambdaLog.Println("handleDeleteCalendarRequest failed to get body")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "failed to get body", StatusCode: 400}, nil
@@ -449,7 +452,7 @@ func handleDeleteCalendarRequest(ctx context.Context, request events.APIGatewayP
 
 	deleteCalendarRequest := &simpletracker.DeleteCalendarRequest{}
 	if err := proto.Unmarshal([]byte(requestBody), deleteCalendarRequest); err != nil {
-		fmt.Println("handleDeleteCalendarRequest failed to parse request proto")
+		lambdalog.LambdaLog.Println("handleDeleteCalendarRequest failed to parse request proto")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "failed to parse request proto", StatusCode: 400}, nil
@@ -469,14 +472,14 @@ func handleDeleteCalendarRequest(ctx context.Context, request events.APIGatewayP
 		ctx,
 	)
 	if err != nil {
-		fmt.Println("DeleteCalendar handling failed.")
+		lambdalog.LambdaLog.Println("DeleteCalendar handling failed.")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "DeleteCalendar handling failed.", StatusCode: 400}, nil
 	}
 	resp, err := proto.Marshal(updateCalendarsResp)
 	if err != nil {
-		fmt.Println("Failed to serialize delete calendar response")
+		lambdalog.LambdaLog.Println("Failed to serialize delete calendar response")
 		_ = xray.AddError(ctx, err)
 		return events.APIGatewayProxyResponse{
 			Body: "Failed to serialize delete calendar response", StatusCode: 500}, nil

@@ -20,10 +20,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 
+	"lambda/lambdalog"
 	simpletracker "lambda/proto"
 )
 
@@ -45,7 +45,7 @@ func handleCreateUserRequestInner(
 ) (*simpletracker.CreateUserResponse, error) {
 	user, err := CreateUser(request.Username, request.Password, dynamoDbClient, userTableName, ctx)
 	if err != nil {
-		fmt.Printf("Failed to create user: %s\n", err.Error())
+		lambdalog.LambdaLog.Printf("Failed to create user: %s\n", err.Error())
 		if err == ErrUserAlreadyExists {
 			return &simpletracker.CreateUserResponse{
 				Success:     false,
@@ -58,7 +58,7 @@ func handleCreateUserRequestInner(
 
 	createdSession, err := CreateSession(user.Id, dynamoDbClient, sessionTableName, ctx)
 	if err != nil {
-		fmt.Printf("Failed to create createdSession: %s\n", err.Error)
+		lambdalog.LambdaLog.Printf("Failed to create createdSession: %s\n", err.Error)
 		return &simpletracker.CreateUserResponse{
 			Success:     false,
 			ErrorReason: simpletracker.CreateUserErrorReason_CREATE_USER_ERROR_REASON_INTERNAL_SERVER_ERROR}, err

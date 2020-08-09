@@ -11,8 +11,8 @@
     "cdk": "cdk"
   },
   "devDependencies": {
-    "aws-cdk": "1.38.0",
-    "@aws-cdk/assert": "1.38.0",
+    "aws-cdk": "1.46.0",
+    "@aws-cdk/assert": "1.46.0",
     "@types/jest": "^24.0.22",
     "@types/node": "10.17.5",
     "jest": "^24.9.0",
@@ -21,16 +21,16 @@
     "typescript": "~3.7.2"
   },
   "dependencies": {
-    "@aws-cdk/aws-apigateway": "1.38.0",
-    "@aws-cdk/aws-apigatewayv2": "1.38.0",
-    "@aws-cdk/aws-certificatemanager": "1.38.0",
-    "@aws-cdk/aws-dynamodb": "1.38.0",
-    "@aws-cdk/aws-events-targets": "1.38.0",
-    "@aws-cdk/aws-iam": "1.38.0",
-    "@aws-cdk/aws-lambda": "1.38.0",
-    "@aws-cdk/aws-route53-targets": "1.38.0",
-    "@aws-cdk/aws-route53": "1.38.0",
-    "@aws-cdk/core": "1.38.0",
-    "@aws-cdk/cx-api": "1.38.0"
+    "@aws-cdk/aws-apigateway": "1.46.0",
+    "@aws-cdk/aws-apigatewayv2": "1.46.0",
+    "@aws-cdk/aws-certificatemanager": "1.46.0",
+    "@aws-cdk/aws-dynamodb": "1.46.0",
+    "@aws-cdk/aws-events-targets": "1.46.0",
+    "@aws-cdk/aws-iam": "1.46.0",
+    "@aws-cdk/aws-lambda": "1.46.0",
+    "@aws-cdk/aws-route53-targets": "1.46.0",
+    "@aws-cdk/aws-route53": "1.46.0",
+    "@aws-cdk/core": "1.46.0",
+    "@aws-cdk/cx-api": "1.46.0"
   }
 }

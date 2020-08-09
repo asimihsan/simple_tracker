@@ -20,7 +20,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_tracker/exception/InternalServerErrorException.dart';
-import 'package:simple_tracker/exception/ServerTimeoutException.dart';
 import 'package:simple_tracker/exception/UserAlreadyExistsException.dart';
 import 'package:simple_tracker/exception/UserMissingOrPasswordIncorrectException.dart';
 import 'package:simple_tracker/localizations.dart';

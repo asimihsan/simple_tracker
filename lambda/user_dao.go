@@ -29,6 +29,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 	"github.com/aws/aws-xray-sdk-go/xray"
 	"github.com/google/uuid"
+
+	"lambda/lambdalog"
 )
 
 var (
@@ -70,28 +72,28 @@ func VerifyUser(username string,
 			if awsErr, ok := err.(awserr.Error); ok {
 				if reqErr, ok := err.(awserr.RequestFailure); ok {
 					// A service error occurred
-					fmt.Printf("AWS service error. Code %s, Message: %s, OrigErr %s, StatusCode %s, RequestID %s\n",
+					lambdalog.LambdaLog.Printf("AWS service error. Code %s, Message: %s, OrigErr %s, StatusCode %s, RequestID %s\n",
 						awsErr.Code(), awsErr.Message(), awsErr.OrigErr(), reqErr.StatusCode(), reqErr.RequestID())
 				} else {
 					// Generic AWS error with Code, Message, and original error (if any)
-					fmt.Printf("Generic AWS error. Code %s, Message %s, OrigErr %s\n",
+					lambdalog.LambdaLog.Printf("Generic AWS error. Code %s, Message %s, OrigErr %s\n",
 						awsErr.Code(), awsErr.Message(), awsErr.OrigErr())
 				}
 			} else {
-				fmt.Println(err.Error())
+				lambdalog.LambdaLog.Println(err.Error())
 			}
 			return err
 		}
 		return nil
 	}); err != nil {
-		fmt.Println("VerifyUser failed to get item from DynamoDB")
-		fmt.Println(err.Error())
+		lambdalog.LambdaLog.Println("VerifyUser failed to get item from DynamoDB")
+		lambdalog.LambdaLog.Println(err.Error())
 		return nil, err
 	}
 
 	if len(resp.Item) == 0 {
 		// No user found.
-		fmt.Println("User not found")
+		lambdalog.LambdaLog.Println("User not found")
 
 		// To mitigate side-channel timing attacks always calculate a password hash, even if we don't have a
 		// database hash to compare it to. We don't return any hash-errors again to mitigate side-channel
@@ -108,13 +110,13 @@ func VerifyUser(username string,
 		match, err = comparePasswordAndHash(password, existingPasswordHashCombined)
 		return
 	}); err != nil {
-		fmt.Println("VerifyUser failed to compare passwords")
-		fmt.Println(err.Error())
+		lambdalog.LambdaLog.Println("VerifyUser failed to compare passwords")
+		lambdalog.LambdaLog.Println(err.Error())
 		return nil, err
 	}
 
 	if !match {
-		fmt.Println("Password incorrect")
+		lambdalog.LambdaLog.Println("Password incorrect")
 		return nil, ErrUserMissingOrPasswordIncorrect
 	}
 
@@ -128,8 +130,8 @@ func arbitraryHashPassword(password string, ctx context.Context) (err error) {
 		_, err = generatePasswordHash(password)
 		return
 	}); err != nil {
-		fmt.Println("Failed to do arbitrary hash password")
-		fmt.Println(err.Error())
+		lambdalog.LambdaLog.Println("Failed to do arbitrary hash password")
+		lambdalog.LambdaLog.Println(err.Error())
 	}
 	return
 }
@@ -143,7 +145,7 @@ func CreateUser(username string,
 	uuid_object := uuid.Must(uuid.NewRandom())
 	id, err := uuid_object.MarshalText()
 	if err != nil {
-		fmt.Printf("CreateUser failed to generate UUID: %s", err.Error())
+		lambdalog.LambdaLog.Printf("CreateUser failed to generate UUID: %s", err.Error())
 		_ = xray.AddError(ctx, err)
 		return nil, err
 	}
@@ -154,16 +156,16 @@ func CreateUser(username string,
 		password_hashed, err = generatePasswordHash(password)
 		return
 	}); err != nil {
-		fmt.Println("CreateUser failed to hash password")
-		fmt.Println(err.Error())
+		lambdalog.LambdaLog.Println("CreateUser failed to hash password")
+		lambdalog.LambdaLog.Println(err.Error())
 		return nil, err
 	}
 
 	user := User{Username: username, Password: password_hashed, Id: canonical_id}
 	av, err := dynamodbattribute.MarshalMap(user)
 	if err != nil {
-		fmt.Println("CreateUser failed to marshal user")
-		fmt.Println(err.Error())
+		lambdalog.LambdaLog.Println("CreateUser failed to marshal user")
+		lambdalog.LambdaLog.Println(err.Error())
 		_ = xray.AddError(ctx, err)
 		return nil, err
 	}
@@ -171,8 +173,8 @@ func CreateUser(username string,
 	condition_username_not_exists := expression.Name("Username").AttributeNotExists()
 	condition, err := expression.NewBuilder().WithCondition(condition_username_not_exists).Build()
 	if err != nil {
-		fmt.Println("CreateUser failed to create condition")
-		fmt.Println(err.Error())
+		lambdalog.LambdaLog.Println("CreateUser failed to create condition")
+		lambdalog.LambdaLog.Println(err.Error())
 		_ = xray.AddError(ctx, err)
 		return nil, err
 	}
@@ -190,30 +192,30 @@ func CreateUser(username string,
 		if err != nil {
 			if awsErr, ok := err.(awserr.Error); ok {
 				if awsErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
-					fmt.Printf("User already exists\n")
+					lambdalog.LambdaLog.Printf("User already exists\n")
 					return ErrUserAlreadyExists
 				}
 				if reqErr, ok := err.(awserr.RequestFailure); ok {
 					// A service error occurred
-					fmt.Printf("AWS service error. Code %s, Message: %s, OrigErr %s, StatusCode %s, RequestID %s\n",
+					lambdalog.LambdaLog.Printf("AWS service error. Code %s, Message: %s, OrigErr %s, StatusCode %s, RequestID %s\n",
 						awsErr.Code(), awsErr.Message(), awsErr.OrigErr(), reqErr.StatusCode(), reqErr.RequestID())
 				} else {
 					// Generic AWS error with Code, Message, and original error (if any)
-					fmt.Printf("Generic AWS error. Code %s, Message %s, OrigErr %s\n",
+					lambdalog.LambdaLog.Printf("Generic AWS error. Code %s, Message %s, OrigErr %s\n",
 						awsErr.Code(), awsErr.Message(), awsErr.OrigErr())
 				}
 			} else {
-				fmt.Println(err.Error())
+				lambdalog.LambdaLog.Println(err.Error())
 			}
 			return err
 		}
 		return nil
 	}); err != nil {
-		fmt.Println("CreateUser failed to put item into DynamoDB")
-		fmt.Println(err.Error())
+		lambdalog.LambdaLog.Println("CreateUser failed to put item into DynamoDB")
+		lambdalog.LambdaLog.Println(err.Error())
 		return nil, err
 	}
 
-	fmt.Printf("Successfully added username: %s\n", username)
+	lambdalog.LambdaLog.Printf("Successfully added username: %s\n", username)
 	return &UserToReturn{Username: username, Id: canonical_id}, nil
 }

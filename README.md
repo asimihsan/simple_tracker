@@ -7,11 +7,10 @@ A minimalistic way of tracking occurrences of events over time. Only tracks whet
 ## TODO experimenting with Docker builds of the core Lambda
 
 ```
-cd lambda
-docker build -t simple-tracker-lambda .
+(cd lambda && docker build -t simple-tracker-lambda .)
 
 # interactive shell
-docker run --volume $(pwd):/mnt/source --interactivet simple-tracker-lambda
+docker run --volume $(pwd):/mnt/source --interactive --tty simple-tracker-lambda
 ```
 
 ## Build / deployment steps
