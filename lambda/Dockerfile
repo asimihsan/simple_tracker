@@ -8,7 +8,7 @@ RUN yum -y update && \
     yum -y install wget && \
     yum clean all
 
-RUN wget -O go.tgz https://dl.google.com/go/go1.14.4.src.tar.gz
+RUN wget -O go.tgz https://dl.google.com/go/go1.16.5.src.tar.gz
 RUN tar -C /usr/local -xzf go.tgz
 RUN cd /usr/local/go/src/ && ./make.bash
 RUN rm -f go.tgz
