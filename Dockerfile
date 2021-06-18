@@ -44,8 +44,6 @@ RUN wget -O go.tgz https://dl.google.com/go/go$VERSION_GO.src.tar.gz
 RUN tar -C /usr/local -xzf go.tgz
 RUN cd /usr/local/go/src/ && ./make.bash
 RUN rm -f go.tgz
-RUN echo export PATH="/usr/local/go/bin:\$PATH" >> $HOME/.bashrc
-RUN echo export GOPATH="\$HOME/.go" >> $HOME/.bashrc
 RUN mkdir $HOME/.go
 # -----------------------------------------------------------------------------
 
@@ -101,7 +99,8 @@ RUN echo export PATH="$PATH:$HOME/.protobuf/bin" >> $HOME/.bashrc
 RUN curl -LO https://storage.googleapis.com/dart-archive/channels/stable/release/$DART_VERSION/sdk/dartsdk-linux-x64-release.zip
 RUN unzip dartsdk-linux-x64-release.zip -d $HOME/.dart
 RUN $HOME/.dart/dart-sdk/bin/pub global activate protoc_plugin
-RUN echo export PATH="\$PATH:$HOME/.dart/dart-sdk/bin:$HOME/.pub-cache/bin" >> $HOME/.bashrc
+RUN echo export PATH="/usr/local/go/bin:\$PATH:$HOME/.dart/dart-sdk/bin:$HOME/.pub-cache/bin:\$GOPATH/bin" >> $HOME/.bashrc
+RUN echo export GOPATH="\$HOME/.go" >> $HOME/.bashrc
 
 # Protobuf Go plugin
 RUN /usr/local/go/bin/go get -u github.com/golang/protobuf/proto

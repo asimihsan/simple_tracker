@@ -28,9 +28,7 @@ docker run \
     /bin/bash
 
 # inside Docker container
-cd /mnt/app
-protoc -I=proto --dart_out=flutter/lib/proto --go_out=lambda/proto proto/user.proto proto/calendar.proto
-
+/mnt/app/build.sh
 ```
 
 ### lambda

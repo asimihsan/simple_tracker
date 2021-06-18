@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package simpletracker;
+option go_package = "lambda/proto";
 
 message CreateUserRequest {
     string username = 1;
