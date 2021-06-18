@@ -20,15 +20,19 @@ docker run --volume $(pwd):/mnt/source --interactive --tty simple-tracker-lambda
 ```
 docker build -t simple-tracker --target final .
 
+# build
+docker run \
+    --volume $(pwd):/mnt/app \
+    --volume $HOME/.aws:/root/.aws:ro \
+    -it simple-tracker \
+    /bin/bash -c '. ~/.bashrc && /mnt/app/build.sh'
+
 # interactive shell
 docker run \
     --volume $(pwd):/mnt/app \
     --volume $HOME/.aws:/root/.aws:ro \
     -it simple-tracker \
     /bin/bash
-
-# inside Docker container
-/mnt/app/build.sh
 ```
 
 ### lambda
