@@ -118,6 +118,10 @@ WORKDIR /root
 COPY lambda/go.mod .
 COPY lambda/go.sum .
 RUN /usr/local/go/bin/go mod download
+
+COPY ephemeral-key-lambda/go.mod .
+COPY ephemeral-key-lambda/go.sum .
+RUN /usr/local/go/bin/go mod download
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
