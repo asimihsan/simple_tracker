@@ -31,9 +31,12 @@ RUN yum -y update && \
     rm -rf /var/cache/yum
 
 # AWS CLI
+WORKDIR /root
 RUN curl "https://awscli.amazonaws.com/ awscli-exe-linux-x86_64-$VERSION_AWS_CLI.zip" -o "awscliv2.zip"
 RUN unzip awscliv2.zip
 RUN ./aws/install
+RUN rm -f awscliv2.zip
+RUN rm -rf aws
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
@@ -58,8 +61,8 @@ RUN rm -f go.tgz
 RUN mkdir $HOME/.go
 
 # Protobuf Go plugin
-RUN bash -c 'GOPATH="\$HOME/.go" /usr/local/go/bin/go get -u github.com/golang/protobuf/proto'
-RUN bash -c 'GOPATH="\$HOME/.go" /usr/local/go/bin/go get -u github.com/golang/protobuf/protoc-gen-go'
+RUN bash -c 'GOPATH="/root/.go" /usr/local/go/bin/go get -u github.com/golang/protobuf/proto'
+RUN bash -c 'GOPATH="/root/.go" /usr/local/go/bin/go get -u github.com/golang/protobuf/protoc-gen-go'
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
@@ -107,7 +110,7 @@ RUN /bin/bash -c '. ~/.nvm/nvm.sh && cd /root/cdk && npm install --unsafe-perm=t
 FROM go_base as go_dependencies 
 
 ENV PATH="/usr/local/go/bin:\$PATH"
-ENV GOPATH="\$HOME/.go"
+ENV GOPATH="/root/.go"
 
 WORKDIR /root
 
@@ -125,16 +128,17 @@ FROM base as final
 COPY --from=dart_dependencies /root/.dart /root/.dart
 COPY --from=dart_dependencies /root/.pub-cache /root/.pub-cache
 COPY --from=go_base /usr/local/go /usr/local/go
-COPY --from=go_dependencies /root/.go/pkg /root/.go/pkg
+COPY --from=go_dependencies /root/.go /root/.go
 COPY --from=npm_dependencies /root/.npm /root/.npm
 COPY --from=npm_dependencies /root/.nvm /root/.nvm
 COPY --from=protobuf /root/.protobuf /root/.protobuf
 COPY --from=rust_dependencies /root/.cargo /root/.cargo
 COPY --from=rust_dependencies /root/.rustup /root/.rustup
 
-RUN echo "\. \"\$HOME/\.cargo/env\"" >> $HOME/.bashrc
-RUN echo export PATH="/usr/local/go/bin:\$PATH:$HOME/.dart/dart-sdk/bin:$HOME/.pub-cache/bin:\$GOPATH/bin" >> $HOME/.bashrc
+RUN echo ". \"\$HOME/.cargo/env\"" >> $HOME/.bashrc
+RUN echo ". \"\$HOME/.nvm/nvm.sh\"" >> $HOME/.bashrc
 RUN echo export GOPATH="\$HOME/.go" >> $HOME/.bashrc
+RUN echo export PATH="/usr/local/go/bin:\$PATH:$HOME/.dart/dart-sdk/bin:$HOME/.pub-cache/bin:\$GOPATH/bin" >> $HOME/.bashrc
 RUN echo export PATH="\$PATH:\$HOME/.protobuf/bin" >> $HOME/.bashrc
 
 # Delete visible files from root home
