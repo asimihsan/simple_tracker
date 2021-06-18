@@ -32,7 +32,7 @@ RUN yum -y update && \
 
 # AWS CLI
 WORKDIR /root
-RUN curl "https://awscli.amazonaws.com/ awscli-exe-linux-x86_64-$VERSION_AWS_CLI.zip" -o "awscliv2.zip"
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-$VERSION_AWS_CLI.zip" -o "awscliv2.zip"
 RUN unzip awscliv2.zip
 RUN ./aws/install
 RUN rm -f awscliv2.zip
