@@ -15,6 +15,26 @@ docker run --volume $(pwd):/mnt/source --interactive --tty simple-tracker-lambda
 
 ## Build / deployment steps
 
+### CDK
+
+```
+docker build -t simple-tracker --target final .
+
+# interactive shell
+docker run \
+    --volume $(pwd):/mnt/app \
+    --volume $HOME/.aws:/root/.aws:ro \
+    -it simple-tracker \
+    /bin/bash
+
+# inside Docker container
+cd /mnt/app
+protoc -I=proto --dart_out=flutter/lib/proto --go_out=lambda/proto proto/user.proto proto/calendar.proto
+
+```
+
+### lambda
+
 `lambda` is built using Docker in an Amazon Linux environment to ensure that `gozstd` is built correctly. This is
 a one-time step to get the image built:
 
