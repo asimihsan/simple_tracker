@@ -132,12 +132,15 @@ FROM base as final
 COPY --from=dart_dependencies /root/.dart /root/.dart
 COPY --from=dart_dependencies /root/.pub-cache /root/.pub-cache
 COPY --from=go_base /usr/local/go /usr/local/go
-COPY --from=go_dependencies /root/.go /root/.go
-COPY --from=npm_dependencies /root/.npm /root/.npm
 COPY --from=npm_dependencies /root/.nvm /root/.nvm
 COPY --from=protobuf /root/.protobuf /root/.protobuf
 COPY --from=rust_dependencies /root/.cargo /root/.cargo
 COPY --from=rust_dependencies /root/.rustup /root/.rustup
+
+# Go dependencies (from Lambdas) and NPM dependencies (from CDK)
+# most likely to change, so go after the rest.
+COPY --from=go_dependencies /root/.go /root/.go
+COPY --from=npm_dependencies /root/.npm /root/.npm
 
 RUN echo ". \"\$HOME/.cargo/env\"" >> $HOME/.bashrc
 RUN echo ". \"\$HOME/.nvm/nvm.sh\"" >> $HOME/.bashrc
