@@ -16,15 +16,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:simple_tracker/exception/ServerTimeoutException.dart';
 import 'package:simple_tracker/state/calendar_detail_model.dart';
 import 'package:simple_tracker/state/calendar_repository.dart';
 import 'package:simple_tracker/state/calendar_summary_model.dart';
 import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/view/detail_view.dart';
-import 'package:simple_tracker/view/user_login.dart';
 
-Widget getCalendarDetail(List<CalendarSummaryModel> calendarSummaryModels, {bool readOnly}) {
+Widget getCalendarDetail(List<CalendarSummaryModel> calendarSummaryModels, {required bool readOnly}) {
   return CalendarDetailWidget(calendarSummaryModels: calendarSummaryModels, readOnly: readOnly);
 }
 
@@ -32,7 +30,7 @@ class CalendarDetailWidget extends StatefulWidget {
   final List<CalendarSummaryModel> calendarSummaryModels;
   final bool readOnly;
 
-  const CalendarDetailWidget({this.calendarSummaryModels, this.readOnly});
+  const CalendarDetailWidget({required this.calendarSummaryModels, required this.readOnly});
 
   @override
   State<StatefulWidget> createState() {
@@ -67,11 +65,11 @@ class _CalendarDetailWidgetState extends State<CalendarDetailWidget> {
     return FutureBuilder<CalendarDetailModel>(
         future: _downloadCalendars(context),
         builder: (BuildContext context, AsyncSnapshot<CalendarDetailModel> snapshot) {
-          if (snapshot != null && snapshot.hasError) {
-            final Exception error = snapshot.error;
+          if (snapshot.hasError) {
+            final Exception error = snapshot.error! as Exception;
             return _buildHomePage(Text("Error loading calendars! " + error.toString()));
           }
-          final CalendarDetailModel calendarDetailModel = snapshot?.data;
+          final CalendarDetailModel? calendarDetailModel = snapshot.data;
           if (calendarDetailModel == null) {
             return _buildHomePage(new CircularProgressIndicator());
           }
@@ -88,8 +86,8 @@ class _CalendarDetailWidgetState extends State<CalendarDetailWidget> {
         Provider.of<CalendarRepository>(context, listen: false);
     final UserModel userModel = Provider.of<UserModel>(context, listen: false);
     return await calendarRepository.getCalendars(
-      userId: userModel.userId,
-      sessionId: userModel.sessionId,
+      userId: userModel.userId!,
+      sessionId: userModel.sessionId!,
       calendarIds: this
           .calendarSummaryModels
           .map((calendarSummaryModel) => calendarSummaryModel.id)

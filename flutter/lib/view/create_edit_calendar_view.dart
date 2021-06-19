@@ -31,9 +31,9 @@ import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/view/calendar_list.dart';
 
 Widget getCreateEditCalendar(BuildContext context, CalendarListModel calendarListModel,
-    {required bool isCreate, CalendarSummaryModel existingCalendarSummaryModel}) {
+    {required bool isCreate, CalendarSummaryModel? existingCalendarSummaryModel}) {
   final AppLocalizations localizations =
-      Localizations.of<AppLocalizations>(context, AppLocalizations);
+      Localizations.of<AppLocalizations>(context, AppLocalizations)!;
 
   final String title =
       isCreate ? localizations.createCalendarTitle : localizations.editCalendarTitle;
@@ -57,10 +57,10 @@ Widget getCreateEditCalendar(BuildContext context, CalendarListModel calendarLis
 class CreateEditCalendarForm extends StatefulWidget {
   final bool isCreate;
   final CalendarListModel calendarListModel;
-  final CalendarSummaryModel existingCalendarSummaryModel;
+  final CalendarSummaryModel? existingCalendarSummaryModel;
 
   CreateEditCalendarForm(
-      {required this.isCreate, this.calendarListModel, this.existingCalendarSummaryModel});
+      {required this.isCreate, required this.calendarListModel, this.existingCalendarSummaryModel});
 
   @override
   State<StatefulWidget> createState() {
@@ -68,10 +68,10 @@ class CreateEditCalendarForm extends StatefulWidget {
   }
 }
 
-Widget createSimilarColorsWarning(
-    final BigColor proposedColor,
+Widget? createSimilarColorsWarning(
+    final BigColor? proposedColor,
     final CalendarListModel calendarListModel,
-    CalendarSummaryModel existingCalendarSummaryModel,
+    CalendarSummaryModel? existingCalendarSummaryModel,
     AppLocalizations localizations) {
   if (proposedColor == null) {
     return null;
@@ -113,28 +113,27 @@ Widget createSimilarColorsWarning(
 
 class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
   final bool isCreate;
-  List<BigColor> recommendedColors;
+  List<BigColor>? recommendedColors;
   final CalendarListModel calendarListModel;
   final List<BigColor> existingCalendarColors;
-  List<BigColor> colorsToOffer;
-  final CalendarSummaryModel existingCalendarSummaryModel;
+  final List<BigColor> colorsToOffer = Palettes.getMaterialColorsInHueOrder([500, 800, 200]);
+  final CalendarSummaryModel? existingCalendarSummaryModel;
   final TextEditingController _name;
-  BigColor currentColor;
-  BigColor currentRecommendedColor;
+  BigColor? currentColor;
+  BigColor? currentRecommendedColor;
 
   CreateEditCalendarFormState(final CalendarListModel calendarListModel, bool isCreate,
-      CalendarSummaryModel existingCalendarSummaryModel)
+      CalendarSummaryModel? existingCalendarSummaryModel)
       : this.isCreate = isCreate,
         this.calendarListModel = calendarListModel,
         this.existingCalendarColors = calendarListModel.getCalendarColors(),
         this.existingCalendarSummaryModel = existingCalendarSummaryModel,
         this._name = isCreate
             ? new TextEditingController()
-            : new TextEditingController(text: existingCalendarSummaryModel.name) {
+            : new TextEditingController(text: existingCalendarSummaryModel!.name) {
     if (existingCalendarSummaryModel != null) {
       currentColor = existingCalendarSummaryModel.color;
     }
-    colorsToOffer = Palettes.getMaterialColorsInHueOrder([500, 800, 200]);
   }
 
   // Global key that uniquely identifies Form widget allows validation.
@@ -142,7 +141,7 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
 
   void changeColor(Color color, BuildContext context) {
     setState(() {
-      currentColor = color;
+      currentColor = color as BigColor?;
     });
     Navigator.pop(context);
   }
@@ -150,7 +149,7 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations localizations =
-        Localizations.of<AppLocalizations>(context, AppLocalizations);
+        Localizations.of<AppLocalizations>(context, AppLocalizations)!;
     final CalendarRepository calendarRepository =
         Provider.of<CalendarRepository>(context, listen: false);
 
@@ -165,27 +164,27 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
         return true;
       }
       if (currentColor != null) {
-        return ColorAnalyzer.noticeablyDifferent(currentColor, paletteColor);
+        return ColorAnalyzer.noticeablyDifferent(currentColor!, paletteColor);
       }
       return true;
     }).toList();
     if (currentRecommendedColor == null) {
-      currentRecommendedColor = recommendedColors[0];
+      currentRecommendedColor = recommendedColors![0];
     }
 
     if (currentColor == null && existingCalendarSummaryModel == null) {
       Color proposedCurrentColor;
-      if (recommendedColors.isNotEmpty) {
-        proposedCurrentColor = recommendedColors[0];
+      if (recommendedColors!.isNotEmpty) {
+        proposedCurrentColor = recommendedColors![0];
       } else {
         proposedCurrentColor = colorsToOffer[0];
       }
       setState(() {
-        currentColor = proposedCurrentColor;
+        currentColor = proposedCurrentColor as BigColor?;
       });
     }
 
-    final Widget similarColorsWarning = createSimilarColorsWarning(
+    final Widget? similarColorsWarning = createSimilarColorsWarning(
         currentColor, calendarListModel, existingCalendarSummaryModel, localizations);
 
     final Widget form = Form(
@@ -193,7 +192,7 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
         child: Column(children: <Widget>[
           TextFormField(
             controller: _name,
-            validator: (input) => validateName(input, localizations),
+            validator: (input) => validateName(input!, localizations),
             decoration: InputDecoration(
               labelText: localizations.createCalendarName,
             ),
@@ -217,8 +216,8 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
                               children: <Widget>[
                                 Text("Recommended colors"),
                                 BlockPicker(
-                                  availableColors: recommendedColors,
-                                  pickerColor: currentRecommendedColor,
+                                  availableColors: recommendedColors!,
+                                  pickerColor: currentRecommendedColor!,
                                   onColorChanged: (color) {
                                     changeColor(color, context);
                                   },
@@ -227,7 +226,7 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
                                 BlockPicker(
                                   availableColors: colorsToOffer,
                                   pickerColor:
-                                      currentColor != null ? currentColor : colorsToOffer[0],
+                                      currentColor != null ? currentColor! : colorsToOffer[0],
                                   onColorChanged: (color) {
                                     changeColor(color, context);
                                   },
@@ -248,7 +247,7 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
                     ? localizations.createCalendarSubmitButton
                     : localizations.editCalendarSubmitButton),
                 onPressed: () {
-                  if (!_formKey.currentState.validate()) {
+                  if (!_formKey.currentState!.validate()) {
                     return;
                   }
                   Scaffold.of(context).showSnackBar(
@@ -257,20 +256,20 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
 
                   final Future<void> future = isCreate
                       ? calendarRepository.createCalendar(
-                          userId: userModel.userId,
-                          sessionId: userModel.sessionId,
+                          userId: userModel.userId!,
+                          sessionId: userModel.sessionId!,
                           name: _name.text,
                           color: color3p.Color.rgb(
-                                  currentColor.red, currentColor.green, currentColor.blue)
+                                  currentColor!.red, currentColor!.green, currentColor!.blue)
                               .toHexColor()
                               .toCssString(),
                         )
                       : calendarRepository.updateCalendarNameColor(
                           userModel: userModel,
-                          calendarSummaryModel: existingCalendarSummaryModel,
+                          calendarSummaryModel: existingCalendarSummaryModel!,
                           name: _name.text,
                           color: color3p.Color.rgb(
-                                  currentColor.red, currentColor.green, currentColor.blue)
+                                  currentColor!.red, currentColor!.green, currentColor!.blue)
                               .toHexColor()
                               .toCssString(),
                         );
@@ -302,7 +301,7 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
     );
   }
 
-  String validateName(String input, AppLocalizations appLocalizations) {
+  String? validateName(String input, AppLocalizations appLocalizations) {
     if (input.isEmpty || input.trim().isEmpty) {
       return appLocalizations.createCalendarErrorNameEmpty;
     }

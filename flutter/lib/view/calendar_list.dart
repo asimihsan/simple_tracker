@@ -32,14 +32,14 @@ import 'package:simple_tracker/view/calendar_detail.dart';
 import 'package:simple_tracker/view/create_edit_calendar_view.dart';
 import 'package:simple_tracker/view/settings_widget.dart';
 
-Widget getCalendarList(BuildContext context, {Exception error}) {
+Widget getCalendarList(BuildContext context, {Exception? error}) {
   final AppLocalizations localizations =
-      Localizations.of<AppLocalizations>(context, AppLocalizations);
+      Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   final CalendarListModel calendarListModel = Provider.of<CalendarListModel>(context, listen: true);
   final bool noCalendars = calendarListModel.getCalendarSummariesInNameOrder().isEmpty;
 
   final Color addButtonColor = calendarListModel.isCombinedView ? Colors.grey : Colors.blue;
-  final VoidCallback onAddCallback = calendarListModel.isCombinedView
+  final VoidCallback onAddCallback = (calendarListModel.isCombinedView
       ? null
       : () async {
           developer.log("Create new calendar click");
@@ -49,15 +49,15 @@ Widget getCalendarList(BuildContext context, {Exception error}) {
                 builder: (context) =>
                     getCreateEditCalendar(context, calendarListModel, isCreate: true)),
           );
-        };
+        }) as VoidCallback;
 
   final Color combinedViewButtonColor = noCalendars ? Colors.grey : Colors.lightGreen;
-  final VoidCallback onCombinedViewCallback = noCalendars
+  final VoidCallback onCombinedViewCallback = (noCalendars
       ? null
       : () async {
           developer.log("Combined view");
           calendarListModel.toggleIsCombinedView();
-        };
+        }) as VoidCallback;
 
   return Scaffold(
     appBar: AppBar(
@@ -105,9 +105,9 @@ Widget getCalendarList(BuildContext context, {Exception error}) {
 
 class CalendarList extends StatefulWidget {
   static CalendarListState of(BuildContext context) =>
-      context.findAncestorStateOfType<CalendarListState>();
+      context.findAncestorStateOfType<CalendarListState>()!;
 
-  final Exception error;
+  final Exception? error;
 
   CalendarList({this.error});
 
@@ -124,8 +124,8 @@ Future<List<CalendarSummaryModel>> refreshListCalendars(BuildContext context) {
   final CalendarListModel calendarListModel =
       Provider.of<CalendarListModel>(context, listen: false);
   return calendarRepository.listCalendars(
-      userId: userModel.userId,
-      sessionId: userModel.sessionId,
+      userId: userModel.userId!,
+      sessionId: userModel.sessionId!,
       calendarListModel: calendarListModel);
 }
 
@@ -135,7 +135,7 @@ Future<void> deleteCalendar(String calendarId, BuildContext context) {
   final UserModel userModel = Provider.of<UserModel>(context, listen: false);
   return calendarRepository
       .deleteCalendar(
-          userId: userModel.userId, sessionId: userModel.sessionId, calendarId: calendarId)
+          userId: userModel.userId!, sessionId: userModel.sessionId!, calendarId: calendarId)
       .then((_) {
     return refreshListCalendars(context);
   }).catchError((error) {
@@ -145,7 +145,7 @@ Future<void> deleteCalendar(String calendarId, BuildContext context) {
 
 class CalendarListState extends State<CalendarList> with AfterLayoutMixin<CalendarList> {
   final SlidableController slidableController = SlidableController();
-  final Exception error;
+  final Exception? error;
 
   CalendarListState({this.error});
 
@@ -171,7 +171,7 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
       if (calendarSummaries.length == 0) {
         return emptyList(context, "You don't have any calendars!");
       }
-      List<Widget> children = new List();
+      List<Widget> children = [];
       if (calendarList.isCombinedView) {
         children.add(Container(
           padding: const EdgeInsets.fromLTRB(0, 0, 0, 16.0),
@@ -250,7 +250,7 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
       onTap: () {
         if (!calendarListModel.isCombinedView) {
           slidableController.activeState?.close();
-          final List<CalendarSummaryModel> calendarSummaryModels = new List();
+          final List<CalendarSummaryModel> calendarSummaryModels = [];
           calendarSummaryModels.add(calendarSummaryModel);
           Navigator.push(
               context,

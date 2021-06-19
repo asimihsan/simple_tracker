@@ -37,10 +37,10 @@ class CalendarModelAndMonthSum {
 }
 
 class CalendarDetailModel extends ChangeNotifier {
-  static final List<CalendarModel> emptyCalendarModelList = List.unmodifiable(List());
+  static final List<CalendarModel> emptyCalendarModelList = List.unmodifiable([]);
 
-  bool _loading;
-  bool isReadOnly;
+  bool _loading = true;
+  bool isReadOnly = false;
 
   Map<String, CalendarModel> _calendarModels = new HashMap();
 
@@ -69,13 +69,13 @@ class CalendarDetailModel extends ChangeNotifier {
     GregorianCalendar currentCalendar = new GregorianCalendar(year, month, 1);
     while (currentCalendar.month == month) {
       getHighlightedCalendarModelsForDateTime(currentCalendar.toDateTimeLocal())
-          .forEach((calendarModel) => monthSum[calendarModel] = monthSum[calendarModel] + 1);
+          .forEach((calendarModel) => monthSum[calendarModel] = monthSum[calendarModel]! + 1);
       currentCalendar = currentCalendar.addDays(1);
     }
 
     return List.unmodifiable(calendarModels
         .map(
-            (calendarModel) => new CalendarModelAndMonthSum(calendarModel, monthSum[calendarModel]))
+            (calendarModel) => new CalendarModelAndMonthSum(calendarModel, monthSum[calendarModel]!))
         .toList());
   }
 
@@ -111,25 +111,25 @@ class CalendarDetailModel extends ChangeNotifier {
     _calendarModels.values.forEach((calendarModel) {
       calendarModel.highlightedDaysAsDateTimes.forEach((dateTime) {
         if (!_highlightedDateTimes.containsKey(dateTime)) {
-          _highlightedDateTimes[dateTime] = new List();
+          _highlightedDateTimes[dateTime] = [];
         }
-        if (!_highlightedDateTimes[dateTime].contains(calendarModel)) {
-          _highlightedDateTimes[dateTime].add(calendarModel);
-          _highlightedDateTimes[dateTime]
+        if (!_highlightedDateTimes[dateTime]!.contains(calendarModel)) {
+          _highlightedDateTimes[dateTime]!.add(calendarModel);
+          _highlightedDateTimes[dateTime]!
               .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
         }
       });
     });
   }
 
-  List<CalendarModel> getHighlightedCalendarModelsForDateTime(DateTime dateTime) {
+  List<CalendarModel> getHighlightedCalendarModelsForDateTime(DateTime? dateTime) {
     if (!_highlightedDateTimes.containsKey(dateTime)) {
       return emptyCalendarModelList;
     }
-    return List.unmodifiable(_highlightedDateTimes[dateTime]);
+    return List.unmodifiable(_highlightedDateTimes[dateTime]!);
   }
 
-  List<Color> getColorsForDateTime(DateTime dateTime) {
+  List<Color> getColorsForDateTime(DateTime? dateTime) {
     return getHighlightedCalendarModelsForDateTime(dateTime)
         .map((calendarModel) => calendarModel.color)
         .toList();

@@ -29,9 +29,9 @@ import 'package:simple_tracker/state/user_repository.dart';
 import 'package:simple_tracker/view/calendar_list.dart';
 
 Widget getUserLogin(BuildContext context, AppPreferencesModel appPreferencesModel,
-    {bool isSignupForm}) {
+    {required bool isSignupForm}) {
   final AppLocalizations localizations =
-      Localizations.of<AppLocalizations>(context, AppLocalizations);
+      Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   final String title =
       isSignupForm ? localizations.userLoginSignupTitle : localizations.userLoginLoginTitle;
   Widget child = Provider(create: (_) => appPreferencesModel, child: UserLoginForm(isSignupForm));
@@ -71,7 +71,7 @@ class UserLoginFormState extends State<UserLoginForm> {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations localizations =
-        Localizations.of<AppLocalizations>(context, AppLocalizations);
+        Localizations.of<AppLocalizations>(context, AppLocalizations)!;
     final UserRepository userRepository = Provider.of<UserRepository>(context, listen: false);
     final AppPreferencesModel appPreferencesModel =
         Provider.of<AppPreferencesModel>(context, listen: false);
@@ -97,21 +97,21 @@ class UserLoginFormState extends State<UserLoginForm> {
         child: Column(children: <Widget>[
           TextFormField(
             controller: _username,
-            validator: (input) => validateUsername(input, localizations),
+            validator: (input) => validateUsername(input!, localizations),
             decoration: InputDecoration(
               labelText: localizations.userLoginUsername,
             ),
           ),
           TextFormField(
             controller: _password,
-            validator: (input) => validatePassword(input, localizations),
+            validator: (input) => validatePassword(input!, localizations),
             decoration: InputDecoration(
               labelText: localizations.userLoginPassword,
             ),
           ),
           if (isSignupForm)
             TextFormField(
-              validator: (input) => validateConfirmPassword(input, _password.text, localizations),
+              validator: (input) => validateConfirmPassword(input!, _password.text, localizations),
               decoration: InputDecoration(
                 labelText: localizations.userLoginConfirmPassword,
               ),
@@ -120,7 +120,7 @@ class UserLoginFormState extends State<UserLoginForm> {
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: RaisedButton(
                 onPressed: () {
-                  if (!_formKey.currentState.validate()) {
+                  if (!_formKey.currentState!.validate()) {
                     return;
                   }
                   Scaffold.of(context)
@@ -137,8 +137,8 @@ class UserLoginFormState extends State<UserLoginForm> {
                       await appPreferencesModel.setCredentials(
                           username: _username.text,
                           password: _password.text,
-                          userId: providedUserModel.userId,
-                          sessionId: providedUserModel.sessionId);
+                          userId: providedUserModel.userId!,
+                          sessionId: providedUserModel.sessionId!);
                       Scaffold.of(context).removeCurrentSnackBar();
                       switchToCalendarListView(context);
                     }).catchError((err) async {
@@ -170,8 +170,8 @@ class UserLoginFormState extends State<UserLoginForm> {
                       await appPreferencesModel.setCredentials(
                           username: _username.text,
                           password: _password.text,
-                          userId: providedUserModel.userId,
-                          sessionId: providedUserModel.sessionId);
+                          userId: providedUserModel.userId!,
+                          sessionId: providedUserModel.sessionId!);
                       Scaffold.of(context).removeCurrentSnackBar();
                       switchToCalendarListView(context);
                     }).catchError((err) async {
@@ -226,13 +226,13 @@ void switchToUserLoginHandler(AppPreferencesModel appPreferencesModel, BuildCont
           builder: (context) => getUserLogin(context, appPreferencesModel, isSignupForm: false)));
 }
 
-Future<void> switchToCalendarListView(BuildContext context, {Exception error}) async {
+Future<void> switchToCalendarListView(BuildContext context, {Exception? error}) async {
   developer.log("switching to calendar list view");
   await Navigator.pushReplacement(
       context, MaterialPageRoute(builder: (context) => getCalendarList(context, error: error)));
 }
 
-String validateUsername(String input, AppLocalizations appLocalizations) {
+String? validateUsername(String input, AppLocalizations appLocalizations) {
   if (input.isEmpty) {
     return appLocalizations.userLoginErrorUsernameEmpty;
   }
@@ -250,7 +250,7 @@ String validateUsername(String input, AppLocalizations appLocalizations) {
   return null;
 }
 
-String validatePassword(String input, AppLocalizations appLocalizations) {
+String? validatePassword(String input, AppLocalizations appLocalizations) {
   if (input.isEmpty) {
     return appLocalizations.userLoginErrorPasswordEmpty;
   }
@@ -260,7 +260,7 @@ String validatePassword(String input, AppLocalizations appLocalizations) {
   return null;
 }
 
-String validateConfirmPassword(
+String? validateConfirmPassword(
     String input, String firstPassword, AppLocalizations appLocalizations) {
   if (input != firstPassword) {
     return appLocalizations.userLoginConfirmPasswordDoesNotMatch;

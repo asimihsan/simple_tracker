@@ -17,7 +17,7 @@
 import 'package:flutter/material.dart';
 
 class CustomScrollPhysics extends AlwaysScrollableScrollPhysics {
-  const CustomScrollPhysics({ScrollPhysics parent}) : super(parent: parent);
+  const CustomScrollPhysics({ScrollPhysics? parent}) : super(parent: parent);
 
   @override
   double get minFlingVelocity => 50.0;
@@ -29,7 +29,7 @@ class CustomScrollPhysics extends AlwaysScrollableScrollPhysics {
   double get minFlingDistance => 18.0;
 
   @override
-  CustomScrollPhysics applyTo(ScrollPhysics ancestor) {
+  CustomScrollPhysics applyTo(ScrollPhysics? ancestor) {
     return CustomScrollPhysics(parent: buildParent(ancestor));
   }
 }

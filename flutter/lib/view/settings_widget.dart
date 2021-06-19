@@ -52,7 +52,7 @@ class SettingsListView extends StatelessWidget {
     final AppPreferencesModel appPreferencesModel =
         Provider.of<AppPreferencesModel>(context, listen: false);
     final String aboutText =
-        createAboutText(appPreferencesModel.appVersion, appPreferencesModel.appBuildNumber);
+        createAboutText(appPreferencesModel.appVersion!, appPreferencesModel.appBuildNumber!);
 
     return SafeArea(
         child: Container(

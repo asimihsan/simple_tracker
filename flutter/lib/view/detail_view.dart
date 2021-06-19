@@ -25,7 +25,7 @@ import 'package:simple_tracker/view/calendar_month_widget.dart';
 import 'package:simple_tracker/view/custom_scroll_physics.dart';
 
 class DetailView extends StatelessWidget {
-  const DetailView({Key key}) : super(key: key);
+  const DetailView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

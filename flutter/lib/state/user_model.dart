@@ -15,7 +15,7 @@
 // ============================================================================
 
 class UserModel {
-  bool _loggedIn;
+  bool _loggedIn = false;
   String? _userId;
   String? _sessionId;
 

@@ -60,7 +60,7 @@ const DAY_LABELS_SHORTEST_EN = [
 ];
 
 class CalenderMonth extends StatelessWidget {
-  const CalenderMonth({Key key, this.year, this.month}) : super(key: key);
+  const CalenderMonth({Key? key, required this.year, required this.month}) : super(key: key);
 
   final int year;
   final int month;
@@ -84,15 +84,15 @@ class CalenderMonth extends StatelessWidget {
       final GregorianCalendar today = GregorianCalendar.now();
       GregorianCalendar currentCalendar = new GregorianCalendar(this.year, this.month, 1);
       final int startingWeekday = currentCalendar.weekday;
-      final List<TableRow> tableRows = new List();
+      final List<TableRow> tableRows = [];
 
-      final List<Widget> headerRow = new List();
+      final List<Widget> headerRow = [];
       for (var i = 0; i < daysInWeek; i++) {
         headerRow.add(headerWidget(context, DAY_LABELS_SHORTEST_EN[i]));
       }
       tableRows.add(TableRow(children: headerRow));
 
-      var currentRow = new List<Widget>();
+      var currentRow = <Widget>[];
       for (var i = 0; i <= maximumCellsInMonth; i++) {
         final DateTime currentDateTime = currentCalendar.toDateTimeLocal();
         if (i + 1 < startingWeekday) {
@@ -112,7 +112,7 @@ class CalenderMonth extends StatelessWidget {
         }
         if (currentRow.length >= 7) {
           tableRows.add(TableRow(children: currentRow));
-          currentRow = new List<Widget>();
+          currentRow = <Widget>[];
         }
         if (currentCalendar.month != this.month) {
           break;
@@ -127,7 +127,7 @@ class CalenderMonth extends StatelessWidget {
         tableRows.add(TableRow(children: currentRow));
       }
 
-      List<Widget> children = new List();
+      List<Widget> children = [];
       children.add(Text(title, style: themeData.textTheme.headline4));
 
       final List<CalendarModelAndMonthSum> calendarModelAndMonthSum =
@@ -162,15 +162,15 @@ class CalenderMonth extends StatelessWidget {
       final int index,
       final bool isToday,
       final bool isBlank,
-      final CalendarDetailModel calendarDetailModel,
-      final DateTime currentDateTime,
+      final CalendarDetailModel? calendarDetailModel,
+      final DateTime? currentDateTime,
       final CalendarRepository calendarRepository,
       final UserModel userModel) {
     final List<CalendarModel> calendarModels =
-        calendarDetailModel != null ? calendarDetailModel.calendarModels : new List();
+        calendarDetailModel != null ? calendarDetailModel.calendarModels : [];
     final List<Color> colors = calendarDetailModel != null
         ? calendarDetailModel.getColorsForDateTime(currentDateTime)
-        : new List();
+        : [];
 
     Widget child;
     Color backgroundColor;
@@ -185,11 +185,11 @@ class CalenderMonth extends StatelessWidget {
       onTapHandler = () {};
     } else {
       final bool highlighted = colors.length > 0;
-      final bool refreshing = calendarDetailModel.isRefreshingDateTime(currentDateTime);
+      final bool refreshing = calendarDetailModel!.isRefreshingDateTime(currentDateTime!);
 
       // TODO let us see more than one background color.
       backgroundColor = highlighted ? colors[0] : Colors.white;
-      TextStyle textStyle = Theme.of(context).textTheme.bodyText2;
+      TextStyle textStyle = Theme.of(context).textTheme.bodyText2!;
       if (isToday) {
         textStyle = textStyle.copyWith(fontWeight: FontWeight.bold);
       }
@@ -225,7 +225,7 @@ class CalenderMonth extends StatelessWidget {
     final List<Color> bgColors = calendarDetailModel != null && currentDateTime != null
         ? calendarDetailModel.getColorsForDateTimeWithDefaultColor(
             currentDateTime, Colors.transparent)
-        : new List();
+        : [];
     final Color bgColor1 = bgColors.length >= 1 ? bgColors[0] : Colors.transparent;
     final Color bgColor2 = bgColors.length >= 2 ? bgColors[1] : Colors.transparent;
     final Color bgColor3 = bgColors.length >= 3 ? bgColors[2] : Colors.transparent;
@@ -325,7 +325,7 @@ class CalenderMonth extends StatelessWidget {
               maxHeight: maxWidthPixels,
             ),
             child: InkWell(
-              onTap: onTapHandler,
+              onTap: onTapHandler as Function()?,
               child: Ink(
                   padding: const EdgeInsets.all(5.0),
                   decoration: new BoxDecoration(border: border),
@@ -343,7 +343,7 @@ class CalenderMonth extends StatelessWidget {
           maxHeight: minWidthPixels,
         ),
         child: InkWell(
-          onTap: onTapHandler,
+          onTap: onTapHandler as Function()?,
           child: Ink(
               padding: const EdgeInsets.all(5.0),
               decoration: new BoxDecoration(border: border, color: backgroundColor),

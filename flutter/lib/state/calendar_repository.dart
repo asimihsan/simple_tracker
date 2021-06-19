@@ -39,9 +39,7 @@ class CalendarRepository {
   final String baseUrl;
   BackendClient _backendClient;
 
-  CalendarRepository(this.baseUrl) {
-    _backendClient = BackendClient.defaultClient(baseUrl);
-  }
+  CalendarRepository(this.baseUrl) : _backendClient = BackendClient.defaultClient(baseUrl)
 
   Future<CalendarDetailModel> getCalendars(
       {required String userId,
@@ -287,8 +285,8 @@ class CalendarRepository {
       required String name,
       required String color}) async {
     var requestProto = UpdateCalendarsRequest();
-    requestProto.userId = userModel.userId;
-    requestProto.sessionId = userModel.sessionId;
+    requestProto.userId = userModel.userId!;
+    requestProto.sessionId = userModel.sessionId!;
 
     var updateCalendarAction = UpdateCalendarAction();
     updateCalendarAction.calendarId = calendarSummaryModel.id;
