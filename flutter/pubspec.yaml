@@ -44,9 +44,7 @@ dependencies:
   package_info: ^2.0.2
   protobuf: ^2.0.0
   provider: ^5.0.0
-
-  local_storage:
-    path: ../flutter-custom-packages/local_storage
+  shared_preferences: ^2.0.6
 
 dev_dependencies:
   flutter_test:

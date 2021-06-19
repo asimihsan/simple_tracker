@@ -20,13 +20,12 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:local_storage/local_storage.dart';
 import 'package:package_info/package_info.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:simple_tracker/proto/app_preferences.pb.dart';
 
 class AppPreferencesModel {
-  static String appId = "com.asimihsan.simpletracker";
-  static String preferencesKey = "_preferences";
+  static String preferencesKey = "com.asimihsan.simpletracker.preferences";
 
   AppPreferences _appPreferencesProto;
   PackageInfo _packageInfo;
@@ -125,32 +124,29 @@ class AppPreferencesModel {
 
   Future<void> reload() async {
     try {
-      final String preferencesSerialized = await LocalStorage.getKeyValue(appId, preferencesKey);
-      final Uint8List preferencesSerializedBytes = utf8.encode(preferencesSerialized);
-      _appPreferencesProto = AppPreferences.fromBuffer(preferencesSerializedBytes);
-    } on PlatformException catch (e) {
-      switch (e.code) {
-        case "KEY_NOT_FOUND":
-          developer.log("No existing preferences found, initialize from scratch.");
-          _appPreferencesProto = new AppPreferences();
-          await persist();
-          break;
-        default:
-          developer.log("Unexpected exception during reload, will blow away preferences.",
-              error: e);
-          _appPreferencesProto = new AppPreferences();
-          await persist();
-          break;
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String preferencesSerialized = prefs.getString(preferencesKey);
+      if (preferencesSerialized == null) {
+        _appPreferencesProto = new AppPreferences();
+      } else {
+        final Uint8List preferencesSerializedBytes = utf8.encode(preferencesSerialized);
+        _appPreferencesProto = AppPreferences.fromBuffer(preferencesSerializedBytes);
       }
+    } on Exception catch (e) {
+      developer.log("Unexpected exception during reload, will blow away preferences.",
+          error: e);
+      _appPreferencesProto = new AppPreferences();
+      await persist();
     }
     _packageInfo = await PackageInfo.fromPlatform();
     return;
   }
 
   Future<void> persist() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
     final Uint8List preferencesSerializedBytes = _appPreferencesProto.writeToBuffer();
     final String preferencesSerialized = String.fromCharCodes(preferencesSerializedBytes);
-    await LocalStorage.storeKeyValue(appId, preferencesKey, preferencesSerialized);
+    await prefs.setString(preferencesKey, preferencesSerialized);
     return;
   }
 }
