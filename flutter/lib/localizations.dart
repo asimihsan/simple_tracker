@@ -61,124 +61,124 @@ class AppLocalizations {
   };
 
   String get userLoginLoginTitle {
-    return _localizedValues[locale.languageCode]['user_login_login_title'];
+    return _localizedValues[locale.languageCode]!['user_login_login_title']!;
   }
 
   String get userLoginSignupTitle {
-    return _localizedValues[locale.languageCode]['user_login_signup_title'];
+    return _localizedValues[locale.languageCode]!['user_login_signup_title']!;
   }
 
   String get userLoginUsername {
-    return _localizedValues[locale.languageCode]['user_login_username'];
+    return _localizedValues[locale.languageCode]!['user_login_username']!;
   }
 
   String get userLoginPassword {
-    return _localizedValues[locale.languageCode]['user_login_password'];
+    return _localizedValues[locale.languageCode]!['user_login_password']!;
   }
 
   String get userLoginConfirmPassword {
-    return _localizedValues[locale.languageCode]['user_login_confirm_password'];
+    return _localizedValues[locale.languageCode]!['user_login_confirm_password']!;
   }
 
   String get userLoginErrorUsernameEmpty {
-    return _localizedValues[locale.languageCode]['user_login_error_username_empty'];
+    return _localizedValues[locale.languageCode]!['user_login_error_username_empty']!;
   }
 
   String get userLoginErrorUsernameTooShort {
-    return _localizedValues[locale.languageCode]['user_login_error_username_too_short'];
+    return _localizedValues[locale.languageCode]!['user_login_error_username_too_short']!;
   }
 
   String get userLoginErrorUsernameTooLong {
-    return _localizedValues[locale.languageCode]['user_login_error_username_too_long'];
+    return _localizedValues[locale.languageCode]!['user_login_error_username_too_long']!;
   }
 
   String get userLoginErrorUsernameInvalidChars {
-    return _localizedValues[locale.languageCode]['user_login_error_username_invalid_chars'];
+    return _localizedValues[locale.languageCode]!['user_login_error_username_invalid_chars']!;
   }
 
   String get userLoginProcessingData {
-    return _localizedValues[locale.languageCode]['user_login_processing_data'];
+    return _localizedValues[locale.languageCode]!['user_login_processing_data']!;
   }
 
   String get userLoginErrorPasswordEmpty {
-    return _localizedValues[locale.languageCode]['user_login_error_password_empty'];
+    return _localizedValues[locale.languageCode]!['user_login_error_password_empty']!;
   }
 
   String get userLoginErrorPasswordTooLong {
-    return _localizedValues[locale.languageCode]['user_login_error_password_too_long'];
+    return _localizedValues[locale.languageCode]!['user_login_error_password_too_long']!;
   }
 
   String get userLoginSignUpAsANewUser {
-    return _localizedValues[locale.languageCode]['user_login_sign_up_as_a_new_user'];
+    return _localizedValues[locale.languageCode]!['user_login_sign_up_as_a_new_user']!;
   }
 
   String get userLoginLoginAsExistingUser {
-    return _localizedValues[locale.languageCode]['user_login_login_as_existing_user'];
+    return _localizedValues[locale.languageCode]!['user_login_login_as_existing_user']!;
   }
 
   String get userLoginSubmitButton {
-    return _localizedValues[locale.languageCode]['user_login_submit_button'];
+    return _localizedValues[locale.languageCode]!['user_login_submit_button']!;
   }
 
   String get userLoginConfirmPasswordDoesNotMatch {
-    return _localizedValues[locale.languageCode]['user_login_confirm_password_does_not_match'];
+    return _localizedValues[locale.languageCode]!['user_login_confirm_password_does_not_match']!;
   }
 
   String get userLoginUserMissingOrPasswordIncorrectException {
-    return _localizedValues[locale.languageCode]
-        ['user_login_user_missing_or_password_incorrect_exception'];
+    return _localizedValues[locale.languageCode]!
+        ['user_login_user_missing_or_password_incorrect_exception']!;
   }
 
   String get internalServerErrorException {
-    return _localizedValues[locale.languageCode]['internal_server_error_exception'];
+    return _localizedValues[locale.languageCode]!['internal_server_error_exception']!;
   }
 
   String get calendarListTitle {
-    return _localizedValues[locale.languageCode]['calendar_list_title'];
+    return _localizedValues[locale.languageCode]!['calendar_list_title']!;
   }
 
   String get calendarListCombinedViewTitle {
-    return _localizedValues[locale.languageCode]['calendar_list_combined_view_title'];
+    return _localizedValues[locale.languageCode]!['calendar_list_combined_view_title']!;
   }
 
   String get createCalendarName {
-    return _localizedValues[locale.languageCode]['create_calendar_name'];
+    return _localizedValues[locale.languageCode]!['create_calendar_name']!;
   }
 
   String get createCalendarErrorNameEmpty {
-    return _localizedValues[locale.languageCode]['create_calendar_error_name_empty'];
+    return _localizedValues[locale.languageCode]!['create_calendar_error_name_empty']!;
   }
 
   String get createCalendarErrorNameTooLong {
-    return _localizedValues[locale.languageCode]['create_calendar_error_name_too_long'];
+    return _localizedValues[locale.languageCode]!['create_calendar_error_name_too_long']!;
   }
 
   String get createCalendarCreatingCalendar {
-    return _localizedValues[locale.languageCode]['create_calendar_creating_calendar'];
+    return _localizedValues[locale.languageCode]!['create_calendar_creating_calendar']!;
   }
 
   String get createCalendarTitle {
-    return _localizedValues[locale.languageCode]['create_calendar_title'];
+    return _localizedValues[locale.languageCode]!['create_calendar_title']!;
   }
 
   String get createCalendarSubmitButton {
-    return _localizedValues[locale.languageCode]['create_calendar_submit_button'];
+    return _localizedValues[locale.languageCode]!['create_calendar_submit_button']!;
   }
 
   String get createCalendarColor {
-    return _localizedValues[locale.languageCode]['create_calendar_color'];
+    return _localizedValues[locale.languageCode]!['create_calendar_color']!;
   }
 
   String get editCalendarTitle {
-    return _localizedValues[locale.languageCode]['edit_calendar_title'];
+    return _localizedValues[locale.languageCode]!['edit_calendar_title']!;
   }
 
   String get editCalendarSubmitButton {
-    return _localizedValues[locale.languageCode]['edit_calendar_submit_button'];
+    return _localizedValues[locale.languageCode]!['edit_calendar_submit_button']!;
   }
 
   String get createEditCalendarSimilarColorsWarning {
-    return _localizedValues[locale.languageCode]['create_edit_calendar_similar_colors_warning'];
+    return _localizedValues[locale.languageCode]!['create_edit_calendar_similar_colors_warning']!;
   }
 }
 

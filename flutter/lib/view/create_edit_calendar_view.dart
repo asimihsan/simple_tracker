@@ -31,7 +31,7 @@ import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/view/calendar_list.dart';
 
 Widget getCreateEditCalendar(BuildContext context, CalendarListModel calendarListModel,
-    {@required bool isCreate, CalendarSummaryModel existingCalendarSummaryModel}) {
+    {required bool isCreate, CalendarSummaryModel existingCalendarSummaryModel}) {
   final AppLocalizations localizations =
       Localizations.of<AppLocalizations>(context, AppLocalizations);
 
@@ -60,7 +60,7 @@ class CreateEditCalendarForm extends StatefulWidget {
   final CalendarSummaryModel existingCalendarSummaryModel;
 
   CreateEditCalendarForm(
-      {@required this.isCreate, this.calendarListModel, this.existingCalendarSummaryModel});
+      {required this.isCreate, this.calendarListModel, this.existingCalendarSummaryModel});
 
   @override
   State<StatefulWidget> createState() {

@@ -38,9 +38,9 @@ class UserRepository {
   }
 
   Future<void> createUser(
-      {@required String username,
-      @required String password,
-      @required UserModel providedUserModel}) async {
+      {required String username,
+      required String password,
+      required UserModel providedUserModel}) async {
     var requestProto = CreateUserRequest();
     requestProto.username = username;
     requestProto.password = password;
@@ -70,9 +70,9 @@ class UserRepository {
   }
 
   Future<UserModel> loginUser(
-      {@required String username,
-      @required String password,
-      @required UserModel providedUserModel}) async {
+      {required String username,
+      required String password,
+      required UserModel providedUserModel}) async {
     var requestProto = LoginUserRequest();
     requestProto.username = username;
     requestProto.password = password;

@@ -16,8 +16,8 @@
 
 class UserModel {
   bool _loggedIn;
-  String _userId;
-  String _sessionId;
+  String? _userId;
+  String? _sessionId;
 
   UserModel.notLoggedIn() {
     this._loggedIn = false;
@@ -33,7 +33,7 @@ class UserModel {
 
   bool get loggedIn => _loggedIn;
 
-  String get sessionId => _sessionId;
+  String? get sessionId => _sessionId;
 
-  String get userId => _userId;
+  String? get userId => _userId;
 }

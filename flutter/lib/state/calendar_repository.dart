@@ -44,9 +44,9 @@ class CalendarRepository {
   }
 
   Future<CalendarDetailModel> getCalendars(
-      {@required String userId,
-      @required String sessionId,
-      @required List<String> calendarIds}) async {
+      {required String userId,
+      required String sessionId,
+      required List<String> calendarIds}) async {
     var requestProto = GetCalendarsRequest();
     requestProto.userId = userId;
     requestProto.sessionId = sessionId;
@@ -103,10 +103,10 @@ class CalendarRepository {
   }
 
   Future<void> createCalendar(
-      {@required String userId,
-      @required String sessionId,
-      @required String name,
-      @required String color}) async {
+      {required String userId,
+      required String sessionId,
+      required String name,
+      required String color}) async {
     var requestProto = CreateCalendarRequest();
     requestProto.userId = userId;
     requestProto.sessionId = sessionId;
@@ -136,9 +136,9 @@ class CalendarRepository {
   }
 
   Future<List<CalendarSummaryModel>> listCalendars(
-      {@required String userId,
-      @required String sessionId,
-      @required CalendarListModel calendarListModel,
+      {required String userId,
+      required String sessionId,
+      required CalendarListModel calendarListModel,
       int maxResults = 100}) async {
     calendarListModel.loading = true;
 
@@ -184,10 +184,10 @@ class CalendarRepository {
   }
 
   Future<void> removeHighlightedDay(
-      {@required UserModel userModel,
-      @required CalendarDetailModel calendarDetailModel,
-      @required CalendarModel calendarModel,
-      @required DateTime dateTime}) async {
+      {required UserModel userModel,
+      required CalendarDetailModel calendarDetailModel,
+      required CalendarModel calendarModel,
+      required DateTime dateTime}) async {
     calendarDetailModel.addRefreshingDateTime(dateTime);
 
     var requestProto = UpdateCalendarsRequest();
@@ -233,10 +233,10 @@ class CalendarRepository {
   }
 
   Future<void> addHighlightedDay(
-      {@required UserModel userModel,
-      @required CalendarDetailModel calendarDetailModel,
-      @required CalendarModel calendarModel,
-      @required DateTime dateTime}) async {
+      {required UserModel userModel,
+      required CalendarDetailModel calendarDetailModel,
+      required CalendarModel calendarModel,
+      required DateTime dateTime}) async {
     calendarDetailModel.addRefreshingDateTime(dateTime);
 
     var requestProto = UpdateCalendarsRequest();
@@ -282,10 +282,10 @@ class CalendarRepository {
   }
 
   Future<void> updateCalendarNameColor(
-      {@required UserModel userModel,
-      @required CalendarSummaryModel calendarSummaryModel,
-      @required String name,
-      @required String color}) async {
+      {required UserModel userModel,
+      required CalendarSummaryModel calendarSummaryModel,
+      required String name,
+      required String color}) async {
     var requestProto = UpdateCalendarsRequest();
     requestProto.userId = userModel.userId;
     requestProto.sessionId = userModel.sessionId;
@@ -324,7 +324,7 @@ class CalendarRepository {
   }
 
   Future<void> deleteCalendar(
-      {@required String userId, @required String sessionId, @required String calendarId}) async {
+      {required String userId, required String sessionId, required String calendarId}) async {
     var requestProto = DeleteCalendarRequest();
     requestProto.userId = userId;
     requestProto.sessionId = sessionId;

@@ -40,13 +40,14 @@ void main() {
 const apiBaseUrl = "https://preprod-simple-tracker.ihsan.io/";
 
 class MyApp extends StatelessWidget {
-  MyApp({Key key}) : super(key: key);
+  MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
         providers: [
           FutureProvider<AppPreferencesModel>(
+            initialData: new AppPreferencesModel(),
             create: (_) async {
               final AppPreferencesModel appPreferencesModel = new AppPreferencesModel();
               await appPreferencesModel.reload();
@@ -99,7 +100,7 @@ class MyAppWithLocalizationsState extends State<MyAppWithLocalizations> {
       if (appPreferencesModel != null && movingToNextView == false) {
         // TODO racey! Surely there is an easier and less racey way of injecting Future-provided
         // preferences.
-        WidgetsBinding.instance.addPostFrameCallback((_) {
+        WidgetsBinding.instance!.addPostFrameCallback((_) {
           setState(() {
             movingToNextView = true;
           });
@@ -119,8 +120,8 @@ class MyAppWithLocalizationsState extends State<MyAppWithLocalizations> {
           Future future;
           if (appPreferencesModel.sessionId != "") {
             future = calendarRepository.listCalendars(
-                userId: appPreferencesModel.userId,
-                sessionId: appPreferencesModel.sessionId,
+                userId: appPreferencesModel.userId!,
+                sessionId: appPreferencesModel.sessionId!,
                 maxResults: 1,
                 calendarListModel: calendarListModel);
           } else {
@@ -128,7 +129,7 @@ class MyAppWithLocalizationsState extends State<MyAppWithLocalizations> {
           }
           future.then((_) async {
             developer.log("MyAppWithLocalizationsState user repository list calendars success");
-            userModel.login(appPreferencesModel.userId, appPreferencesModel.sessionId);
+            userModel.login(appPreferencesModel.userId!, appPreferencesModel.sessionId!);
             await switchToCalendarListView(context);
           }).catchError((listCalendarErr) async {
             await appPreferencesModel.clearUserIdAndSessionId();
@@ -138,13 +139,13 @@ class MyAppWithLocalizationsState extends State<MyAppWithLocalizations> {
                 Provider.of<UserRepository>(context, listen: false);
             userRepository
                 .loginUser(
-                    username: appPreferencesModel.username,
-                    password: appPreferencesModel.password,
+                    username: appPreferencesModel.username!,
+                    password: appPreferencesModel.password!,
                     providedUserModel: userModel)
                 .then((_) async {
               developer.log("MyAppWithLocalizationsState user repository login finished success");
               await appPreferencesModel.setUserIdAndSessionId(
-                  userModel.userId, userModel.sessionId);
+                  userModel.userId!, userModel.sessionId!);
               await switchToCalendarListView(context);
             }).catchError((userLoginErr) async {
               developer.log("MyAppWithLocalizationsState user repository login finished error",
