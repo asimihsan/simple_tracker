@@ -20,16 +20,16 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:local_storage/local_storage.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:package_info/package_info.dart';
 import 'package:simple_tracker/proto/app_preferences.pb.dart';
 
 class AppPreferencesModel {
-  static String appId = "com.asimihsan.simpletracker";
-  static String preferencesKey = "_preferences";
+  static String key = "com.asimihsan.simpletracker.preferences";
 
   AppPreferences _appPreferencesProto;
   PackageInfo _packageInfo;
+  final _storage = FlutterSecureStorage();
 
   bool get isPreferencesInitialized => _appPreferencesProto != null;
 
@@ -124,25 +124,17 @@ class AppPreferencesModel {
   String get appBuildNumber => _packageInfo?.buildNumber;
 
   Future<void> reload() async {
-    try {
-      final String preferencesSerialized = await LocalStorage.getKeyValue(appId, preferencesKey);
-      final Uint8List preferencesSerializedBytes = utf8.encode(preferencesSerialized);
-      _appPreferencesProto = AppPreferences.fromBuffer(preferencesSerializedBytes);
-    } on PlatformException catch (e) {
-      switch (e.code) {
-        case "KEY_NOT_FOUND":
-          developer.log("No existing preferences found, initialize from scratch.");
-          _appPreferencesProto = new AppPreferences();
-          await persist();
-          break;
-        default:
-          developer.log("Unexpected exception during reload, will blow away preferences.",
-              error: e);
-          _appPreferencesProto = new AppPreferences();
-          await persist();
-          break;
-      }
+    final String? preferencesSerialized = await _storage.read(key: key);
+    if (preferencesSerialized == null) {
+      developer.log("No existing preferences found, initialize from scratch.");
+      _appPreferencesProto = new AppPreferences();
+      await persist();
+      return;
     }
+    final Uint8List preferencesSerializedBytes = utf8.encode(
+        preferencesSerialized);
+    _appPreferencesProto =
+        AppPreferences.fromBuffer(preferencesSerializedBytes);
     _packageInfo = await PackageInfo.fromPlatform();
     return;
   }
@@ -150,7 +142,7 @@ class AppPreferencesModel {
   Future<void> persist() async {
     final Uint8List preferencesSerializedBytes = _appPreferencesProto.writeToBuffer();
     final String preferencesSerialized = String.fromCharCodes(preferencesSerializedBytes);
-    await LocalStorage.storeKeyValue(appId, preferencesKey, preferencesSerialized);
+    await _storage.write(key: key, value: preferencesSerialized);
     return;
   }
 }
