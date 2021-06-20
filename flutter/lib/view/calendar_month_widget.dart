@@ -17,10 +17,10 @@
 import 'dart:developer' as developer;
 import 'dart:math';
 
-import 'package:date_calendar/date_calendar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:simple_tracker/date_calendar/date_calendar.dart';
 import 'package:simple_tracker/state/calendar_detail_model.dart';
 import 'package:simple_tracker/state/calendar_model.dart';
 import 'package:simple_tracker/state/calendar_repository.dart';

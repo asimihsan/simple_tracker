@@ -36,8 +36,14 @@ class PrivacyPolicyWidget extends StatelessWidget {
               builder: (context, snapshot) {
                 final Brightness brightnessValue = MediaQuery.of(context).platformBrightness;
                 bool isDark = brightnessValue == Brightness.dark;
+                final String data;
+                if (snapshot.data == null) {
+                  data = "";
+                } else {
+                  data = snapshot.data as String;
+                }
                 return MarkdownBody(
-                    data: snapshot.data as String ?? '',
+                    data: data,
                     styleSheet: MarkdownStyleSheet.fromTheme(Theme.of(context)).copyWith(
                       blockquoteDecoration: BoxDecoration(
                         color: isDark ? Colors.blue.withOpacity(0.4) : Colors.blue.shade50,

@@ -18,8 +18,8 @@ import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:simple_tracker/date_calendar/date_calendar.dart';
 import 'package:simple_tracker/state/calendar_model.dart';
-import 'package:date_calendar/date_calendar.dart';
 
 class CalendarModelAndMonthSum {
   final CalendarModel _calendarModel;

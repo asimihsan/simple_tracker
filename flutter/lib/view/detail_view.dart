@@ -17,10 +17,10 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
 
-import 'package:date_calendar/date_calendar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_listview/infinite_listview.dart';
+import 'package:simple_tracker/date_calendar/date_calendar.dart';
 import 'package:simple_tracker/view/calendar_month_widget.dart';
 import 'package:simple_tracker/view/custom_scroll_physics.dart';
 

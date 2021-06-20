@@ -22,15 +22,18 @@ import 'package:simple_tracker/state/calendar_summary_model.dart';
 import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/view/detail_view.dart';
 
-Widget getCalendarDetail(List<CalendarSummaryModel> calendarSummaryModels, {required bool readOnly}) {
-  return CalendarDetailWidget(calendarSummaryModels: calendarSummaryModels, readOnly: readOnly);
+Widget getCalendarDetail(List<CalendarSummaryModel> calendarSummaryModels,
+    {required bool readOnly}) {
+  return CalendarDetailWidget(
+      calendarSummaryModels: calendarSummaryModels, readOnly: readOnly);
 }
 
 class CalendarDetailWidget extends StatefulWidget {
   final List<CalendarSummaryModel> calendarSummaryModels;
   final bool readOnly;
 
-  const CalendarDetailWidget({required this.calendarSummaryModels, required this.readOnly});
+  const CalendarDetailWidget(
+      {required this.calendarSummaryModels, required this.readOnly});
 
   @override
   State<StatefulWidget> createState() {
@@ -64,10 +67,12 @@ class _CalendarDetailWidgetState extends State<CalendarDetailWidget> {
   Widget build(BuildContext context) {
     return FutureBuilder<CalendarDetailModel>(
         future: _downloadCalendars(context),
-        builder: (BuildContext context, AsyncSnapshot<CalendarDetailModel> snapshot) {
+        builder: (BuildContext context,
+            AsyncSnapshot<CalendarDetailModel> snapshot) {
           if (snapshot.hasError) {
             final Exception error = snapshot.error! as Exception;
-            return _buildHomePage(Text("Error loading calendars! " + error.toString()));
+            return _buildHomePage(
+                Text("Error loading calendars! " + error.toString()));
           }
           final CalendarDetailModel? calendarDetailModel = snapshot.data;
           if (calendarDetailModel == null) {
@@ -86,10 +91,9 @@ class _CalendarDetailWidgetState extends State<CalendarDetailWidget> {
         Provider.of<CalendarRepository>(context, listen: false);
     final UserModel userModel = Provider.of<UserModel>(context, listen: false);
     return await calendarRepository.getCalendars(
-      userId: userModel.userId!,
-      sessionId: userModel.sessionId!,
-      calendarIds: this
-          .calendarSummaryModels
+      userModel.userId!,
+      userModel.sessionId!,
+      this.calendarSummaryModels
           .map((calendarSummaryModel) => calendarSummaryModel.id)
           .toList(),
     );

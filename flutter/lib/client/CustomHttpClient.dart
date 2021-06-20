@@ -42,15 +42,14 @@ class BackendClient {
     "Content-Type": "application/protobuf",
   };
 
-  HttpClient client;
+  HttpClient? client;
   final String baseUrl;
   Random random;
 
   BackendClient(this.client, this.baseUrl, this.random);
 
-  BackendClient.defaultClient(this.baseUrl) {
+  BackendClient.defaultClient(this.baseUrl): random = Random() {
     _initializeHttpClient();
-    random = new Random();
   }
 
   // Retry using exponential backoff with full jitter.
@@ -66,24 +65,22 @@ class BackendClient {
 
   void _initializeHttpClient() {
     if (client != null) {
-      client.close(force: true);
+      client!.close(force: true);
     }
     client = HttpClient();
-    client.connectionTimeout = connectionClientTimeout;
-    client.idleTimeout = idleTimeout;
+    client!.connectionTimeout = connectionClientTimeout;
+    client!.idleTimeout = idleTimeout;
   }
 
-  Future<Uint8List> send(final String endpoint, final Uint8List payload) async {
-    Uint8List response;
+  Future<List<int>> send(final String endpoint, final List<int> payload) async {
     for (int i = 0; i < maxRetryCount; i++) {
       try {
         final Duration operationTimeout = i < operationTimeoutSchedule.length
             ? operationTimeoutSchedule[i]
             : operationTimeoutSchedule[operationTimeoutSchedule.length - 1];
-        response = await sendInternal(endpoint, payload, operationTimeout);
-        return response;
+        return await sendInternal(endpoint, payload, operationTimeout);
       } catch (e) {
-        developer.log("URL: ${endpoint}. failed attempt $i.");
+        developer.log("URL: $endpoint. failed attempt $i.");
         if (i < maxRetryCount - 1) {
           if (e.runtimeType == InternalServerErrorException || e.runtimeType == TimeoutException) {
             _initializeHttpClient();
@@ -99,12 +96,12 @@ class BackendClient {
     throw BackendClientSendFailedException();
   }
 
-  Future<Uint8List> sendInternal(
-      final String endpoint, final Uint8List payload, final Duration operationTimeout) async {
+  Future<List<int>> sendInternal(
+      final String endpoint, final List<int> payload, final Duration operationTimeout) async {
     final Stopwatch stopwatch = new Stopwatch()..start();
     final String fullPath = baseUrl + endpoint;
     final HttpClientRequest request =
-        await client.postUrl(Uri.parse(fullPath)).timeout(connectionTimeout);
+        await client!.postUrl(Uri.parse(fullPath)).timeout(connectionTimeout);
     defaultHeaders.forEach((key, value) {
       request.headers.add(key, value);
     });
@@ -115,17 +112,17 @@ class BackendClient {
       developer.log("URL: " +
           endpoint +
           ", X-Ray trace ID: " +
-          response.headers.value("x-amzn-trace-id").replaceAll("Root=", ""));
+          response.headers.value("x-amzn-trace-id")!.replaceAll("Root=", ""));
     }
     if (response.headers.value("x-amzn-requestid") != null) {
       developer
-          .log("URL: " + endpoint + ", Request ID: " + response.headers.value("x-amzn-requestid"));
+          .log("URL: " + endpoint + ", Request ID: " + response.headers.value("x-amzn-requestid")!);
     }
     if (response.statusCode >= 500 && response.statusCode <= 599) {
       response.drain();
       throw new InternalServerErrorException();
     }
-    final Uint8List responseBytes = await response.single;
+    final List<int> responseBytes = await response.single;
     developer.log("elapsed duration: ", error: stopwatch.elapsed);
     return responseBytes;
   }

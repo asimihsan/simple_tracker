@@ -17,11 +17,9 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:fixnum/fixnum.dart';
 import 'package:intl/intl.dart';
-import 'package:meta/meta.dart';
 import 'package:simple_tracker/client/CustomHttpClient.dart';
 import 'package:simple_tracker/exception/CouldNotDeserializeResponseException.dart';
 import 'package:simple_tracker/exception/CouldNotVerifySessionException.dart';
@@ -39,19 +37,19 @@ class CalendarRepository {
   final String baseUrl;
   BackendClient _backendClient;
 
-  CalendarRepository(this.baseUrl) : _backendClient = BackendClient.defaultClient(baseUrl)
+  CalendarRepository(this.baseUrl) : _backendClient = BackendClient.defaultClient(baseUrl);
 
   Future<CalendarDetailModel> getCalendars(
-      {required String userId,
-      required String sessionId,
-      required List<String> calendarIds}) async {
+      String userId,
+      String sessionId,
+      List<String> calendarIds) async {
     var requestProto = GetCalendarsRequest();
     requestProto.userId = userId;
     requestProto.sessionId = sessionId;
     calendarIds.forEach((calendarId) => requestProto.calendarIds.add(calendarId));
     var getCalendarsRequestSerialized = requestProto.writeToBuffer();
 
-    final Uint8List responseBytes =
+    final List<int> responseBytes =
         await _backendClient.send("get_calendars", getCalendarsRequestSerialized);
     GetCalendarsResponse responseProto;
     try {
@@ -88,14 +86,14 @@ class CalendarRepository {
     );
   }
 
-  List<String> getInternalHighlightedDays(Uint8List highlightedDaysSerialized) {
-    Uint8List inflated = zlib.decode(highlightedDaysSerialized);
+  List<String> getInternalHighlightedDays(List<int> highlightedDaysSerialized) {
+    List<int> inflated = zlib.decode(highlightedDaysSerialized);
     ListOfStrings listOfStrings;
     try {
       listOfStrings = ListOfStrings.fromBuffer(inflated);
     } catch (e) {
       developer.log("could not deserialize highlightedDays as proto", error: e);
-      return null;
+      throw e;
     }
     return listOfStrings.strings;
   }
@@ -112,7 +110,7 @@ class CalendarRepository {
     requestProto.color = color;
     var createCalendarRequestSerialized = requestProto.writeToBuffer();
 
-    final Uint8List responseBytes =
+    final List<int> responseBytes =
         await _backendClient.send("create_calendar", createCalendarRequestSerialized);
     CreateCalendarResponse responseProto;
     try {
@@ -146,7 +144,7 @@ class CalendarRepository {
     requestProto.maxResults = Int64(maxResults);
     var listCalendarsRequestSerialized = requestProto.writeToBuffer();
 
-    final Uint8List responseBytes =
+    final List<int> responseBytes =
         await _backendClient.send("list_calendars", listCalendarsRequestSerialized);
     ListCalendarsResponse responseProto;
     try {
@@ -189,8 +187,8 @@ class CalendarRepository {
     calendarDetailModel.addRefreshingDateTime(dateTime);
 
     var requestProto = UpdateCalendarsRequest();
-    requestProto.userId = userModel.userId;
-    requestProto.sessionId = userModel.sessionId;
+    requestProto.userId = userModel.userId!;
+    requestProto.sessionId = userModel.sessionId!;
 
     var updateCalendarAction = UpdateCalendarAction();
     updateCalendarAction.calendarId = calendarModel.id;
@@ -201,7 +199,7 @@ class CalendarRepository {
     requestProto.actions[calendarModel.id] = updateCalendarAction;
     var requestSerialized = requestProto.writeToBuffer();
 
-    final Uint8List responseBytes =
+    final List<int> responseBytes =
         await _backendClient.send("update_calendars", requestSerialized);
     UpdateCalendarsResponse responseProto;
     try {
@@ -227,7 +225,7 @@ class CalendarRepository {
         .toList();
     calendarDetailModel.setupUpdatedCalendarModels(calendarModels);
     calendarDetailModel.removeRefreshingDateTime(dateTime);
-    return calendarDetailModel;
+    return;
   }
 
   Future<void> addHighlightedDay(
@@ -238,8 +236,8 @@ class CalendarRepository {
     calendarDetailModel.addRefreshingDateTime(dateTime);
 
     var requestProto = UpdateCalendarsRequest();
-    requestProto.userId = userModel.userId;
-    requestProto.sessionId = userModel.sessionId;
+    requestProto.userId = userModel.userId!;
+    requestProto.sessionId = userModel.sessionId!;
 
     var updateCalendarAction = UpdateCalendarAction();
     updateCalendarAction.calendarId = calendarModel.id;
@@ -250,7 +248,7 @@ class CalendarRepository {
     requestProto.actions[calendarModel.id] = updateCalendarAction;
     var requestSerialized = requestProto.writeToBuffer();
 
-    final Uint8List responseBytes =
+    final List<int> responseBytes =
         await _backendClient.send("update_calendars", requestSerialized);
     UpdateCalendarsResponse responseProto;
     try {
@@ -276,7 +274,7 @@ class CalendarRepository {
         .toList();
     calendarDetailModel.setupUpdatedCalendarModels(calendarModels);
     calendarDetailModel.removeRefreshingDateTime(dateTime);
-    return calendarDetailModel;
+    return;
   }
 
   Future<void> updateCalendarNameColor(
@@ -298,7 +296,7 @@ class CalendarRepository {
     requestProto.actions[calendarSummaryModel.id] = updateCalendarAction;
     var requestSerialized = requestProto.writeToBuffer();
 
-    final Uint8List responseBytes =
+    final List<int> responseBytes =
         await _backendClient.send("update_calendars", requestSerialized);
 
     UpdateCalendarsResponse responseProto;
@@ -329,7 +327,7 @@ class CalendarRepository {
     requestProto.calendarId = calendarId;
     var requestSerialized = requestProto.writeToBuffer();
 
-    final Uint8List responseBytes = await _backendClient.send("delete_calendar", requestSerialized);
+    final List<int> responseBytes = await _backendClient.send("delete_calendar", requestSerialized);
 
     DeleteCalendarResponse responseProto;
     try {

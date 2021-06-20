@@ -140,7 +140,7 @@ class AppPreferencesModel {
   }
 
   Future<void> persist() async {
-    final Uint8List preferencesSerializedBytes = _appPreferencesProto!.writeToBuffer();
+    final List<int> preferencesSerializedBytes = _appPreferencesProto!.writeToBuffer();
     final String preferencesSerialized = String.fromCharCodes(preferencesSerializedBytes);
     await _storage.write(key: key, value: preferencesSerialized);
     return;

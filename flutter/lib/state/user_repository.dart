@@ -16,10 +16,7 @@
 
 import 'dart:convert';
 import 'dart:developer' as developer;
-import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
-import 'package:meta/meta.dart';
 import 'package:simple_tracker/client/CustomHttpClient.dart';
 import 'package:simple_tracker/exception/CouldNotDeserializeResponseException.dart';
 import 'package:simple_tracker/exception/InternalServerErrorException.dart';
@@ -33,9 +30,7 @@ class UserRepository {
 
   BackendClient _backendClient;
 
-  UserRepository(this.baseUrl) {
-    _backendClient = BackendClient.defaultClient(baseUrl);
-  }
+  UserRepository(this.baseUrl): _backendClient = BackendClient.defaultClient(baseUrl);
 
   Future<void> createUser(
       {required String username,
@@ -46,7 +41,7 @@ class UserRepository {
     requestProto.password = password;
     var createUserRequestSerialized = requestProto.writeToBuffer();
 
-    final Uint8List responseBytes =
+    final List<int> responseBytes =
         await _backendClient.send("create_user", createUserRequestSerialized);
 
     CreateUserResponse responseProto;
@@ -78,7 +73,7 @@ class UserRepository {
     requestProto.password = password;
     var requestSerialized = requestProto.writeToBuffer();
 
-    final Uint8List responseBytes = await _backendClient.send("login_user", requestSerialized);
+    final List<int> responseBytes = await _backendClient.send("login_user", requestSerialized);
 
     LoginUserResponse responseProto;
     try {

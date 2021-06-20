@@ -32,7 +32,7 @@ class CalendarSummaryModel {
 
   BigColor get color {
     color3p.RgbColor rgbColor = color3p.Color.hex(_color).toRgbColor();
-    return BigColor.fromColor(Color.fromARGB(255, rgbColor.r, rgbColor.g, rgbColor.b));
+    return BigColor.fromColor(Color.fromARGB(255, rgbColor.r.toInt(), rgbColor.g.toInt(), rgbColor.b.toInt()));
   }
 
   String get name => _name;
