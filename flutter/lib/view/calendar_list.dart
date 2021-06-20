@@ -39,7 +39,7 @@ Widget getCalendarList(BuildContext context, {Exception? error}) {
   final bool noCalendars = calendarListModel.getCalendarSummariesInNameOrder().isEmpty;
 
   final Color addButtonColor = calendarListModel.isCombinedView ? Colors.grey : Colors.blue;
-  final VoidCallback onAddCallback = (calendarListModel.isCombinedView
+  final VoidCallback? onAddCallback = (calendarListModel.isCombinedView
       ? null
       : () async {
           developer.log("Create new calendar click");
@@ -49,15 +49,15 @@ Widget getCalendarList(BuildContext context, {Exception? error}) {
                 builder: (context) =>
                     getCreateEditCalendar(context, calendarListModel, isCreate: true)),
           );
-        }) as VoidCallback;
+        });
 
   final Color combinedViewButtonColor = noCalendars ? Colors.grey : Colors.lightGreen;
-  final VoidCallback onCombinedViewCallback = (noCalendars
+  final VoidCallback? onCombinedViewCallback = (noCalendars
       ? null
       : () async {
           developer.log("Combined view");
           calendarListModel.toggleIsCombinedView();
-        }) as VoidCallback;
+        });
 
   return Scaffold(
     appBar: AppBar(
