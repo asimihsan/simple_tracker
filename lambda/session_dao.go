@@ -40,6 +40,11 @@ var (
 	ErrSessionNotFound                   = errors.New("session not found")
 	ErrSessionDoesNotMatchProposedUserId = errors.New("session found but does not match proposed user ID")
 	ErrSessionCouldNotDeserializeEpoch = errors.New("session found but could not deserialize epoch")
+	ErrSessionExpired = errors.New("session found but it has expired")
+)
+
+const (
+	sessionExpiryTime = time.Hour * 24 * 14
 )
 
 type Session struct {
@@ -62,7 +67,7 @@ func CreateSession(userId string,
 	}
 	canonical_id := fmt.Sprintf("sessionid_%s", string(id))
 
-	expiryTime := time.Now().Add(time.Hour * 24 * 7)
+	expiryTime := time.Now().Add(sessionExpiryTime)
 	expiryEpochSecs := expiryTime.Unix()
 
 	session := Session{Id: canonical_id, UserId: userId, ExpiryEpochSeconds: expiryEpochSecs}
@@ -170,6 +175,13 @@ func VerifySession(
 		lambdalog.LambdaLog.Println("Session found but does not match proposed user ID")
 		_ = xray.AddError(ctx, ErrSessionDoesNotMatchProposedUserId)
 		return nil, ErrSessionDoesNotMatchProposedUserId
+	}
+
+	now := time.Now().Unix()
+	if now >= expiryEpochSeconds {
+		lambdalog.LambdaLog.Println("Session found but it has expired.")
+		_ = xray.AddError(ctx, ErrSessionExpired)
+		return nil, ErrSessionExpired
 	}
 
 	return &Session{
