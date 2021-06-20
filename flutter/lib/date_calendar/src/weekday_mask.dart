@@ -115,7 +115,7 @@ class WeekdayMask {
   /// Create a new mask with the 1 based weekday set to the value.
   ///
   /// Passing null for a value will return a copy of this mask.
-  WeekdayMask setDay(int weekday, bool value) {
+  WeekdayMask setDay(int? weekday, bool? value) {
     if (weekday == null || value == null) {
       return new WeekdayMask(mask);
     }
@@ -128,7 +128,7 @@ class WeekdayMask {
   }
 
   /// See [setDay].  You may pass a custom map of weekday names, where US EN Monday should be 1 and Sunday 7.
-  WeekdayMask setDayName(String weekdayName, bool value,
+  WeekdayMask setDayName(String? weekdayName, bool value,
       {Map<String, int> dayMap = dayNameToMaskVal}) {
     if (weekdayName == null) {
       return new WeekdayMask(mask);
@@ -140,7 +140,7 @@ class WeekdayMask {
   }
 
   /// Creates a new mask with the specified weekday's value toggled from true to false or false to true.
-  WeekdayMask toggleDay(int weekday) {
+  WeekdayMask toggleDay(int? weekday) {
     if (weekday == null) {
       return new WeekdayMask(mask);
     }
@@ -152,7 +152,7 @@ class WeekdayMask {
   }
 
   /// See [toggleDay] and [setDayName].  You may pass a custom map of days if desired.
-  WeekdayMask toggleDayName(String weekdayName, {Map<String, int> dayMap = dayNameToMaskVal}) {
+  WeekdayMask toggleDayName(String? weekdayName, {Map<String, int> dayMap = dayNameToMaskVal}) {
     if (weekdayName == null) {
       return new WeekdayMask(mask);
     }

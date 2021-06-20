@@ -118,7 +118,7 @@ class MyAppWithLocalizationsState extends State<MyAppWithLocalizations> {
           final UserModel userModel = Provider.of<UserModel>(context, listen: false);
 
           Future future;
-          if (appPreferencesModel.sessionId != "") {
+          if (appPreferencesModel.sessionId != null && appPreferencesModel.sessionId != "") {
             future = calendarRepository.listCalendars(
                 userId: appPreferencesModel.userId!,
                 sessionId: appPreferencesModel.sessionId!,
