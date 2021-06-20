@@ -29,8 +29,13 @@ RUN yum -y update && \
     wget && \
     yum clean all && \
     rm -rf /var/cache/yum
+# -----------------------------------------------------------------------------
 
-# AWS CLI
+# -----------------------------------------------------------------------------
+#   AWS CLI
+# -----------------------------------------------------------------------------
+FROM base as awscli
+
 WORKDIR /root
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-$VERSION_AWS_CLI.zip" -o "awscliv2.zip"
 RUN unzip awscliv2.zip
@@ -129,6 +134,8 @@ RUN /usr/local/go/bin/go mod download
 # -----------------------------------------------------------------------------
 FROM base as final
 
+COPY --from=awscli /usr/local/aws-cli /usr/local/
+COPY --from=awscli /usr/local/bin/aws* /usr/local/bin/
 COPY --from=dart_dependencies /root/.dart /root/.dart
 COPY --from=dart_dependencies /root/.pub-cache /root/.pub-cache
 COPY --from=go_base /usr/local/go /usr/local/go
