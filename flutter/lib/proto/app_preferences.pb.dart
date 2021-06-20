@@ -11,8 +11,6 @@ import 'package:protobuf/protobuf.dart' as $pb;
 
 class AppPreferences extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AppPreferences', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'simpletracker'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'username')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'password')
     ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'isNotFirstLaunch', protoName: 'isNotFirstLaunch')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId', protoName: 'sessionId')
     ..aOS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'userId', protoName: 'userId')
@@ -21,19 +19,11 @@ class AppPreferences extends $pb.GeneratedMessage {
 
   AppPreferences._() : super();
   factory AppPreferences({
-    $core.String? username,
-    $core.String? password,
     $core.bool? isNotFirstLaunch,
     $core.String? sessionId,
     $core.String? userId,
   }) {
     final _result = create();
-    if (username != null) {
-      _result.username = username;
-    }
-    if (password != null) {
-      _result.password = password;
-    }
     if (isNotFirstLaunch != null) {
       _result.isNotFirstLaunch = isNotFirstLaunch;
     }
@@ -66,48 +56,30 @@ class AppPreferences extends $pb.GeneratedMessage {
   static AppPreferences getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AppPreferences>(create);
   static AppPreferences? _defaultInstance;
 
-  @$pb.TagNumber(1)
-  $core.String get username => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set username($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasUsername() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearUsername() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get password => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set password($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasPassword() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearPassword() => clearField(2);
-
   @$pb.TagNumber(3)
-  $core.bool get isNotFirstLaunch => $_getBF(2);
+  $core.bool get isNotFirstLaunch => $_getBF(0);
   @$pb.TagNumber(3)
-  set isNotFirstLaunch($core.bool v) { $_setBool(2, v); }
+  set isNotFirstLaunch($core.bool v) { $_setBool(0, v); }
   @$pb.TagNumber(3)
-  $core.bool hasIsNotFirstLaunch() => $_has(2);
+  $core.bool hasIsNotFirstLaunch() => $_has(0);
   @$pb.TagNumber(3)
   void clearIsNotFirstLaunch() => clearField(3);
 
   @$pb.TagNumber(4)
-  $core.String get sessionId => $_getSZ(3);
+  $core.String get sessionId => $_getSZ(1);
   @$pb.TagNumber(4)
-  set sessionId($core.String v) { $_setString(3, v); }
+  set sessionId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(4)
-  $core.bool hasSessionId() => $_has(3);
+  $core.bool hasSessionId() => $_has(1);
   @$pb.TagNumber(4)
   void clearSessionId() => clearField(4);
 
   @$pb.TagNumber(5)
-  $core.String get userId => $_getSZ(4);
+  $core.String get userId => $_getSZ(2);
   @$pb.TagNumber(5)
-  set userId($core.String v) { $_setString(4, v); }
+  set userId($core.String v) { $_setString(2, v); }
   @$pb.TagNumber(5)
-  $core.bool hasUserId() => $_has(4);
+  $core.bool hasUserId() => $_has(2);
   @$pb.TagNumber(5)
   void clearUserId() => clearField(5);
 }

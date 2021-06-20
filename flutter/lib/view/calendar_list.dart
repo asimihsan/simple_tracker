@@ -139,7 +139,7 @@ Future<void> deleteCalendar(String calendarId, BuildContext context) {
       .then((_) {
     return refreshListCalendars(context);
   }).catchError((error) {
-    Scaffold.of(context).showSnackBar(SnackBar(content: Text("Failed to delete calendar!!")));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to delete calendar!!")));
   });
 }
 
@@ -155,7 +155,7 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
     refreshListCalendars(context);
 
 //    if (error != null) {
-//      Scaffold.of(context)
+//      ScaffoldMessenger.of(context)
 //          .showSnackBar(SnackBar(content: Text("Failed to list calendars: " + error.toString())));
 //    }
   }
@@ -185,7 +185,7 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
             child: RaisedButton(
                 onPressed: () async {
                   if (calendarList.getCombinedViewCalendarsAsList().length == 0) {
-                    Scaffold.of(context).showSnackBar(SnackBar(
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text("No calendars selected!"),
                         backgroundColor: Colors.deepOrange));
                     return;
@@ -322,7 +322,7 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
                                 deleteCalendar(calendarSummaryModel.id, context).then((_) {
                                   navigatorState.pop(true);
                                 }).catchError((err) {
-                                  Scaffold.of(context).showSnackBar(
+                                  ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(content: Text("Failed to delete calendar!!")));
                                   calendarListModel.loading = false;
                                 });

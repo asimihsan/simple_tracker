@@ -120,7 +120,7 @@ class BackendClient {
     }
     if (response.statusCode >= 500 && response.statusCode <= 599) {
       response.drain();
-      throw new InternalServerErrorException();
+      throw InternalServerErrorException();
     }
     final List<int> responseBytes = await response.single;
     developer.log("elapsed duration: ", error: stopwatch.elapsed);

@@ -61,8 +61,8 @@ class UserLoginFormState extends State<UserLoginForm> {
   // Global key that uniquely identifies Form widget allows validation.
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _username = new TextEditingController();
-  final TextEditingController _password = new TextEditingController();
+  final TextEditingController _username = TextEditingController();
+  final TextEditingController _password = TextEditingController();
 
   final bool isSignupForm;
 
@@ -77,17 +77,17 @@ class UserLoginFormState extends State<UserLoginForm> {
         Provider.of<AppPreferencesModel>(context, listen: false);
 
     final TextSpan switchLink = isSignupForm
-        ? new TextSpan(
+        ? TextSpan(
             text: localizations.userLoginLoginAsExistingUser,
-            style: new TextStyle(color: Colors.blue),
-            recognizer: new TapGestureRecognizer()
+            style: TextStyle(color: Colors.blue),
+            recognizer: TapGestureRecognizer()
               ..onTap = () {
                 switchToUserLoginHandler(appPreferencesModel, context);
               })
-        : new TextSpan(
+        : TextSpan(
             text: localizations.userLoginSignUpAsANewUser,
-            style: new TextStyle(color: Colors.blue),
-            recognizer: new TapGestureRecognizer()
+            style: TextStyle(color: Colors.blue),
+            recognizer: TapGestureRecognizer()
               ..onTap = () {
                 switchToUserSignupHandler(appPreferencesModel, context);
               });
@@ -123,7 +123,7 @@ class UserLoginFormState extends State<UserLoginForm> {
                   if (!_formKey.currentState!.validate()) {
                     return;
                   }
-                  Scaffold.of(context)
+                  ScaffoldMessenger.of(context)
                       .showSnackBar(SnackBar(content: Text(localizations.userLoginProcessingData)));
                   final providedUserModel = Provider.of<UserModel>(context, listen: false);
                   if (isSignupForm) {
@@ -135,26 +135,24 @@ class UserLoginFormState extends State<UserLoginForm> {
                         .then((_) async {
                       developer.log("UserLoginFormState user repository create finished success");
                       await appPreferencesModel.setCredentials(
-                          username: _username.text,
-                          password: _password.text,
-                          userId: providedUserModel.userId!,
-                          sessionId: providedUserModel.sessionId!);
-                      Scaffold.of(context).removeCurrentSnackBar();
+                          providedUserModel.userId!,
+                          providedUserModel.sessionId!);
+                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
                       switchToCalendarListView(context);
                     }).catchError((err) async {
                       developer.log("UserLoginFormState user repository create finished error",
                           error: err);
                       await appPreferencesModel.clearCredentials();
                       if (err is UserAlreadyExistsException) {
-                        Scaffold.of(context).showSnackBar(SnackBar(
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             backgroundColor: Colors.deepOrange,
                             content: Text("User already exists!")));
                       } else if (err is InternalServerErrorException) {
-                        Scaffold.of(context).showSnackBar(SnackBar(
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             backgroundColor: Colors.deepOrange,
                             content: Text(localizations.internalServerErrorException)));
                       } else {
-                        Scaffold.of(context).showSnackBar(SnackBar(
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             backgroundColor: Colors.deepOrange,
                             content: Text("Unknown error occurred!!")));
                       }
@@ -168,28 +166,26 @@ class UserLoginFormState extends State<UserLoginForm> {
                         .then((_) async {
                       developer.log("UserLoginFormState user repository login finished success");
                       await appPreferencesModel.setCredentials(
-                          username: _username.text,
-                          password: _password.text,
-                          userId: providedUserModel.userId!,
-                          sessionId: providedUserModel.sessionId!);
-                      Scaffold.of(context).removeCurrentSnackBar();
+                          providedUserModel.userId!,
+                          providedUserModel.sessionId!);
+                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
                       switchToCalendarListView(context);
                     }).catchError((err) async {
                       developer.log("UserLoginFormState user repository login finished error",
                           error: err);
-                      Scaffold.of(context).removeCurrentSnackBar();
+                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
                       await appPreferencesModel.clearCredentials();
                       if (err is UserMissingOrPasswordIncorrectException) {
-                        Scaffold.of(context).showSnackBar(SnackBar(
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             backgroundColor: Colors.deepOrange,
                             content: Text(
                                 localizations.userLoginUserMissingOrPasswordIncorrectException)));
                       } else if (err is InternalServerErrorException) {
-                        Scaffold.of(context).showSnackBar(SnackBar(
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             backgroundColor: Colors.deepOrange,
                             content: Text(localizations.internalServerErrorException)));
                       } else {
-                        Scaffold.of(context).showSnackBar(SnackBar(
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             backgroundColor: Colors.deepOrange,
                             content: Text("Unknown error occurred!!")));
                       }
@@ -200,9 +196,9 @@ class UserLoginFormState extends State<UserLoginForm> {
               )),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 32.0),
-            child: new Center(
-                child: new RichText(
-                    text: new TextSpan(
+            child: Center(
+                child: RichText(
+                    text: TextSpan(
               children: [switchLink],
             ))),
           ),
@@ -242,7 +238,7 @@ String? validateUsername(String input, AppLocalizations appLocalizations) {
   if (input.length > 40) {
     return appLocalizations.userLoginErrorUsernameTooLong;
   }
-  var validUsernameRe = new RegExp(r"^[A-Za-z0-9_\-\.]+$",
+  var validUsernameRe = RegExp(r"^[A-Za-z0-9_\-\.]+$",
       multiLine: false, caseSensitive: true, unicode: false, dotAll: false);
   if (!validUsernameRe.hasMatch(input)) {
     return appLocalizations.userLoginErrorUsernameInvalidChars;

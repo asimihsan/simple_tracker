@@ -12,8 +12,6 @@ import 'dart:typed_data' as $typed_data;
 const AppPreferences$json = const {
   '1': 'AppPreferences',
   '2': const [
-    const {'1': 'username', '3': 1, '4': 1, '5': 9, '10': 'username'},
-    const {'1': 'password', '3': 2, '4': 1, '5': 9, '10': 'password'},
     const {'1': 'isNotFirstLaunch', '3': 3, '4': 1, '5': 8, '10': 'isNotFirstLaunch'},
     const {'1': 'sessionId', '3': 4, '4': 1, '5': 9, '10': 'sessionId'},
     const {'1': 'userId', '3': 5, '4': 1, '5': 9, '10': 'userId'},
@@ -21,4 +19,4 @@ const AppPreferences$json = const {
 };
 
 /// Descriptor for `AppPreferences`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List appPreferencesDescriptor = $convert.base64Decode('Cg5BcHBQcmVmZXJlbmNlcxIaCgh1c2VybmFtZRgBIAEoCVIIdXNlcm5hbWUSGgoIcGFzc3dvcmQYAiABKAlSCHBhc3N3b3JkEioKEGlzTm90Rmlyc3RMYXVuY2gYAyABKAhSEGlzTm90Rmlyc3RMYXVuY2gSHAoJc2Vzc2lvbklkGAQgASgJUglzZXNzaW9uSWQSFgoGdXNlcklkGAUgASgJUgZ1c2VySWQ=');
+final $typed_data.Uint8List appPreferencesDescriptor = $convert.base64Decode('Cg5BcHBQcmVmZXJlbmNlcxIqChBpc05vdEZpcnN0TGF1bmNoGAMgASgIUhBpc05vdEZpcnN0TGF1bmNoEhwKCXNlc3Npb25JZBgEIAEoCVIJc2Vzc2lvbklkEhYKBnVzZXJJZBgFIAEoCVIGdXNlcklk');

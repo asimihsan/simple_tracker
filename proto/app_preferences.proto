@@ -4,8 +4,6 @@ package simpletracker;
 option go_package = "lambda/proto";
 
 message AppPreferences {
-    string username = 1;
-    string password = 2;
     bool isNotFirstLaunch = 3;
     string sessionId = 4;
     string userId = 5;

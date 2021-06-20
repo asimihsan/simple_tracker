@@ -56,7 +56,7 @@ class CalendarRepository {
       responseProto = GetCalendarsResponse.fromBuffer(responseBytes);
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
-      throw new CouldNotDeserializeResponseException();
+      throw CouldNotDeserializeResponseException();
     }
     developer.log("GetCalendarsResponse", error: responseProto);
 
@@ -117,16 +117,16 @@ class CalendarRepository {
       responseProto = CreateCalendarResponse.fromBuffer(responseBytes);
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
-      throw new CouldNotDeserializeResponseException();
+      throw CouldNotDeserializeResponseException();
     }
     developer.log("CreateCalendarResponse", error: responseProto);
 
     if (responseProto.success == false) {
       if (responseProto.errorReason ==
           CreateCalendarErrorReason.CREATE_CALENDAR_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR) {
-        throw new CouldNotVerifySessionException();
+        throw CouldNotVerifySessionException();
       } else {
-        throw new InternalServerErrorException();
+        throw InternalServerErrorException();
       }
     }
   }
@@ -152,7 +152,7 @@ class CalendarRepository {
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
       calendarListModel.loading = false;
-      throw new CouldNotDeserializeResponseException();
+      throw CouldNotDeserializeResponseException();
     }
     developer.log("ListCalendarsResponse", error: responseProto);
     calendarListModel.loading = false;
@@ -160,9 +160,9 @@ class CalendarRepository {
     if (responseProto.success == false) {
       if (responseProto.errorReason ==
           ListCalendarsErrorReason.LIST_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR) {
-        throw new CouldNotVerifySessionException();
+        throw CouldNotVerifySessionException();
       } else {
-        throw new InternalServerErrorException();
+        throw InternalServerErrorException();
       }
     }
 
@@ -207,16 +207,16 @@ class CalendarRepository {
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
       calendarDetailModel.removeRefreshingDateTime(dateTime);
-      throw new CouldNotDeserializeResponseException();
+      throw CouldNotDeserializeResponseException();
     }
 
     if (responseProto.success == false) {
       calendarDetailModel.removeRefreshingDateTime(dateTime);
       if (responseProto.errorReason ==
           UpdateCalendarsErrorReason.UPDATE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR) {
-        throw new CouldNotVerifySessionException();
+        throw CouldNotVerifySessionException();
       } else {
-        throw new InternalServerErrorException();
+        throw InternalServerErrorException();
       }
     }
 
@@ -256,16 +256,16 @@ class CalendarRepository {
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
       calendarDetailModel.removeRefreshingDateTime(dateTime);
-      throw new CouldNotDeserializeResponseException();
+      throw CouldNotDeserializeResponseException();
     }
 
     if (responseProto.success == false) {
       calendarDetailModel.removeRefreshingDateTime(dateTime);
       if (responseProto.errorReason ==
           UpdateCalendarsErrorReason.UPDATE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR) {
-        throw new CouldNotVerifySessionException();
+        throw CouldNotVerifySessionException();
       } else {
-        throw new InternalServerErrorException();
+        throw InternalServerErrorException();
       }
     }
 
@@ -304,15 +304,15 @@ class CalendarRepository {
       responseProto = UpdateCalendarsResponse.fromBuffer(responseBytes);
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
-      throw new CouldNotDeserializeResponseException();
+      throw CouldNotDeserializeResponseException();
     }
 
     if (responseProto.success == false) {
       if (responseProto.errorReason ==
           UpdateCalendarsErrorReason.UPDATE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR) {
-        throw new CouldNotVerifySessionException();
+        throw CouldNotVerifySessionException();
       } else {
-        throw new InternalServerErrorException();
+        throw InternalServerErrorException();
       }
     }
 
@@ -334,16 +334,16 @@ class CalendarRepository {
       responseProto = DeleteCalendarResponse.fromBuffer(responseBytes);
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
-      throw new CouldNotDeserializeResponseException();
+      throw CouldNotDeserializeResponseException();
     }
     developer.log("DeleteCalendarResponse", error: responseProto);
 
     if (responseProto.success == false) {
       if (responseProto.errorReason ==
           DeleteCalendarErrorReason.DELETE_CALENDARS_ERROR_REASON_COULD_NOT_VERIFY_SESSION_ERROR) {
-        throw new CouldNotVerifySessionException();
+        throw CouldNotVerifySessionException();
       } else {
-        throw new InternalServerErrorException();
+        throw InternalServerErrorException();
       }
     }
 

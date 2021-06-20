@@ -51,7 +51,7 @@ class UserRepository {
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
       developer.log(Utf8Codec().decode(responseBytes));
-      throw new CouldNotDeserializeResponseException();
+      throw CouldNotDeserializeResponseException();
     }
 
     if (!responseProto.success) {
@@ -82,16 +82,16 @@ class UserRepository {
       providedUserModel.login(responseProto.userId, responseProto.sessionId);
     } catch (e) {
       developer.log("could not deserialize response as proto", error: e);
-      throw new CouldNotDeserializeResponseException();
+      throw CouldNotDeserializeResponseException();
     }
 
     if (!responseProto.success) {
       switch (responseProto.errorReason) {
         case LoginUserErrorReason.USER_MISSING_OR_PASSWORD_INCORRECT:
-          throw new UserMissingOrPasswordIncorrectException();
+          throw UserMissingOrPasswordIncorrectException();
         case LoginUserErrorReason.LOGIN_USER_ERROR_REASON_INTERNAL_SERVER_ERROR:
         default:
-          throw new InternalServerErrorException();
+          throw InternalServerErrorException();
       }
     }
 

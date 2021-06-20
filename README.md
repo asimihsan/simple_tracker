@@ -33,6 +33,13 @@ docker run \
     --volume $HOME/.aws:/root/.aws:ro \
     -it simple-tracker \
     /bin/bash
+
+# deploy
+docker run \
+    --volume $(pwd):/mnt/app \
+    --volume $HOME/.aws:/root/.aws:ro \
+    -it simple-tracker \
+    /bin/bash -c '. ~/.bashrc && /mnt/app/deploy.sh'
 ```
 
 ### lambda

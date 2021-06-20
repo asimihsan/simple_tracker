@@ -32,19 +32,23 @@ class AppPreferencesModel {
   bool get isPreferencesInitialized => _appPreferencesProto != null;
 
   Future<void> clear() async {
-    await clearUsernameAndPassword();
-  }
-
-  Future<void> setCredentials(
-      {required String username,
-      required String password,
-      required String userId,
-      required String sessionId}) async {
     if (_appPreferencesProto == null) {
       await reload();
     }
-    _appPreferencesProto!.username = username;
-    _appPreferencesProto!.password = password;
+    _appPreferencesProto!.userId = "";
+    _appPreferencesProto!.sessionId = "";
+    _appPreferencesProto!.isNotFirstLaunch = false;
+    await persist();
+    return;
+  }
+
+  bool credentialsPresent() => _appPreferencesProto?.sessionId != null && _appPreferencesProto?.sessionId != "";
+  String? get userId => _appPreferencesProto?.userId;
+  String? get sessionId => _appPreferencesProto?.sessionId;
+  Future<void> setCredentials(String userId, sessionId) async {
+    if (_appPreferencesProto == null) {
+      await reload();
+    }
     _appPreferencesProto!.userId = userId;
     _appPreferencesProto!.sessionId = sessionId;
     await persist();
@@ -52,54 +56,6 @@ class AppPreferencesModel {
   }
 
   Future<void> clearCredentials() async {
-    if (_appPreferencesProto == null) {
-      await reload();
-    }
-    _appPreferencesProto!.username = "";
-    _appPreferencesProto!.password = "";
-    await persist();
-    return;
-  }
-
-  String? get username => _appPreferencesProto?.username;
-  String? get password => _appPreferencesProto?.password;
-
-  Future<void> setUsernameAndPassword(String username, String password) async {
-    if (_appPreferencesProto == null) {
-      await reload();
-    }
-    _appPreferencesProto!.username = username;
-    _appPreferencesProto!.password = password;
-    await persist();
-    return;
-  }
-
-  Future<void> clearUsernameAndPassword() async {
-    if (_appPreferencesProto == null) {
-      await reload();
-    }
-    _appPreferencesProto!.username = "";
-    _appPreferencesProto!.password = "";
-    _appPreferencesProto!.userId = "";
-    _appPreferencesProto!.sessionId = "";
-    await persist();
-    return;
-  }
-
-  String? get userId => _appPreferencesProto?.userId;
-  String? get sessionId => _appPreferencesProto?.sessionId;
-
-  Future<void> setUserIdAndSessionId(String userId, String sessionId) async {
-    if (_appPreferencesProto == null) {
-      await reload();
-    }
-    _appPreferencesProto!.userId = userId;
-    _appPreferencesProto!.sessionId = sessionId;
-    await persist();
-    return;
-  }
-
-  Future<void> clearUserIdAndSessionId() async {
     if (_appPreferencesProto == null) {
       await reload();
     }
@@ -127,14 +83,20 @@ class AppPreferencesModel {
     final String? preferencesSerialized = await _storage.read(key: key);
     if (preferencesSerialized == null) {
       developer.log("No existing preferences found, initialize from scratch.");
-      _appPreferencesProto = new AppPreferences();
+      _appPreferencesProto = AppPreferences();
       await persist();
       return;
     }
     final List<int> preferencesSerializedBytes = utf8.encode(
         preferencesSerialized);
-    _appPreferencesProto =
-        AppPreferences.fromBuffer(preferencesSerializedBytes);
+    try {
+      _appPreferencesProto =
+          AppPreferences.fromBuffer(preferencesSerializedBytes);
+    } catch (_) {
+      _appPreferencesProto = AppPreferences();
+      await persist();
+    }
+
     _packageInfo = await PackageInfo.fromPlatform();
     return;
   }

@@ -250,7 +250,7 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
                   if (!_formKey.currentState!.validate()) {
                     return;
                   }
-                  Scaffold.of(context).showSnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(localizations.createCalendarCreatingCalendar)));
                   final userModel = Provider.of<UserModel>(context, listen: false);
 
@@ -275,16 +275,16 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
                         );
 
                   future.then((_) {
-                    Scaffold.of(context).removeCurrentSnackBar();
+                    ScaffoldMessenger.of(context).removeCurrentSnackBar();
                     Navigator.maybePop(context);
                   }).catchError((err) {
-                    Scaffold.of(context).removeCurrentSnackBar();
+                    ScaffoldMessenger.of(context).removeCurrentSnackBar();
                     if (err is InternalServerErrorException) {
-                      Scaffold.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           backgroundColor: Colors.deepOrange,
                           content: Text(localizations.internalServerErrorException)));
                     } else {
-                      Scaffold.of(context).showSnackBar(SnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           backgroundColor: Colors.deepOrange,
                           content: Text("Unknown error occurred!!")));
                     }
