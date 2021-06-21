@@ -20,7 +20,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:simple_tracker/exception/CouldNotVerifySessionException.dart';
 import 'package:simple_tracker/exception/NoExistingSessionToReuseException.dart';
 import 'package:simple_tracker/localizations.dart';
 import 'package:simple_tracker/state/app_preferences_model.dart';
@@ -47,26 +46,26 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
         providers: [
-          FutureProvider<AppPreferencesModel>(
-            initialData: new AppPreferencesModel(),
+          FutureProvider<AppPreferencesModel?>(
+            initialData: null,
             create: (_) async {
               final AppPreferencesModel appPreferencesModel =
-                  new AppPreferencesModel();
+                  AppPreferencesModel();
               await appPreferencesModel.reload();
               return appPreferencesModel;
             },
           ),
           Provider(
-            create: (_) => new UserModel.notLoggedIn(),
+            create: (_) => UserModel.notLoggedIn(),
           ),
           ListenableProvider(
-            create: (_) => new CalendarListModel(),
+            create: (_) => CalendarListModel(),
           ),
           Provider(
-            create: (_) => new CalendarRepository(apiBaseUrl),
+            create: (_) => CalendarRepository(apiBaseUrl),
           ),
           Provider(
-            create: (_) => new UserRepository(apiBaseUrl),
+            create: (_) => UserRepository(apiBaseUrl),
           ),
         ],
         child: MaterialApp(
@@ -90,7 +89,7 @@ class MyApp extends StatelessWidget {
 
 class MyAppWithLocalizations extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => new MyAppWithLocalizationsState();
+  State<StatefulWidget> createState() => MyAppWithLocalizationsState();
 }
 
 class MyAppWithLocalizationsState extends State<MyAppWithLocalizations> {
@@ -98,7 +97,7 @@ class MyAppWithLocalizationsState extends State<MyAppWithLocalizations> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppPreferencesModel>(
+    return Consumer<AppPreferencesModel?>(
         builder: (context, appPreferencesModel, child) {
       if (appPreferencesModel != null && movingToNextView == false) {
         // TODO racey! Surely there is an easier and less racey way of injecting Future-provided
@@ -156,7 +155,7 @@ class MyAppWithLocalizationsState extends State<MyAppWithLocalizations> {
             title: Text('Loading...'),
           ),
           body: SafeArea(
-            child: new CircularProgressIndicator(),
+            child: CircularProgressIndicator(),
             minimum: const EdgeInsets.symmetric(horizontal: 16.0),
           ));
     });
