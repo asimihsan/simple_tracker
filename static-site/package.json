@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "start": "webpack serve --open",
-    "build": "del-cli dist && webpack --mode production"
+    "build": "del-cli dist && webpack --mode production && /apply_critical.py"
   },
   "dependencies": {
     "@popperjs/core": "^2.9.2",
