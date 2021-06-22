@@ -3,6 +3,7 @@ import * as cdk from '@aws-cdk/core';
 import * as apigateway from '@aws-cdk/aws-apigateway';
 // import * as apigatewayv2 from '@aws-cdk/aws-apigatewayv2';
 import * as certificatemanager from '@aws-cdk/aws-certificatemanager';
+import * as cloudfront from '@aws-cdk/aws-cloudfront';
 import * as eventstargets from '@aws-cdk/aws-events-targets';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
 // import * as iam from '@aws-cdk/aws-iam';
@@ -10,13 +11,84 @@ import * as kms from '@aws-cdk/aws-kms';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as r53targets from '@aws-cdk/aws-route53-targets';
 import * as route53 from '@aws-cdk/aws-route53';
+import * as s3 from '@aws-cdk/aws-s3';
+import * as s3deploy from '@aws-cdk/aws-s3-deployment';
 
-import { RemovalPolicy } from '@aws-cdk/core';
+import { Construct, RemovalPolicy } from '@aws-cdk/core';
 import { Rule, Schedule } from '@aws-cdk/aws-events';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 
 import path = require('path');
 // import { HttpProxyIntegration } from '@aws-cdk/aws-apigatewayv2';
+
+export interface StaticSiteProps {
+  domainName: string;
+  siteSubDomain: string;
+}
+
+export class StaticSite extends cdk.Stack {
+  constructor(scope: cdk.App, id: string, domainName: string, siteSubDomain: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    const zone = route53.HostedZone.fromLookup(this, 'Zone', { domainName: domainName });
+    const siteDomain = siteSubDomain + '.' + domainName;
+    new cdk.CfnOutput(this, 'Site', { value: 'https://' + siteDomain });
+
+    // Content bucket
+    const siteBucket = new s3.Bucket(this, 'SiteBucket', {
+        bucketName: siteDomain,
+        websiteIndexDocument: 'index.html',
+        websiteErrorDocument: 'error.html',
+        publicReadAccess: true,
+
+        // The default removal policy is RETAIN, which means that cdk destroy will not attempt to delete
+        // the new bucket, and it will remain in your account until manually deleted. By setting the policy to
+        // DESTROY, cdk destroy will attempt to delete the bucket, but will error if the bucket is not empty.
+        removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production code
+    });
+    new cdk.CfnOutput(this, 'Bucket', { value: siteBucket.bucketName });
+
+    // TLS certificate
+    const certificate = new certificatemanager.DnsValidatedCertificate(this, 'SiteCertificate', {
+        domainName: siteDomain,
+        hostedZone: zone,
+        region: 'us-east-1', // Cloudfront only checks this region for certificates.
+    });
+    new cdk.CfnOutput(this, 'Certificate', { value: certificate.certificateArn });
+
+    // CloudFront distribution that provides HTTPS
+    const distribution = new cloudfront.CloudFrontWebDistribution(this, 'SiteDistribution', {
+      viewerCertificate:  cloudfront.ViewerCertificate.fromAcmCertificate(certificate, {
+        securityPolicy: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2019,
+        aliases: [ siteDomain ],
+        sslMethod: cloudfront.SSLMethod.SNI,
+      }),
+      originConfigs: [
+          {
+            s3OriginSource: { s3BucketSource: siteBucket },
+            behaviors : [ {isDefaultBehavior: true} ],
+          }
+      ]
+    });
+    new cdk.CfnOutput(this, 'DistributionId', { value: distribution.distributionId });
+
+    // Route53 alias record for the CloudFront distribution
+    new route53.ARecord(this, 'SiteAliasRecord', {
+        recordName: siteDomain,
+        target: route53.RecordTarget.fromAlias(new r53targets.CloudFrontTarget(distribution)),
+        zone
+    });
+
+    // Deploy site contents to S3 bucket
+    new s3deploy.BucketDeployment(this, 'DeployWithInvalidation', {
+        sources: [ s3deploy.Source.asset(path.join(__dirname, '../../static-site/dist/')) ],
+        destinationBucket: siteBucket,
+        distribution,
+        distributionPaths: ['/*'],
+        memoryLimit: 2048,
+      });
+  }
+}
 
 export class CdkStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, apiDomainName: string, apiV2DomainName: string, props?: cdk.StackProps) {
