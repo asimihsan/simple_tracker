@@ -4,6 +4,7 @@ import * as apigateway from '@aws-cdk/aws-apigateway';
 // import * as apigatewayv2 from '@aws-cdk/aws-apigatewayv2';
 import * as certificatemanager from '@aws-cdk/aws-certificatemanager';
 import * as cloudfront from '@aws-cdk/aws-cloudfront';
+// import * as cfn_origins from '@aws-cdk/aws-cloudfront-origins';
 import * as eventstargets from '@aws-cdk/aws-events-targets';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
 // import * as iam from '@aws-cdk/aws-iam';
@@ -14,7 +15,7 @@ import * as route53 from '@aws-cdk/aws-route53';
 import * as s3 from '@aws-cdk/aws-s3';
 import * as s3deploy from '@aws-cdk/aws-s3-deployment';
 
-import { Construct, RemovalPolicy } from '@aws-cdk/core';
+import { Construct, Duration, RemovalPolicy } from '@aws-cdk/core';
 import { Rule, Schedule } from '@aws-cdk/aws-events';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 
@@ -63,10 +64,21 @@ export class StaticSite extends cdk.Stack {
         aliases: [ siteDomain ],
         sslMethod: cloudfront.SSLMethod.SNI,
       }),
+      priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
       originConfigs: [
           {
             s3OriginSource: { s3BucketSource: siteBucket },
-            behaviors : [ {isDefaultBehavior: true} ],
+            behaviors : [
+              {
+                compress: true,
+                isDefaultBehavior: true,
+              },
+              {
+                pathPattern: 'index.html',
+                compress: true,
+                maxTtl: Duration.seconds(0),
+              },
+            ],
           }
       ]
     });

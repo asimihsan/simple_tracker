@@ -17,7 +17,8 @@ new CdkStack(
     app,
     'preprod-SimpleTrackerCdkStack',
     preprodDomainName,
-    preprodDomainNameV2, {
+    preprodDomainNameV2,
+    {
         env: preprodEnvironment,
     }
 );
@@ -26,7 +27,8 @@ new StaticSite(
     app,
     "preprod-SimpleCalendarTrackerStaticSite",
     "simplecalendartracker.com",
-    "preprod-www", {
+    "preprod-www",
+    {
         env: preprodEnvironment,
     }
 );
