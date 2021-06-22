@@ -1,7 +1,7 @@
 This Privacy Policy covers how Simple Calendar Tracker (SCT) collects, uses, discloses, transfers, and stores
 your personal information.
 
-An online copy of the SCT Privacy Policy is available at https://simplecalendartracker.com/privacy/.
+An online copy of the SCT Privacy Policy is available at [https://simplecalendartracker.com/privacy/](https://simplecalendartracker.com/privacy/).
 
 ## Changes to This Privacy Policy
 
