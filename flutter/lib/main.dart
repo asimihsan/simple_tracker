@@ -157,7 +157,8 @@ class MyAppWithLocalizationsState extends State<MyAppWithLocalizations> {
           body: SafeArea(
             child: CircularProgressIndicator(),
             minimum: const EdgeInsets.symmetric(horizontal: 16.0),
-          ));
+          ),
+      );
     });
   }
 

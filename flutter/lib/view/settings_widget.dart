@@ -14,15 +14,15 @@ class SettingsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     Icon backIcon;
     if (Platform.isIOS) {
-      backIcon = new Icon(CupertinoIcons.back);
+      backIcon = Icon(CupertinoIcons.back);
     } else {
-      backIcon = new Icon(Icons.arrow_back);
+      backIcon = Icon(Icons.arrow_back);
     }
 
     return Scaffold(
         appBar: AppBar(
             title: Text("Settings"),
-            leading: new IconButton(
+            leading: IconButton(
               icon: backIcon,
               onPressed: () {
                 Navigator.of(context).pop();
@@ -40,7 +40,7 @@ String createAboutText(final String appVersion, final String appBuild) {
 
 Please send comments, questions, and feedback to:
 
-### **simple-calendar-tracker@gmail.com**
+### **contact@simplecalendartracker.com**
 """;
 }
 

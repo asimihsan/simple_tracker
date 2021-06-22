@@ -27,18 +27,32 @@ import 'package:simple_tracker/state/app_preferences_model.dart';
 import 'package:simple_tracker/state/user_model.dart';
 import 'package:simple_tracker/state/user_repository.dart';
 import 'package:simple_tracker/view/calendar_list.dart';
+import 'package:simple_tracker/view/settings_widget.dart';
 
-Widget getUserLogin(BuildContext context, AppPreferencesModel appPreferencesModel,
+Widget getUserLogin(
+    BuildContext context, AppPreferencesModel appPreferencesModel,
     {required bool isSignupForm}) {
   final AppLocalizations localizations =
       Localizations.of<AppLocalizations>(context, AppLocalizations)!;
-  final String title =
-      isSignupForm ? localizations.userLoginSignupTitle : localizations.userLoginLoginTitle;
-  Widget child = Provider(create: (_) => appPreferencesModel, child: UserLoginForm(isSignupForm));
+  final String title = isSignupForm
+      ? localizations.userLoginSignupTitle
+      : localizations.userLoginLoginTitle;
+  final Widget child = Provider(
+      create: (_) => appPreferencesModel, child: UserLoginForm(isSignupForm));
+  final Widget settingsWidget = Provider(
+      create: (_) => appPreferencesModel, child: SettingsWidget(),
+  );
   return Scaffold(
-    appBar: AppBar(
-      title: Text(title),
-    ),
+    appBar: AppBar(title: Text(title), actions: <Widget>[
+      IconButton(
+          icon: Icon(Icons.settings),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_context) => settingsWidget),
+            );
+          }),
+    ]),
     body: SafeArea(
       child: child,
       minimum: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -72,7 +86,8 @@ class UserLoginFormState extends State<UserLoginForm> {
   Widget build(BuildContext context) {
     final AppLocalizations localizations =
         Localizations.of<AppLocalizations>(context, AppLocalizations)!;
-    final UserRepository userRepository = Provider.of<UserRepository>(context, listen: false);
+    final UserRepository userRepository =
+        Provider.of<UserRepository>(context, listen: false);
     final AppPreferencesModel appPreferencesModel =
         Provider.of<AppPreferencesModel>(context, listen: false);
 
@@ -111,7 +126,8 @@ class UserLoginFormState extends State<UserLoginForm> {
           ),
           if (isSignupForm)
             TextFormField(
-              validator: (input) => validateConfirmPassword(input!, _password.text, localizations),
+              validator: (input) => validateConfirmPassword(
+                  input!, _password.text, localizations),
               decoration: InputDecoration(
                 labelText: localizations.userLoginConfirmPassword,
               ),
@@ -123,9 +139,10 @@ class UserLoginFormState extends State<UserLoginForm> {
                   if (!_formKey.currentState!.validate()) {
                     return;
                   }
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text(localizations.userLoginProcessingData)));
-                  final providedUserModel = Provider.of<UserModel>(context, listen: false);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(localizations.userLoginProcessingData)));
+                  final providedUserModel =
+                      Provider.of<UserModel>(context, listen: false);
                   if (isSignupForm) {
                     userRepository
                         .createUser(
@@ -133,14 +150,16 @@ class UserLoginFormState extends State<UserLoginForm> {
                             password: _password.text,
                             providedUserModel: providedUserModel)
                         .then((_) async {
-                      developer.log("UserLoginFormState user repository create finished success");
+                      developer.log(
+                          "UserLoginFormState user repository create finished success");
                       await appPreferencesModel.setCredentials(
                           providedUserModel.userId!,
                           providedUserModel.sessionId!);
                       ScaffoldMessenger.of(context).removeCurrentSnackBar();
                       switchToCalendarListView(context);
                     }).catchError((err) async {
-                      developer.log("UserLoginFormState user repository create finished error",
+                      developer.log(
+                          "UserLoginFormState user repository create finished error",
                           error: err);
                       await appPreferencesModel.clearCredentials();
                       if (err is UserAlreadyExistsException) {
@@ -150,7 +169,8 @@ class UserLoginFormState extends State<UserLoginForm> {
                       } else if (err is InternalServerErrorException) {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             backgroundColor: Colors.deepOrange,
-                            content: Text(localizations.internalServerErrorException)));
+                            content: Text(
+                                localizations.internalServerErrorException)));
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             backgroundColor: Colors.deepOrange,
@@ -164,26 +184,29 @@ class UserLoginFormState extends State<UserLoginForm> {
                             password: _password.text,
                             providedUserModel: providedUserModel)
                         .then((_) async {
-                      developer.log("UserLoginFormState user repository login finished success");
+                      developer.log(
+                          "UserLoginFormState user repository login finished success");
                       await appPreferencesModel.setCredentials(
                           providedUserModel.userId!,
                           providedUserModel.sessionId!);
                       ScaffoldMessenger.of(context).removeCurrentSnackBar();
                       switchToCalendarListView(context);
                     }).catchError((err) async {
-                      developer.log("UserLoginFormState user repository login finished error",
+                      developer.log(
+                          "UserLoginFormState user repository login finished error",
                           error: err);
                       ScaffoldMessenger.of(context).removeCurrentSnackBar();
                       await appPreferencesModel.clearCredentials();
                       if (err is UserMissingOrPasswordIncorrectException) {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             backgroundColor: Colors.deepOrange,
-                            content: Text(
-                                localizations.userLoginUserMissingOrPasswordIncorrectException)));
+                            content: Text(localizations
+                                .userLoginUserMissingOrPasswordIncorrectException)));
                       } else if (err is InternalServerErrorException) {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             backgroundColor: Colors.deepOrange,
-                            content: Text(localizations.internalServerErrorException)));
+                            content: Text(
+                                localizations.internalServerErrorException)));
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             backgroundColor: Colors.deepOrange,
@@ -206,26 +229,33 @@ class UserLoginFormState extends State<UserLoginForm> {
   }
 }
 
-void switchToUserSignupHandler(AppPreferencesModel appPreferencesModel, BuildContext context) {
+void switchToUserSignupHandler(
+    AppPreferencesModel appPreferencesModel, BuildContext context) {
   developer.log("Sign up click");
   Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-          builder: (context) => getUserLogin(context, appPreferencesModel, isSignupForm: true)));
+          builder: (context) =>
+              getUserLogin(context, appPreferencesModel, isSignupForm: true)));
 }
 
-void switchToUserLoginHandler(AppPreferencesModel appPreferencesModel, BuildContext context) {
+void switchToUserLoginHandler(
+    AppPreferencesModel appPreferencesModel, BuildContext context) {
   developer.log("Log in click");
   Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-          builder: (context) => getUserLogin(context, appPreferencesModel, isSignupForm: false)));
+          builder: (context) =>
+              getUserLogin(context, appPreferencesModel, isSignupForm: false)));
 }
 
-Future<void> switchToCalendarListView(BuildContext context, {Exception? error}) async {
+Future<void> switchToCalendarListView(BuildContext context,
+    {Exception? error}) async {
   developer.log("switching to calendar list view");
   await Navigator.pushReplacement(
-      context, MaterialPageRoute(builder: (context) => getCalendarList(context, error: error)));
+      context,
+      MaterialPageRoute(
+          builder: (context) => getCalendarList(context, error: error)));
 }
 
 String? validateUsername(String input, AppLocalizations appLocalizations) {
