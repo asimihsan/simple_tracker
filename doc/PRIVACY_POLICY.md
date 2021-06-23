@@ -15,6 +15,8 @@ Store / etc.
 
 -   Can post user-generated content, but it is not shared with other users.
 -   Users cannot interact with each other.
+-   Need to mention https://aws.amazon.com/compliance/eu-us-privacy-shield-faq/
+-   Need to mention https://aws.amazon.com/blogs/security/aws-gdpr-data-processing-addendum/
 
 ### Revision History
 
