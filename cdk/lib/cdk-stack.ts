@@ -37,68 +37,68 @@ export class StaticSite extends cdk.Stack {
 
     // Content bucket
     const siteBucket = new s3.Bucket(this, 'SiteBucket', {
-        bucketName: siteDomain,
-        websiteIndexDocument: 'index.html',
-        websiteErrorDocument: 'error.html',
-        publicReadAccess: true,
+      bucketName: siteDomain,
+      websiteIndexDocument: 'index.html',
+      websiteErrorDocument: 'error.html',
+      publicReadAccess: true,
 
-        // The default removal policy is RETAIN, which means that cdk destroy will not attempt to delete
-        // the new bucket, and it will remain in your account until manually deleted. By setting the policy to
-        // DESTROY, cdk destroy will attempt to delete the bucket, but will error if the bucket is not empty.
-        removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production code
+      // The default removal policy is RETAIN, which means that cdk destroy will not attempt to delete
+      // the new bucket, and it will remain in your account until manually deleted. By setting the policy to
+      // DESTROY, cdk destroy will attempt to delete the bucket, but will error if the bucket is not empty.
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // NOT recommended for production code
     });
     new cdk.CfnOutput(this, 'Bucket', { value: siteBucket.bucketName });
 
     // TLS certificate
     const certificate = new certificatemanager.DnsValidatedCertificate(this, 'SiteCertificate', {
-        domainName: siteDomain,
-        hostedZone: zone,
-        region: 'us-east-1', // Cloudfront only checks this region for certificates.
+      domainName: siteDomain,
+      hostedZone: zone,
+      region: 'us-east-1', // Cloudfront only checks this region for certificates.
     });
     new cdk.CfnOutput(this, 'Certificate', { value: certificate.certificateArn });
 
     // CloudFront distribution that provides HTTPS
     const distribution = new cloudfront.CloudFrontWebDistribution(this, 'SiteDistribution', {
-      viewerCertificate:  cloudfront.ViewerCertificate.fromAcmCertificate(certificate, {
+      viewerCertificate: cloudfront.ViewerCertificate.fromAcmCertificate(certificate, {
         securityPolicy: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2019,
-        aliases: [ siteDomain ],
+        aliases: [siteDomain],
         sslMethod: cloudfront.SSLMethod.SNI,
       }),
       priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
       originConfigs: [
-          {
-            s3OriginSource: { s3BucketSource: siteBucket },
-            behaviors : [
-              {
-                compress: true,
-                isDefaultBehavior: true,
-              },
-              {
-                pathPattern: 'index.html',
-                compress: true,
-                maxTtl: Duration.seconds(0),
-              },
-            ],
-          }
+        {
+          s3OriginSource: { s3BucketSource: siteBucket },
+          behaviors: [
+            {
+              compress: true,
+              isDefaultBehavior: true,
+            },
+            {
+              pathPattern: 'index.html',
+              compress: true,
+              maxTtl: Duration.seconds(0),
+            },
+          ],
+        }
       ]
     });
     new cdk.CfnOutput(this, 'DistributionId', { value: distribution.distributionId });
 
     // Route53 alias record for the CloudFront distribution
     new route53.ARecord(this, 'SiteAliasRecord', {
-        recordName: siteDomain,
-        target: route53.RecordTarget.fromAlias(new r53targets.CloudFrontTarget(distribution)),
-        zone
+      recordName: siteDomain,
+      target: route53.RecordTarget.fromAlias(new r53targets.CloudFrontTarget(distribution)),
+      zone
     });
 
     // Deploy site contents to S3 bucket
     new s3deploy.BucketDeployment(this, 'DeployWithInvalidation', {
-        sources: [ s3deploy.Source.asset(path.join(__dirname, '../../static-site/dist/')) ],
-        destinationBucket: siteBucket,
-        distribution,
-        distributionPaths: ['/*'],
-        memoryLimit: 2048,
-      });
+      sources: [s3deploy.Source.asset(path.join(__dirname, '../../static-site/dist/'))],
+      destinationBucket: siteBucket,
+      distribution,
+      distributionPaths: ['/*'],
+      memoryLimit: 2048,
+    });
   }
 }
 
