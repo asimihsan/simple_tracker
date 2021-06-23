@@ -4,7 +4,7 @@ import * as apigateway from '@aws-cdk/aws-apigateway';
 // import * as apigatewayv2 from '@aws-cdk/aws-apigatewayv2';
 import * as certificatemanager from '@aws-cdk/aws-certificatemanager';
 import * as cloudfront from '@aws-cdk/aws-cloudfront';
-// import * as cfn_origins from '@aws-cdk/aws-cloudfront-origins';
+import * as cfn_origins from '@aws-cdk/aws-cloudfront-origins';
 import * as eventstargets from '@aws-cdk/aws-events-targets';
 import * as dynamodb from '@aws-cdk/aws-dynamodb';
 // import * as iam from '@aws-cdk/aws-iam';
@@ -58,29 +58,23 @@ export class StaticSite extends cdk.Stack {
     new cdk.CfnOutput(this, 'Certificate', { value: certificate.certificateArn });
 
     // CloudFront distribution that provides HTTPS
-    const distribution = new cloudfront.CloudFrontWebDistribution(this, 'SiteDistribution', {
-      viewerCertificate: cloudfront.ViewerCertificate.fromAcmCertificate(certificate, {
-        securityPolicy: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2019,
-        aliases: [siteDomain],
-        sslMethod: cloudfront.SSLMethod.SNI,
-      }),
-      priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL,
-      originConfigs: [
-        {
-          s3OriginSource: { s3BucketSource: siteBucket },
-          behaviors: [
-            {
-              compress: true,
-              isDefaultBehavior: true,
-            },
-            {
-              pathPattern: 'index.html',
-              compress: true,
-              maxTtl: Duration.seconds(0),
-            },
-          ],
-        }
-      ]
+    const cachePolicy = new cloudfront.CachePolicy(this, "SiteCachePolicy", {
+      enableAcceptEncodingBrotli: true,
+      enableAcceptEncodingGzip: true
+    });
+    const s3Origin = new cfn_origins.HttpOrigin(siteBucket.bucketWebsiteDomainName, {
+      protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
+    })
+    const distribution = new cloudfront.Distribution(this, 'SiteDistribution', {
+      defaultBehavior: {
+        origin: s3Origin,
+        cachePolicy,
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS
+      },
+      domainNames: [siteDomain],
+      certificate: certificate,
+      minimumProtocolVersion: cloudfront.SecurityPolicyProtocol.TLS_V1_2_2019,
+      priceClass: cloudfront.PriceClass.PRICE_CLASS_ALL
     });
     new cdk.CfnOutput(this, 'DistributionId', { value: distribution.distributionId });
 
