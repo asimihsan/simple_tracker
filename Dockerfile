@@ -9,6 +9,7 @@ ENV VERSION_DART=2.13.3
 ENV VERSION_GO=1.16.5
 ENV VERSION_NODE=14.17.1
 ENV VERSION_NVM=0.38.0
+ENV VERSION_PANDOC=2.14.0.3
 ENV VERSION_PROTOC=3.17.3
 ENV VERSION_RUST=1.53.0
 
@@ -59,10 +60,10 @@ RUN unzip protoc-$VERSION_PROTOC-linux-x86_64.zip -d $HOME/.protobuf
 FROM base as go_base
 
 # Install Go
-RUN wget -O go.tgz https://dl.google.com/go/go$VERSION_GO.src.tar.gz
-RUN tar -C /usr/local -xzf go.tgz
-RUN cd /usr/local/go/src/ && ./make.bash
-RUN rm -f go.tgz
+WORKDIR /root
+RUN curl -LO https://golang.org/dl/go$VERSION_GO.linux-amd64.tar.gz
+RUN tar -xz --strip-components 0 -C /usr/local/ -f go$VERSION_GO.linux-amd64.tar.gz
+RUN rm -f go$VERSION_GO.linux-amd64.tar.gz
 RUN mkdir $HOME/.go
 
 # Protobuf Go plugin
@@ -88,6 +89,17 @@ FROM base as rust_dependencies
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 RUN rustup install ${VERSION_RUST}
+# -----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
+#   Pandoc
+# -----------------------------------------------------------------------------
+FROM base as pandoc
+
+WORKDIR /root
+RUN curl -LO "https://github.com/jgm/pandoc/releases/download/$VERSION_PANDOC/pandoc-$VERSION_PANDOC-linux-amd64.tar.gz"
+RUN tar -xz --strip-components 1 -C /usr/local/ -f pandoc-$VERSION_PANDOC-linux-amd64.tar.gz
+RUN rm -f pandoc-$VERSION_PANDOC-linux-amd64.tar.gz
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
@@ -144,6 +156,7 @@ COPY --from=dart_dependencies /root/.dart /root/.dart
 COPY --from=dart_dependencies /root/.pub-cache /root/.pub-cache
 COPY --from=go_base /usr/local/go /usr/local/go
 COPY --from=npm_dependencies /root/.nvm /root/.nvm
+COPY --from=pandoc /usr/local/bin/pandoc /usr/local/bin
 COPY --from=protobuf /root/.protobuf /root/.protobuf
 COPY --from=rust_dependencies /root/.cargo /root/.cargo
 COPY --from=rust_dependencies /root/.rustup /root/.rustup
