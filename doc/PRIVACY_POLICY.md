@@ -11,6 +11,11 @@ I may update SCT's Privacy Policy from time to time. I will notify you of any ch
 Privacy Policy on this page and within the changes description of the app in the Google Play Store / Apple App
 Store / etc.
 
+### TODO
+
+-   Can post user-generated content, but it is not shared with other users.
+-   Users cannot interact with each other.
+
 ### Revision History
 
 - Revision 1 - June 21st, 2021
