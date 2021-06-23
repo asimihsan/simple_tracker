@@ -20,4 +20,7 @@ protoc -I=proto --dart_out=flutter/lib/proto proto/app_preferences.proto
 (cd cdk && npm install)
 (cd cdk && npm run build && npm run test)
 
+(cd static-site && npm install)
+(cd static-site && npm run build)
+
 # (cd cdk && npm run build && npm run test && cdk deploy preprod-SimpleTrackerCdkStack --strict)

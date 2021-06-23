@@ -107,6 +107,10 @@ RUN /bin/bash -c ". ~/.nvm/nvm.sh && npm install cdk@$VERSION_CDK -g --unsafe-pe
 COPY cdk /root/cdk
 RUN rm -rf /root/cdk/node_modules
 RUN /bin/bash -c '. ~/.nvm/nvm.sh && cd /root/cdk && npm install --unsafe-perm=true'
+
+COPY static-site /root/static-site
+RUN rm -rf /root/static-site/node_modules
+RUN /bin/bash -c '. ~/.nvm/nvm.sh && cd /root/static-site && npm install --unsafe-perm=true'
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
