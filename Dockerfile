@@ -61,10 +61,15 @@ FROM base as go_base
 
 # Install Go
 WORKDIR /root
-RUN curl -LO https://golang.org/dl/go$VERSION_GO.linux-amd64.tar.gz
-RUN tar -xz --strip-components 0 -C /usr/local/ -f go$VERSION_GO.linux-amd64.tar.gz
-RUN rm -f go$VERSION_GO.linux-amd64.tar.gz
-RUN mkdir $HOME/.go
+
+RUN wget -O go.tgz https://dl.google.com/go/go$VERSION_GO.src.tar.gz
+RUN tar -C /usr/local -xzf go.tgz
+RUN cd /usr/local/go/src/ && ./make.bash
+RUN rm -f go.tgz
+#RUN curl -LO https://golang.org/dl/go$VERSION_GO.linux-amd64.tar.gz
+#RUN tar -xz --strip-components 0 -C /usr/local/ -f go$VERSION_GO.linux-amd64.tar.gz
+#RUN rm -f go$VERSION_GO.linux-amd64.tar.gz
+#RUN mkdir $HOME/.go
 
 # Protobuf Go plugin
 RUN bash -c 'GOPATH="/root/.go" /usr/local/go/bin/go get -u github.com/golang/protobuf/proto'
