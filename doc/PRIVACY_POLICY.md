@@ -1,22 +1,40 @@
-This Privacy Policy covers how Simple Calendar Tracker (SCT) collects, uses, discloses, transfers, and stores
-your personal information.
+The Simple Calendar Tracker mobile application ("App") and services that it provides are
+operated by Kitten Cat LLC ("Company", "we", "us", "our").
 
-An online copy of the SCT Privacy Policy is available at [https://simplecalendartracker.com/privacy/](https://simplecalendartracker.com/privacy/).
+This Privacy Policy covers how the App and our services collect, use, disclose, transfer,
+and store your personal information. Please read this policy in full, but here is a summary:
+
+-   We collect personal information that you provide us, such as your email address and calendar event data.
+-   Some information, such as your Internet Protocol (IP) address and device characteristics, are collected automatically as you use the App and our services.
+-   We process your information based on legitimate business interests, compliance with legal obligations, and your consent. 
+-   We only share information with your consent, to comply with laws, to provide you with services, to protect your rights, or to fulfill business obligations.
+-   We use session identifiers, i.e. cookies, to collect and store your information.
+-   We may transfer, store, and process your information in countries other than your own.
+-   We keep your information for as long as necessary to fulfill the purposes outlined in thie privacy policy unless otherwise required by law.
+-   We aim to protect your personal information through a system of organizational and technical security measures.
+-   We do not knowingly collect data from or market to children under 18 years of age.
+-   In some regions, such as the European Economic Area (EEA) and United Kingdom (UK), you have rights that allow you greater access to and control over your personal information.
+-   You may review, change, or terminate your account at any time. On termination we will delete your personal information within 2 months, unless longer retention is required or permitted by law.
+-   If you have questions about this policy, how we collect or process your personal data, or anything else related to our privacy practices, we want to hear from you. You can contact us at any time.
+
+An online copy of the SCT Privacy Policy is available at
+[https://www.simplecalendartracker.com/privacy/](https://www.simplecalendartracker.com/privacy/).
 
 ## Changes to This Privacy Policy
 
 Revision 1 of the SCT Privacy Policy was updated on June 21st, 2021.
 
-I may update SCT's Privacy Policy from time to time. I will notify you of any changes by posting the new
-Privacy Policy on this page and within the changes description of the app in the Google Play Store / Apple App
-Store / etc.
+I may update SCT's Privacy Policy from time to time. I will notify you of any changes by
+posting the new Privacy Policy on this page and within the changes description of the app
+in the Google Play Store / Apple App Store / etc.
 
 ### TODO
 
 -   Can post user-generated content, but it is not shared with other users.
 -   Users cannot interact with each other.
 -   Need to mention https://aws.amazon.com/compliance/eu-us-privacy-shield-faq/
--   Need to mention https://aws.amazon.com/blogs/security/aws-gdpr-data-processing-addendum/
+-   Need to mention
+    https://aws.amazon.com/blogs/security/aws-gdpr-data-processing-addendum/
 
 ### Revision History
 
@@ -39,27 +57,30 @@ TODO
 
 ## Your Rights
 
-If you reside in certain territories, including the EU, you have a number of rights in relation to your
-personal information. While some of these rights apply generally, certain rights apply only in certain limited
-cases. I describe these rights below:
+If you reside in certain territories, including the EU, you have a number of rights in
+relation to your personal information. While some of these rights apply generally, certain
+rights apply only in certain limited cases. I describe these rights below:
 
--   **Access**. You may have the right to access and receive a copy of the personal information I hold about
-    you by contacting me using the contact information below.
--   **Change, restrict, delete**. You may also have rights to change, restrict my use of, or delete your
-    personal information. Absent exceptional circumstances (like where I am required to store data for legal
-    reasons) I will generally delete your personal information upon request.
--   **Object**. You can object to (i) my processing of some of your information based on my legitimate
-    interests and (ii) receiving marketing messages from me after providing your express consent to receive
-    them. In such cases, I will delete your personal information unless I have compelling and legitimate
-    grounds to continue using that information or if it is needed for legal reasons.
--   **Complain**. If you reside in the EU and wish to raise a concern about my use of your information (and
-    without prejudice to any other rights you may have), you have the right to do so with your local data
-    protection authority.
+-   **Access**. You may have the right to access and receive a copy of the personal
+    information I hold about you by contacting me using the contact information below.
+-   **Change, restrict, delete**. You may also have rights to change, restrict my use of,
+    or delete your personal information. Absent exceptional circumstances (like where I am
+    required to store data for legal reasons) I will generally delete your personal
+    information upon request.
+-   **Object**. You can object to (i) my processing of some of your information based on
+    my legitimate interests and (ii) receiving marketing messages from me after providing
+    your express consent to receive them. In such cases, I will delete your personal
+    information unless I have compelling and legitimate grounds to continue using that
+    information or if it is needed for legal reasons.
+-   **Complain**. If you reside in the EU and wish to raise a concern about my use of your
+    information (and without prejudice to any other rights you may have), you have the
+    right to do so with your local data protection authority.
 
 ## How to Contact Me
 
-For purpose of EU data protection law, I, Asim Ihsan, am the data controller of your personal information. If
-you have any questions or concerns, you may contact me at TODO@TODO.com
+For purpose of EU data protection law, I, Asim Ihsan, am the data controller of your
+personal information. If you have any questions or concerns, you may contact me at
+TODO@TODO.com
 
 ## End of document
 
