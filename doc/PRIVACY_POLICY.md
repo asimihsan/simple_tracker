@@ -44,12 +44,17 @@ We store and process your data under the following bases:
     your account.
 -   **Our legitimate business interests** in order to operate the App and underlying
     services, and protect our users and their rights.
--   **In order to comply with legal obligations**.
+-   **In order to comply with legal obligations**, 
 
 ## How we store your personal information
 
 Your personal information is stored securely in Amazon Web Services (AWS) infrastructure
-located in the United States of America (USA).
+located in the United States of America (USA). It is also stored by the App on your device.
+
+We keep your personal information while you continue to have an account with the App and our services. If you ask us to delete your account, we will then dispose of your information within 30 days, unless required to retain it for legal purposes. Specifically:
+
+-   Your username, password, email address, and user-generated calendar names and highlighted days are deleted within 30 days. We delete this information by permanently deleting internal keys specific to your account.
+-   Your IP address(es) and device characteristics may be stored for up to 18 months for legal purposes.
 
 ## Information sharing and disclosure
 
@@ -59,6 +64,41 @@ third-party advertising or third-party tracking in our App or services.
 However, in operating the App and underlying services, our employees or contractors may
 access your personal information. Their access is audited and restricted to the the least
 amount of your personal information necessary to operate the App and our services.
+
+## Your Rights
+
+Under data protection law, you have rights including:
+
+-   **Your right of access** - You have the right to ask us for copies of your personal information. 
+-   **Your right to rectification** - You have the right to ask us to rectify personal information you think is inaccurate. You also have the right to ask us to complete information you think is incomplete. 
+-   **Your right to erasure** - You have the right to ask us to erase your personal information in certain circumstances. 
+-   **Your right to restriction of processing** - You have the right to ask us to restrict the processing of your personal information in certain circumstances. 
+-   **Your right to object to processing** - You have the the right to object to the processing of your personal information in certain circumstances.
+Your right to data portability - You have the right to ask that we transfer the personal information you gave us to another organisation, or to you, in certain circumstances.
+You are not required to pay any charge for exercising your rights. If you make a request, we have one month to respond to you.
+Please contact us at [insert email address, phone number and or postal address] if you wish to make a request.
+
+
+If you reside in certain territories, including the EU, you have a number of rights in
+relation to your personal information. While some of these rights apply generally, certain
+rights apply only in certain limited cases. I describe these rights below:
+
+-   **Access**. You may have the right to access and receive a copy of the personal
+    information I hold about you by contacting me using the contact information below.
+-   **Change, restrict, delete**. You may also have rights to change, restrict my use of,
+    or delete your personal information. Absent exceptional circumstances (like where I am
+    required to store data for legal reasons) I will generally delete your personal
+    information upon request.
+-   **Object**. You can object to (i) my processing of some of your information based on
+    my legitimate interests and (ii) receiving marketing messages from me after providing
+    your express consent to receive them. In such cases, I will delete your personal
+    information unless I have compelling and legitimate grounds to continue using that
+    information or if it is needed for legal reasons.
+-   **Complain**. If you reside in the EU and wish to raise a concern about my use of your
+    information (and without prejudice to any other rights you may have), you have the
+    right to do so with your local data protection authority.
+
+
 
 -   We collect personal information that you provide us, such as your email address and
     calendar event data.
