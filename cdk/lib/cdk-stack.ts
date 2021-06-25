@@ -10,7 +10,7 @@ import * as dynamodb from '@aws-cdk/aws-dynamodb';
 // import * as iam from '@aws-cdk/aws-iam';
 import * as kms from '@aws-cdk/aws-kms';
 import * as lambda from '@aws-cdk/aws-lambda';
-import * as r53patterns from '@aws-cdk/aws-route53-patterns';
+// import * as r53patterns from '@aws-cdk/aws-route53-patterns';
 import * as r53targets from '@aws-cdk/aws-route53-targets';
 import * as route53 from '@aws-cdk/aws-route53';
 import * as s3 from '@aws-cdk/aws-s3';
@@ -34,21 +34,12 @@ export class StaticSite extends cdk.Stack {
     id: string,
     domainName: string,
     siteSubDomain: string,
-    redirectDnsRoot: boolean,
     props?: cdk.StackProps) {
     super(scope, id, props);
 
     const zone = route53.HostedZone.fromLookup(this, 'Zone', { domainName: domainName });
     const siteDomain = siteSubDomain + '.' + domainName;
     new cdk.CfnOutput(this, 'Site', { value: 'https://' + siteDomain });
-
-    if (redirectDnsRoot) {
-      new r53patterns.HttpsRedirect(this, 'wwwToNonWww', {
-        recordNames: [siteDomain],
-        targetDomain: domainName,
-        zone: zone
-      });
-    }
 
     // Content bucket
     const siteBucket = new s3.Bucket(this, 'SiteBucket', {
