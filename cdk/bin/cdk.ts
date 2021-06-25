@@ -28,6 +28,7 @@ new StaticSite(
     "preprod-SimpleCalendarTrackerStaticSite",
     "simplecalendartracker.com",
     "preprod-www",
+    false /*redirectDnsRoot*/,
     {
         env: preprodEnvironment,
     }
@@ -38,6 +39,7 @@ new StaticSite(
     "prod-SimpleCalendarTrackerStaticSite",
     "simplecalendartracker.com",
     "www",
+    true /*redirectDnsRoot*/,
     {
         env: prodEnvironment,
     }
