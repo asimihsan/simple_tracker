@@ -32,3 +32,13 @@ new StaticSite(
         env: preprodEnvironment,
     }
 );
+
+new StaticSite(
+    app,
+    "prod-SimpleCalendarTrackerStaticSite",
+    "simplecalendartracker.com",
+    "www",
+    {
+        env: prodEnvironment,
+    }
+);

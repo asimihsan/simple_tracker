@@ -11,7 +11,7 @@ Email address: `simplecalendartracker@kittencat.art`
 
 Revision 1 of the SCT Privacy Policy was updated on June 21st, 2021.
 
-I may update SCT's Privacy Policy from time to time. I will notify you of any changes by
+We may update SCT's Privacy Policy from time to time. We will notify you of any changes by
 posting the new Privacy Policy on this page and within the changes description of the app
 in the Google Play Store / Apple App Store / etc.
 
