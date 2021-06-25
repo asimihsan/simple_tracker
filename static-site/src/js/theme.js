@@ -9,7 +9,7 @@
 // Theme
 import './aos';
 // import './bigpicture';
-// import './bootstrap';
+import './bootstrap';
 // import './choices';
 // import './countup';
 // import './dropzone';
