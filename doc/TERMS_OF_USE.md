@@ -1,11 +1,13 @@
-The Simple Calendar Tracker mobile application and the services that underly and connect
-to it ("App") are operated by Kitten Cat LLC ("Company", "we", "us", "our", "the owner").
+The Simple Calendar Tracker mobile application and the services that underly it and
+connect to it ("App") are operated by Kitten Cat LLC ("Company", "we", "us", "our", "the
+owner").
 
 ## Agreeing to the terms
 
-These Terms and Conditions of Use (the "Terms of Use") apply to the App and services that
-underly it. BY USING THE APP, YOU AGREE TO THESE TERMS OF USE; IF YOU DO NOT AGREE, DO NOT
-USE THE APP.
+These Terms and Conditions of Use (the "Terms of Use") apply to the App. BY USING THE APP,
+YOU AGREE TO THESE TERMS OF USE; IF YOU DO NOT AGREE, DO NOT USE THE APP.
+
+You must be over 18 years of age to access and use the App.
 
 We reserve the right, at our sole discretion, to change, modify, add or remove portions of
 these Terms of Use, at any time. It is your responsibility to check these Terms of Use
@@ -25,8 +27,8 @@ other intellectual property rights and unfair competition laws.
 
 ## We collect personal information
 
-When you use the App, we collect some of your personal information. Any participation in
-this App will constitute acceptance of the [privacy
+Your privacy is important to us. When you use the App, we collect some of your personal
+information. Any participation in this App will constitute acceptance of the [privacy
 policy](https://www.simplecalendartracker.com/privacy).
 
 ## Your use of the App
@@ -72,7 +74,7 @@ THE APP WILL PROVIDE SPECIFIC RESULTS. THE APP AND ITS CONTENT ARE DELIVERED ON 
 AND "AS-AVAILABLE" BASIS. 
 
 THE APP AND ANY CONTENT MADE AVAILABLE IN CONJUNCTION WITH OR THROUGH THE APP IS PROVIDED
-"AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+"AS-IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
 THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 IN NO EVENT SHALL WE BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
 ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE APP
@@ -151,3 +153,21 @@ Use, we will be entitled to recover from you, and you agree to pay, all reasonab
 attorneys’ fees and costs of such action, in addition to any other relief granted to us.
 You agree that we will not be liable to you or to any third party for termination of your
 access to the App as a result of any violation of these Terms of Use.
+
+## Miscellaneous
+
+If any of the provisions of these Terms of Use are held by a court or other tribunal of
+competent jurisdiction to be void or unenforceable, such provisions shall be limited or
+eliminated to the minimum extent necessary and replaced with a valid provision that best
+embodies the intent of these Terms of Use, so that these Terms of Use shall remain in full
+force and effect. These Terms of Use constitute the entire agreement between you and us
+with regard to your use of the App, and any and all other written or oral agreements or
+understandings previously existing between you and us with respect to such use are hereby
+superseded and cancelled. Other than as provided in a purchase agreement you enter into
+with us, we will not accept any counter-offers to these Terms of Use, and all such offers
+are hereby categorically rejected. Our failure to insist on or enforce strict performance
+of these Terms of Use shall not be construed as a waiver by us of any provision or any
+right it has to enforce these Terms of Use, nor shall any course of conduct between you
+and us or any other party be deemed to modify any provision of these Terms of Use. These
+Terms of Use shall not be interpreted or construed to confer any rights or remedies on any
+third parties.
