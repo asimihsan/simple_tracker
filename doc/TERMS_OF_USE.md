@@ -106,7 +106,7 @@ we have been advised of the possibility of such damages.
 
 ## Indemnity
 
-You agree to indemnify and hold us, its officers, directors, shareholders, predecessors,
+You agree to indemnify and hold us, our officers, directors, shareholders, predecessors,
 successors in interest, employees, agents, subsidiaries and affiliates, harmless from any
 demands, loss, liability, claims or expenses (including attorneys’ fees), made against us
 by any third party due to or arising out of or in connection with your use of the App.
@@ -117,7 +117,7 @@ We may disclose any information we have about you (including your identity) if w
 determine that such disclosure is necessary in connection with any investigation or
 complaint regarding your use of the App, or to identify, contact or bring legal action
 against someone who may be causing injury to or interference with (either intentionally or
-unintentionally) Our rights or property, or the rights or property of visitors to or users
+unintentionally) our rights or property, or the rights or property of visitors to or users
 of the App, including our customers. We reserve the right at all times to disclose any
 information that we deem necessary to comply with any applicable law, regulation, legal
 process or governmental request. We also may disclose your information when we determine

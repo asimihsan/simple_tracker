@@ -3,8 +3,8 @@
   "version": "2.0.0",
   "description": "",
   "scripts": {
-    "start": "./generate_privacy_policy.sh && webpack serve --open",
-    "build": "del-cli dist && ./generate_privacy_policy.sh && webpack --mode production && ./apply_critical.py"
+    "start": "./generate_policies.sh && webpack serve --open",
+    "build": "del-cli dist && ./generate_policies.sh && webpack --mode production && ./apply_critical.py"
   },
   "dependencies": {
     "@popperjs/core": "^2.9.2",
