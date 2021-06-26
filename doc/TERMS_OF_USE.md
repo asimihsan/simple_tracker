@@ -1,14 +1,153 @@
-The Simple Calendar Tracker mobile application and the services that underly it ("App")
-are operated by Kitten Cat LLC ("Company", "we", "us", "our").
+The Simple Calendar Tracker mobile application and the services that underly and connect
+to it ("App") are operated by Kitten Cat LLC ("Company", "we", "us", "our", "the owner").
 
 ## Agreeing to the terms
 
-By accessing and using this App, you accept and agree to be bound by the terms and
-provision of this agreement. In addition, when using the App, you shall be subject to any
-posted guidelines or rules applicable to the App. Any participation in this App will
-constitute acceptance of this agreement. If you do not agree to abide by the above, please
-do not use this App.
+These Terms and Conditions of Use (the "Terms of Use") apply to the App and services that
+underly it. BY USING THE APP, YOU AGREE TO THESE TERMS OF USE; IF YOU DO NOT AGREE, DO NOT
+USE THE APP.
+
+We reserve the right, at our sole discretion, to change, modify, add or remove portions of
+these Terms of Use, at any time. It is your responsibility to check these Terms of Use
+periodically for changes. Your continued use of the App following the posting of changes
+will mean that you accept and agree to the changes. As long as you comply with these Terms
+of Use, we grant you a personal, non-exclusive, non-transferable, limited privilege to
+register an account with the App and use the App.
+
+## Content
+
+All text, graphics, user interfaces, visual interfaces, photographs, trademarks, logos,
+sounds, music, artwork and computer code (collectively, "Content"), including but not
+limited to the design, structure, selection, coordination, expression, "look and feel" and
+arrangement of such Content, contained on the App is owned, controlled or licensed by or
+to us, and is protected by trade dress, copyright, patent and trademark laws, and various
+other intellectual property rights and unfair competition laws.
 
 ## We collect personal information
 
-When you use the App, we collect some of your personal information. Please see the [privacy policy](https://www.simplecalendartracker.com/privacy) for more information.
+When you use the App, we collect some of your personal information. Any participation in
+this App will constitute acceptance of the [privacy
+policy](https://www.simplecalendartracker.com/privacy).
+
+## Your use of the App
+
+You may not attempt to gain unauthorized access to any portion or feature of the App, or
+any other services, systems, or networks connected to the App or to any of our servers or
+services, by hacking, password "mining", or any other illegitimate means.
+
+You may not probe, scan or test the vulnerability of the App or any underlying or
+connected service, nor breach the security or authentication measures on the App or any
+underlying or connected service. You may not reverse look-up, trace or seek to trace any
+information on any other user of or visitor to the App, or any other customer of ours,
+including any account not owned by you, to its source, or exploit the App or any service
+or information made available or offered by or through the App, in any way where the
+purpose is to reveal any information, including but not limited to personal identification
+or information, other than your own information, as provided for by the App.
+
+You agree that you will not take any action that imposes an unreasonable or
+disproportionately large load on the infrastructure of the App, or any systems or networks
+connected to the App or to us.
+
+You agree not to use any device, software or routine to interfere or attempt to interfere
+with the proper working of the App or any transaction being conducted on the App, or with
+any other person’s use of the App.
+
+You may not forge headers or otherwise manipulate identifiers in order to disguise the
+origin of any message or transmittal you send to us on or through the App or any service
+offered on or through the App. You may not pretend that you are, or that you represent,
+someone else, or impersonate any other individual or entity.
+
+You may not use the App for any purpose that is unlawful or prohibited by these Terms of
+Use, or to solicit the performance of any illegal activity or other activity which
+infringes the rights of us or others.
+
+## Disclaimer of warranties
+
+We disclaim any responsiblity for any harm resulting from your use (or use by your
+employees, agents, or contractors) of the App.
+
+WE DO NOT PROMISE THAT THE APP OR ANY CONTENT, SERVICE OR FEATURE OF THE APP WILL BE
+ERROR-FREE OR UNINTERRUPTED, OR THAT ANY DEFECTS WILL BE CORRECTED, OR THAT YOUR USE OF
+THE APP WILL PROVIDE SPECIFIC RESULTS. THE APP AND ITS CONTENT ARE DELIVERED ON AN "AS-IS"
+AND "AS-AVAILABLE" BASIS. 
+
+THE APP AND ANY CONTENT MADE AVAILABLE IN CONJUNCTION WITH OR THROUGH THE APP IS PROVIDED
+"AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL WE BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE APP
+OR THE USE OR OTHER DEALINGS IN THE APP. THE OWNER AND ANY THIRD PARTY WHO MAKES ITS
+SOFTWARE OR CONTENT AVAILABLE IN CONJUNCTION WITH OR THROUGH THE APP DISCLAIM ANY
+WARRANTIES REGARDING THE SECURITY, RELIABILITY, TIMELINESS, AND PERFORMANCE OF THE APP AND
+SUCH THIRD PARTY SOFTWARE OR CONTENT. YOU UNDERSTAND AND AGREE THAT YOU USE THE APP AND
+ALL THIRD PARTY SOFTWARE OR CONTENT MADE AVAILABLE IN CONJUNCTION WITH OR THROUGH THE APP
+AT YOUR OWN DISCRETION AND RISK.
+
+The above disclaimer applies to any damages, liability or injuries caused by any failure
+of performance, error, omission, interruption, deletion, defect, delay in operation or
+transmission, computer virus, communication line failure, theft or destruction of or
+unauthorized access to, alteration of, or use, whether for breach of contract, tort,
+negligence or any other cause of action.
+
+We reserve the right to do any of the following, at any time, without notice: (1) to
+modify, suspend or terminate operation of or access to the App, or any portion of the App,
+for any reason; (2) to modify or change the App, or any portion of the App, and any
+applicable policies or terms; and (3) to interrupt the operation of the App, or any
+portion of the App, as necessary to perform routine or non-routine maintenance, error
+correction, or other changes.
+
+## Limitation of Liability
+
+Except where prohibited by law, in no event will we be liable to you for any indirect,
+consequential, exemplary, incidental or punitive damages, including lost profits, even if
+we have been advised of the possibility of such damages.
+
+## Indemnity
+
+You agree to indemnify and hold us, its officers, directors, shareholders, predecessors,
+successors in interest, employees, agents, subsidiaries and affiliates, harmless from any
+demands, loss, liability, claims or expenses (including attorneys’ fees), made against us
+by any third party due to or arising out of or in connection with your use of the App.
+
+## Violation of These Terms of Use
+
+We may disclose any information we have about you (including your identity) if we
+determine that such disclosure is necessary in connection with any investigation or
+complaint regarding your use of the App, or to identify, contact or bring legal action
+against someone who may be causing injury to or interference with (either intentionally or
+unintentionally) Our rights or property, or the rights or property of visitors to or users
+of the App, including our customers. We reserve the right at all times to disclose any
+information that we deem necessary to comply with any applicable law, regulation, legal
+process or governmental request. We also may disclose your information when we determine
+that applicable law requires or permits such disclosure, including exchanging information
+with other companies and organizations for fraud protection purposes.
+
+You acknowledge and agree that we may preserve any transmittal or communication by you
+with us through the App or any service offered on or through the App, and may also
+disclose such data if required to do so by law or we determine that such preservation or
+disclosure is reasonably necessary to (1) comply with legal process, (2) enforce these
+Terms of Use, (3) respond to claims that any such data violates the rights of others, or
+(4) protect the rights, property or personal safety of us, our employees, users of or
+visitors to the App, and the public.
+
+You agree that we may, at our sole discretion and without prior notice, terminate your
+access to the App and/or block your future access to the App if we determine that you have
+violated these Terms of Use or other agreements or guidelines which may be associated with
+your use of the App. You also agree that any violation by you of these Terms of Use will
+constitute an unlawful and unfair business practice, and will cause irreparable harm to
+us, for which monetary damages would be inadequate, and you consent us obtaining any
+injunctive or equitable relief that we deem necessary or appropriate in such
+circumstances. These remedies are in addition to any other remedies we may have at law or
+in equity.
+
+You agree that we may, at our sole discretion and without prior notice, terminate your
+access to the App, for cause, which includes (but is not limited to) (1) requests by law
+enforcement or other government agencies, (2) a request by you (self-initiated account
+deletions), (3) discontinuance or material modification of the App or any service offered
+on or through the App, or (4) unexpected technical issues or problems.
+
+If we do take any legal action against you as a result of your violation of these Terms of
+Use, we will be entitled to recover from you, and you agree to pay, all reasonable
+attorneys’ fees and costs of such action, in addition to any other relief granted to us.
+You agree that we will not be liable to you or to any third party for termination of your
+access to the App as a result of any violation of these Terms of Use.

@@ -1,7 +1,7 @@
 The Simple Calendar Tracker mobile application and the services that underly it ("App")
-are operated by Kitten Cat LLC ("Company", "we", "us", "our"). This Privacy Policy covers
-how the App and our services collect, use, disclose, transfer, and store your personal
-information.
+are operated by Kitten Cat LLC ("Company", "we", "us", "our", "the owner"). This Privacy
+Policy covers how the App and our services collect, use, disclose, transfer, and store
+your personal information.
 
 ## Our contact details
 
