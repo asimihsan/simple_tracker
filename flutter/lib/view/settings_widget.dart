@@ -10,6 +10,10 @@ import 'package:simple_tracker/state/app_preferences_model.dart';
 import 'package:simple_tracker/view/privacy_policy_widget.dart';
 
 class SettingsWidget extends StatelessWidget {
+  final AppPreferencesModel appPreferencesModel;
+
+  SettingsWidget(this.appPreferencesModel);
+
   @override
   Widget build(BuildContext context) {
     Icon backIcon;
@@ -28,7 +32,7 @@ class SettingsWidget extends StatelessWidget {
                 Navigator.of(context).pop();
               },
             )),
-        body: SettingsListView());
+        body: SettingsListView(appPreferencesModel));
   }
 }
 
@@ -45,12 +49,14 @@ Please send comments, questions, and feedback to:
 }
 
 class SettingsListView extends StatelessWidget {
+  final AppPreferencesModel appPreferencesModel;
+
+  SettingsListView(this.appPreferencesModel);
+
   @override
   Widget build(BuildContext context) {
     final Brightness brightnessValue = MediaQuery.of(context).platformBrightness;
     final bool isDark = brightnessValue == Brightness.dark;
-    final AppPreferencesModel appPreferencesModel =
-        Provider.of<AppPreferencesModel>(context, listen: false);
     final String aboutText =
         createAboutText(appPreferencesModel.appVersion!, appPreferencesModel.appBuildNumber!);
 

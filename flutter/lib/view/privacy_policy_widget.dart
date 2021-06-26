@@ -7,8 +7,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 
 Future<String> loadPrivacyPolicyText(BuildContext context) async {
   final String text = await DefaultAssetBundle.of(context)
-      .loadString('assets/PRIVACY_POLICY.md');
-  developer.log(text);
+      .loadString('assets/privacy_policy.md');
   return text;
 }
 
@@ -20,12 +19,12 @@ class PrivacyPolicyWidget extends StatefulWidget {
 }
 
 class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget> {
-  Future<String>? privacyPolicyTextFuture;
+  late Future<String> _privacyPolicyTextFuture;
 
   @override
   void initState() {
     super.initState();
-    privacyPolicyTextFuture = loadPrivacyPolicyText(context);
+    _privacyPolicyTextFuture = loadPrivacyPolicyText(context);
   }
 
   @override
@@ -50,9 +49,16 @@ class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget> {
           physics: ClampingScrollPhysics(),
           child: Container(
             padding: const EdgeInsets.all(16),
-            child: FutureBuilder(
-              future: privacyPolicyTextFuture!,
-              builder: (context, snapshot) {
+            child: FutureBuilder<String>(
+              future: _privacyPolicyTextFuture,
+              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                }
                 final Brightness brightnessValue =
                     MediaQuery.of(context).platformBrightness;
                 bool isDark = brightnessValue == Brightness.dark;

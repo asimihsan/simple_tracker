@@ -24,6 +24,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_tracker/localizations.dart';
+import 'package:simple_tracker/state/app_preferences_model.dart';
 import 'package:simple_tracker/state/calendar_list_model.dart';
 import 'package:simple_tracker/state/calendar_repository.dart';
 import 'package:simple_tracker/state/calendar_summary_model.dart';
@@ -32,7 +33,9 @@ import 'package:simple_tracker/view/calendar_detail.dart';
 import 'package:simple_tracker/view/create_edit_calendar_view.dart';
 import 'package:simple_tracker/view/settings_widget.dart';
 
-Widget getCalendarList(BuildContext context, {Exception? error}) {
+Widget getCalendarList(BuildContext context,
+    AppPreferencesModel appPreferencesModel,
+    {Exception? error}) {
   final AppLocalizations localizations =
       Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   final CalendarListModel calendarListModel = Provider.of<CalendarListModel>(context, listen: true);
@@ -70,13 +73,13 @@ Widget getCalendarList(BuildContext context, {Exception? error}) {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => SettingsWidget()),
+                MaterialPageRoute(builder: (context) => SettingsWidget(appPreferencesModel)),
               );
             }),
       ],
     ),
     body: SafeArea(
-      child: new CalendarList(error: error),
+      child: CalendarList(error: error),
     ),
     floatingActionButton: Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -113,7 +116,7 @@ class CalendarList extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return new CalendarListState(error: error);
+    return CalendarListState(error: error);
   }
 }
 
@@ -168,7 +171,7 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
       }
       final List<CalendarSummaryModel> calendarSummaries =
           calendarList.getCalendarSummariesInNameOrder();
-      if (calendarSummaries.length == 0) {
+      if (calendarSummaries.isEmpty) {
         return emptyList(context, "You don't have any calendars!");
       }
       List<Widget> children = [];
@@ -184,7 +187,7 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
             padding: const EdgeInsets.fromLTRB(0, 0, 0, 16.0),
             child: RaisedButton(
                 onPressed: () async {
-                  if (calendarList.getCombinedViewCalendarsAsList().length == 0) {
+                  if (calendarList.getCombinedViewCalendarsAsList().isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text("No calendars selected!"),
                         backgroundColor: Colors.deepOrange));
@@ -203,7 +206,7 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
       }
       children.addAll(calendarList.getCalendarSummariesInNameOrder().map((calendarSummary) =>
           calendarSummaryModelToListViewWidget(calendarList, calendarSummary, context)));
-      return new RefreshIndicator(
+      return RefreshIndicator(
           onRefresh: () {
             developer.log("refresh for non-empty!");
             if (calendarList.isCombinedView) {
@@ -221,7 +224,7 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
   }
 
   Widget emptyList(BuildContext context, String text) {
-    return new RefreshIndicator(
+    return RefreshIndicator(
         onRefresh: () {
           developer.log("refresh for empty!");
           return refreshListCalendars(context);
@@ -230,7 +233,7 @@ class CalendarListState extends State<CalendarList> with AfterLayoutMixin<Calend
             padding: const EdgeInsets.all(32.0),
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              children: <Widget>[new Text(text)],
+              children: <Widget>[Text(text)],
             )));
   }
 

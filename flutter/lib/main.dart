@@ -135,7 +135,7 @@ class MyAppWithLocalizationsState extends State<MyAppWithLocalizations> {
                 "MyAppWithLocalizationsState user repository list calendars success");
             userModel.login(
                 appPreferencesModel.userId!, appPreferencesModel.sessionId!);
-            await switchToCalendarListView(context);
+            await switchToCalendarListView(context, appPreferencesModel);
           }).catchError((listCalendarErr) async {
             developer.log(
                 "MyAppWithLocalizationsState user repository list calendars failed",

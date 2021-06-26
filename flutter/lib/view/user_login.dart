@@ -40,7 +40,7 @@ Widget getUserLogin(
   final Widget child = Provider(
       create: (_) => appPreferencesModel, child: UserLoginForm(isSignupForm));
   final Widget settingsWidget = Provider(
-      create: (_) => appPreferencesModel, child: SettingsWidget(),
+      create: (_) => appPreferencesModel, child: SettingsWidget(appPreferencesModel),
   );
   return Scaffold(
     appBar: AppBar(title: Text(title), actions: <Widget>[
@@ -156,7 +156,7 @@ class UserLoginFormState extends State<UserLoginForm> {
                           providedUserModel.userId!,
                           providedUserModel.sessionId!);
                       ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                      switchToCalendarListView(context);
+                      switchToCalendarListView(context, appPreferencesModel);
                     }).catchError((err) async {
                       developer.log(
                           "UserLoginFormState user repository create finished error",
@@ -190,7 +190,7 @@ class UserLoginFormState extends State<UserLoginForm> {
                           providedUserModel.userId!,
                           providedUserModel.sessionId!);
                       ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                      switchToCalendarListView(context);
+                      switchToCalendarListView(context, appPreferencesModel);
                     }).catchError((err) async {
                       developer.log(
                           "UserLoginFormState user repository login finished error",
@@ -250,12 +250,13 @@ void switchToUserLoginHandler(
 }
 
 Future<void> switchToCalendarListView(BuildContext context,
+    AppPreferencesModel appPreferencesModel,
     {Exception? error}) async {
   developer.log("switching to calendar list view");
   await Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-          builder: (context) => getCalendarList(context, error: error)));
+          builder: (context) => getCalendarList(context, appPreferencesModel, error: error)));
 }
 
 String? validateUsername(String input, AppLocalizations appLocalizations) {

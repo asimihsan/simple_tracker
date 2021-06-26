@@ -38,7 +38,7 @@ Widget getCreateEditCalendar(BuildContext context, CalendarListModel calendarLis
   final String title =
       isCreate ? localizations.createCalendarTitle : localizations.editCalendarTitle;
 
-  return new WillPopScope(
+  return WillPopScope(
       onWillPop: () {
         refreshListCalendars(context);
         return Future.value(true);
@@ -46,7 +46,7 @@ Widget getCreateEditCalendar(BuildContext context, CalendarListModel calendarLis
       child: Scaffold(
           appBar: AppBar(title: Text(title)),
           body: SafeArea(
-            child: new CreateEditCalendarForm(
+            child: CreateEditCalendarForm(
                 isCreate: isCreate,
                 calendarListModel: calendarListModel,
                 existingCalendarSummaryModel: existingCalendarSummaryModel),
@@ -124,13 +124,13 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
 
   CreateEditCalendarFormState(final CalendarListModel calendarListModel, bool isCreate,
       CalendarSummaryModel? existingCalendarSummaryModel)
-      : this.isCreate = isCreate,
-        this.calendarListModel = calendarListModel,
-        this.existingCalendarColors = calendarListModel.getCalendarColors(),
-        this.existingCalendarSummaryModel = existingCalendarSummaryModel,
-        this._name = isCreate
-            ? new TextEditingController()
-            : new TextEditingController(text: existingCalendarSummaryModel!.name) {
+      : isCreate = isCreate,
+        calendarListModel = calendarListModel,
+        existingCalendarColors = calendarListModel.getCalendarColors(),
+        existingCalendarSummaryModel = existingCalendarSummaryModel,
+        _name = isCreate
+            ? TextEditingController()
+            : TextEditingController(text: existingCalendarSummaryModel!.name) {
     if (existingCalendarSummaryModel != null) {
       currentColor = existingCalendarSummaryModel.color;
     }
@@ -168,9 +168,7 @@ class CreateEditCalendarFormState extends State<CreateEditCalendarForm> {
       }
       return true;
     }).toList();
-    if (currentRecommendedColor == null) {
-      currentRecommendedColor = recommendedColors![0];
-    }
+    currentRecommendedColor ??= recommendedColors![0];
 
     if (currentColor == null && existingCalendarSummaryModel == null) {
       Color proposedCurrentColor;
