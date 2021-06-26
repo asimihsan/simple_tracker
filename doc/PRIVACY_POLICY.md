@@ -1,6 +1,6 @@
-The Simple Calendar Tracker mobile application ("App") and services that underly it are
-operated by Kitten Cat LLC ("Company", "we", "us", "our"). This Privacy Policy covers how
-the App and our services collect, use, disclose, transfer, and store your personal
+The Simple Calendar Tracker mobile application and the services that underly it ("App")
+are operated by Kitten Cat LLC ("Company", "we", "us", "our"). This Privacy Policy covers
+how the App and our services collect, use, disclose, transfer, and store your personal
 information.
 
 ## Our contact details
@@ -9,9 +9,9 @@ Email address: `simplecalendartracker@kittencat.art`
 
 ## Changes to This Privacy Policy
 
-Revision 1 of the SCT Privacy Policy was updated on June 21st, 2021.
+Revision 1 of the Privacy Policy was updated on June 21st, 2021.
 
-We may update SCT's Privacy Policy from time to time. We will notify you of any changes by
+We may update this Privacy Policy from time to time. We will notify you of any changes by
 posting the new Privacy Policy on this page and within the changes description of the app
 in the Google Play Store / Apple App Store / etc.
 
