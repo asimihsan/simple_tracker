@@ -2,6 +2,8 @@ The Simple Calendar Tracker mobile application and the services that underly it 
 connect to it ("App") are operated by Kitten Cat LLC ("Company", "we", "us", "our", "the
 owner").
 
+This policy is also available at https://www.simplecalendartracker.com/terms_of_use/.
+
 ## Agreeing to the terms
 
 These Terms and Conditions of Use (the "Terms of Use") apply to the App. BY USING THE APP,

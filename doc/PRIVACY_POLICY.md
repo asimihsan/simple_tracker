@@ -3,9 +3,11 @@ connect to it ("App") are operated by Kitten Cat LLC ("Company", "we", "us", "ou
 owner"). This Privacy Policy covers how the App and our services collect, use, disclose,
 transfer, and store your personal information.
 
+This policy is also available at https://www.simplecalendartracker.com/privacy/.
+
 ## Our contact details
 
-Email address: `simplecalendartracker@kittencat.art`
+Email address: `admin@kittencat.art`
 
 ## Changes to This Privacy Policy
 

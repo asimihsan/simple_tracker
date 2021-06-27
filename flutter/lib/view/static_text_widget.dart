@@ -5,26 +5,38 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
-Future<String> loadPrivacyPolicyText(BuildContext context) async {
+Future<String> loadText(BuildContext context, String path) async {
   final String text = await DefaultAssetBundle.of(context)
-      .loadString('assets/privacy_policy.md');
+      .loadString(path);
   return text;
 }
 
-class PrivacyPolicyWidget extends StatefulWidget {
-  const PrivacyPolicyWidget({Key? key}) : super(key: key);
+class StaticTextWidget extends StatefulWidget {
+  final String assetPath;
+  final String title;
+
+  const StaticTextWidget({
+    Key? key,
+    required String this.assetPath,
+    required String this.title
+  }) : super(key: key);
 
   @override
-  _PrivacyPolicyWidgetState createState() => _PrivacyPolicyWidgetState();
+  _StaticTextWidgetState createState() => _StaticTextWidgetState(assetPath, title);
 }
 
-class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget> {
-  late Future<String> _privacyPolicyTextFuture;
+class _StaticTextWidgetState extends State<StaticTextWidget> {
+  late Future<String> _loadTextFuture;
+
+  final String assetPath;
+  final String title;
+
+  _StaticTextWidgetState(String this.assetPath, String this.title);
 
   @override
   void initState() {
     super.initState();
-    _privacyPolicyTextFuture = loadPrivacyPolicyText(context);
+    _loadTextFuture = loadText(context, this.assetPath);
   }
 
   @override
@@ -38,7 +50,7 @@ class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget> {
 
     return Scaffold(
         appBar: AppBar(
-            title: Text("Privacy Policy"),
+            title: Text(this.title),
             leading: IconButton(
               icon: backIcon,
               onPressed: () {
@@ -50,7 +62,7 @@ class _PrivacyPolicyWidgetState extends State<PrivacyPolicyWidget> {
           child: Container(
             padding: const EdgeInsets.all(16),
             child: FutureBuilder<String>(
-              future: _privacyPolicyTextFuture,
+              future: _loadTextFuture,
               builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(
