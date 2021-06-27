@@ -111,6 +111,8 @@ export class CdkStack extends cdk.Stack {
     const userTable = new dynamodb.Table(this, 'UserTable', {
       partitionKey: { name: 'Username', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      pointInTimeRecovery: true,
+      contributorInsightsEnabled: true,
 
       // TODO if Prod make this RETAIN
       removalPolicy: RemovalPolicy.DESTROY,
@@ -119,6 +121,8 @@ export class CdkStack extends cdk.Stack {
     const sessionTable = new dynamodb.Table(this, 'SessionTable', {
       partitionKey: { name: 'Id', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      pointInTimeRecovery: true,
+      contributorInsightsEnabled: true,
 
       // TODO if Prod make this RETAIN
       removalPolicy: RemovalPolicy.DESTROY,
@@ -130,6 +134,8 @@ export class CdkStack extends cdk.Stack {
       partitionKey: { name: 'OwnerUserId', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'Id', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      pointInTimeRecovery: true,
+      contributorInsightsEnabled: true,
 
       // TODO if Prod make this RETAIN
       removalPolicy: RemovalPolicy.DESTROY,
@@ -147,6 +153,8 @@ export class CdkStack extends cdk.Stack {
     const paginationEphemeralKeyTable = new dynamodb.Table(this, 'PaginationEphemeralKeyTable', {
       partitionKey: { name: 'DateTime_Shard', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      pointInTimeRecovery: true,
+      contributorInsightsEnabled: true,
 
       // TODO if Prod make this RETAIN
       removalPolicy: RemovalPolicy.DESTROY,
