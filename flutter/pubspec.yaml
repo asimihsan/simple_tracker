@@ -67,6 +67,7 @@ flutter:
     - assets/icons/MultipleCalendars.svg
     - assets/privacy_policy.md
     - assets/help_en.md
+    - assets/terms_of_use.md
 
   # To add assets to your application, add an assets section, like this:
   # assets:

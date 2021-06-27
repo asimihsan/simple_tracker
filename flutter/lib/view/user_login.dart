@@ -18,6 +18,7 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_tracker/exception/InternalServerErrorException.dart';
 import 'package:simple_tracker/exception/UserAlreadyExistsException.dart';
@@ -40,7 +41,8 @@ Widget getUserLogin(
   final Widget child = Provider(
       create: (_) => appPreferencesModel, child: UserLoginForm(isSignupForm));
   final Widget settingsWidget = Provider(
-      create: (_) => appPreferencesModel, child: SettingsWidget(appPreferencesModel),
+    create: (_) => appPreferencesModel,
+    child: SettingsWidget(appPreferencesModel),
   );
   return Scaffold(
     appBar: AppBar(title: Text(title), actions: <Widget>[
@@ -107,6 +109,12 @@ class UserLoginFormState extends State<UserLoginForm> {
                 switchToUserSignupHandler(appPreferencesModel, context);
               });
 
+    final confirmationWidget = isSignupForm
+        ? Text(
+            'By creating an account, you agree to the Terms of Use and Privacy Policy. See Settings in the top-right for the policies')
+        : Text(
+            'By signing into this App, you agree to the Terms of Use and Privacy Policy. See Settings in the top-right for the policies');
+
     return Form(
         key: _formKey,
         child: Column(children: <Widget>[
@@ -133,7 +141,10 @@ class UserLoginFormState extends State<UserLoginForm> {
               ),
             ),
           Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              padding: const EdgeInsets.fromLTRB(0.0, 16.0, 0.0, 16.0),
+              child: confirmationWidget),
+          Padding(
+              padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 16.0),
               child: RaisedButton(
                 onPressed: () {
                   if (!_formKey.currentState!.validate()) {
@@ -249,14 +260,15 @@ void switchToUserLoginHandler(
               getUserLogin(context, appPreferencesModel, isSignupForm: false)));
 }
 
-Future<void> switchToCalendarListView(BuildContext context,
-    AppPreferencesModel appPreferencesModel,
+Future<void> switchToCalendarListView(
+    BuildContext context, AppPreferencesModel appPreferencesModel,
     {Exception? error}) async {
   developer.log("switching to calendar list view");
   await Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-          builder: (context) => getCalendarList(context, appPreferencesModel, error: error)));
+          builder: (context) =>
+              getCalendarList(context, appPreferencesModel, error: error)));
 }
 
 String? validateUsername(String input, AppLocalizations appLocalizations) {

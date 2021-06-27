@@ -1,13 +1,11 @@
 import 'dart:io';
-import 'dart:developer' as developer;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 Future<String> loadText(BuildContext context, String path) async {
-  final String text = await DefaultAssetBundle.of(context)
-      .loadString(path);
+  final String text = await DefaultAssetBundle.of(context).loadString(path);
   return text;
 }
 
@@ -15,14 +13,13 @@ class StaticTextWidget extends StatefulWidget {
   final String assetPath;
   final String title;
 
-  const StaticTextWidget({
-    Key? key,
-    required String this.assetPath,
-    required String this.title
-  }) : super(key: key);
+  const StaticTextWidget(
+      {Key? key, required this.assetPath, required this.title})
+      : super(key: key);
 
   @override
-  _StaticTextWidgetState createState() => _StaticTextWidgetState(assetPath, title);
+  _StaticTextWidgetState createState() =>
+      _StaticTextWidgetState(assetPath, title);
 }
 
 class _StaticTextWidgetState extends State<StaticTextWidget> {
@@ -31,12 +28,12 @@ class _StaticTextWidgetState extends State<StaticTextWidget> {
   final String assetPath;
   final String title;
 
-  _StaticTextWidgetState(String this.assetPath, String this.title);
+  _StaticTextWidgetState(this.assetPath, this.title);
 
   @override
   void initState() {
     super.initState();
-    _loadTextFuture = loadText(context, this.assetPath);
+    _loadTextFuture = loadText(context, assetPath);
   }
 
   @override
@@ -50,7 +47,7 @@ class _StaticTextWidgetState extends State<StaticTextWidget> {
 
     return Scaffold(
         appBar: AppBar(
-            title: Text(this.title),
+            title: Text(title),
             leading: IconButton(
               icon: backIcon,
               onPressed: () {
